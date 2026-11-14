@@ -455,11 +455,42 @@ def create_app(config_path: str | None = None) -> FastAPI:
         cfg = with_overrides(st.cfg(), {"translate": {k: body[k] for k in ("provider", "model", "base_url", "api_key_env")
                                                       if k in body}})
         if not translator_ready(cfg.translate):
-            raise HTTPException(400, "Chưa có API key cho nhà cung cấp này")
+            raise HTTPException(400, "Chưa cài cổng MCP" if cfg.translate.provider == "mcp" else "Chưa có API key cho nhà cung cấp này")
         try:
             return {"ok": True, "sample": test_translator(cfg.translate)}
         except Exception as e:
             raise HTTPException(502, friendly_translate_error(e, cfg.translate.provider))
+
+    # ------------------------------------------------------------------ AI qua MCP (cổng trên Cloudflare Workers)
+    @app.get("/api/mcp")
+    def mcp_get():
+        from .. import mcpcloud
+        c = mcpcloud.load_conf()
+        out = {"configured": mcpcloud.configured(), "ai_url": mcpcloud.ai_url(c), "url": c.get("url", ""),
+               "deployed_at": c.get("deployed_at", 0), "has_token": bool(c.get("cf_token"))}
+        if out["configured"]:
+            try:
+                out["status"] = mcpcloud.status()
+            except Exception as e:      # noqa: BLE001
+                out["error"] = str(e)[:200]
+        return out
+
+    @app.post("/api/mcp/deploy")
+    def mcp_deploy(body: dict = Body(default={})):
+        """Cài hoặc cập nhật cổng lên Cloudflare. rotate: đổi mật khẩu cho AI (địa chỉ MCP mới, phải dán lại vào các app AI)."""
+        from .. import mcpcloud
+        try:
+            c = mcpcloud.deploy(str(body.get("token") or ""), rotate_mcp=bool(body.get("rotate")))
+            st_ = mcpcloud.status(wait_ready=45)
+        except mcpcloud.McpError as e:
+            raise HTTPException(400, f"Chưa cài được cổng MCP: {e}")
+        return {"ok": True, "ai_url": mcpcloud.ai_url(c), "url": c["url"], "status": st_}
+
+    @app.delete("/api/mcp")
+    def mcp_forget():
+        from .. import mcpcloud
+        mcpcloud.forget()
+        return {"ok": True}
 
     # ------------------------------------------------------------------ bản quyền (đã tắt, API giữ cho giao diện cũ)
     @app.get("/api/license")

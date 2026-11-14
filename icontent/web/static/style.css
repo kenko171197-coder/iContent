@@ -1785,3 +1785,21 @@ h1, h2, h3, h4 { letter-spacing: -.012em; }
 .hm-sec { margin: 0 0 12px; }
 .hm-tasks { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 @media (max-width: 1250px) { .hm-tasks { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+
+/* ---- AI qua MCP (Cài đặt > Kết nối AI dịch) */
+.mcp-panel { display: flex; flex-direction: column; gap: 10px; }
+.mcp-setup { display: flex; flex-direction: column; gap: 10px; }
+.mcp-step { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.55; color: var(--tx2); }
+.mcp-step b { color: var(--tx); }
+.mcp-step-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.mcp-step-body > .key-row { margin-top: 2px; }
+.mcp-n { flex: none; width: 22px; height: 22px; border-radius: 999px; background: var(--amber-soft); color: var(--amber2); font: 700 12px/22px var(--font); text-align: center; }
+.mcp-step code, .mcp-panel code { font: 500 12px var(--mono); background: var(--s3); padding: 1px 6px; border-radius: 5px; }
+.mcp-addr { display: flex; flex-direction: column; gap: 6px; }
+.mcp-url { font: 500 12.5px var(--mono); }
+.mcp-how { display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; }
+.mcp-how ul { margin: 2px 0 4px; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; color: var(--tx2); }
+.mcp-how b { color: var(--tx); }
+.mcp-more summary { cursor: pointer; font-size: 13px; color: var(--tx3); margin-top: 4px; }
+.mcp-more[open] summary { margin-bottom: 10px; }
+.mcp-panel .ok .ico { width: 14px; height: 14px; vertical-align: -2px; }

@@ -5,12 +5,14 @@ import {
 import { cookiePanel, toolsPanel } from './fixes.js';
 import { aiPacks } from './localai.js';
 import { licensePanel } from './license.js';
+import { mcpPanel } from './mcp.js';
 import { OptionsForm } from './options.js';
 
 const PROVIDERS = [
   { id: 'claude', name: 'Claude', sub: 'Dịch tự nhiên nhất, hiểu ngữ cảnh', key: 'ANTHROPIC_API_KEY', get: 'console.anthropic.com', cfg: { provider: 'claude', model: 'claude-opus-5-5', base_url: '', api_key_env: '' } },
   { id: 'gemini', name: 'Gemini', sub: 'Google, có gói miễn phí', key: 'GEMINI_API_KEY', get: 'aistudio.google.com', cfg: { provider: 'openai', model: 'gemini-auto', base_url: 'https://generativelanguage.googleapis.com/v1beta/openai/', api_key_env: 'GEMINI_API_KEY' } },
   { id: 'deepseek', name: 'DeepSeek', sub: 'Rẻ, giỏi tiếng Trung', key: 'DEEPSEEK_API_KEY', get: 'platform.deepseek.com', cfg: { provider: 'openai', model: 'deepseek-chat', base_url: 'https://api.deepseek.com', api_key_env: 'DEEPSEEK_API_KEY' } },
+  { id: 'mcp', name: 'AI qua MCP', sub: 'Claude, ChatGPT, Grok: không cần key', key: '', get: '', cfg: { provider: 'mcp', model: '', base_url: '', api_key_env: '' } },
   { id: 'offline', name: 'Dịch offline', sub: 'Ngay trên máy, không cần key', key: '', get: '', cfg: { provider: 'offline', model: '', base_url: '', api_key_env: '' } },
   { id: 'ollama', name: 'Ollama', sub: 'Tự chọn model AI chạy trên máy', key: '', get: 'ollama.com', cfg: { provider: 'openai', model: 'qwen2.5', base_url: 'http://localhost:11434/v1', api_key_env: '' } },
   { id: 'google', name: 'Google dịch', sub: 'Miễn phí, kém tự nhiên, dễ bị chặn', key: '', get: '', cfg: { provider: 'google', model: '', base_url: '', api_key_env: '' } },
@@ -19,6 +21,7 @@ const PROVIDERS = [
 function providerOf(t) {
   if (!t) return 'claude';
   if (t.provider === 'claude') return 'claude';
+  if (t.provider === 'mcp') return 'mcp';
   if (t.provider === 'google') return 'google';
   if (t.provider === 'offline') return 'offline';
   const u = t.base_url || '';
@@ -102,6 +105,8 @@ export async function viewSettings(main, alive) {
         el('p', { class: 'dim small' }, 'Lấy key tại ', el('a', { href: 'https://' + p.get, target: '_blank', rel: 'noreferrer', text: p.get }),
           '. Key chỉ lưu trên máy này (keys.json) và chỉ gửi tới chính nhà cung cấp đó.',
           st.source === 'env' ? ' Hiện đang đọc từ biến môi trường.' : ''));
+    } else if (p.id === 'mcp') {
+      kids.push(mcpPanel());
     } else if (p.id === 'offline') {
       kids.push(aiPacks({ only: 'translate', onReady: () => loadStatus() }),
         el('p', { class: 'dim small', text: 'Khi chưa có key, hoặc AI đã chọn lỗi giữa chừng (quá tải, hết hạn mức), Studio566 tự dịch tiếp bằng cách này thay vì Google.' }));

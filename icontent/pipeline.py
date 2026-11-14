@@ -127,7 +127,8 @@ def _ensure_translator(cfg):
     tc = cfg.translate
     if translator_ready(tc):
         return cfg
-    why = "Chưa bật được dịch offline" if tc.provider == "offline" else f"Chưa có API key cho {tc.provider}"
+    why = ("Chưa bật được dịch offline" if tc.provider == "offline" else "Chưa cài cổng AI qua MCP" if tc.provider == "mcp"
+           else f"Chưa có API key cho {tc.provider}")
     if tc.provider in ("claude", "openai") and os.environ.get("GEMINI_API_KEY"):
         # đã có key Gemini (gói miễn phí cũng dịch được): hiểu ngữ cảnh, xưng hô, gợi ý tiêu đề, hơn hẳn dịch offline
         from .translate import GEMINI_AUTO, GEMINI_HOST
@@ -143,7 +144,7 @@ def _ensure_translator(cfg):
     return with_overrides(cfg, {"translate": {"provider": "google"}})
 
 
-PROVIDER_NAMES = {"claude": "Claude", "offline": "dịch offline", "google": "Google dịch"}
+PROVIDER_NAMES = {"claude": "Claude", "mcp": "AI qua MCP", "offline": "dịch offline", "google": "Google dịch"}
 
 
 def provider_name(tc) -> str:
@@ -453,7 +454,7 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
         before_srt = [(s.start, s.end, s.trans) for s in segs]
         segs = _import_srt_edits(job, segs, lang)
         edits_imported = before_srt != [(s.start, s.end, s.trans) for s in segs]
-        if cfg.translate.provider in ("claude", "openai") and cfg.translate.analyze and \
+        if cfg.translate.provider in ("claude", "openai", "mcp") and cfg.translate.analyze and \
                 ("translate" in force or context is None):
             stage("analyze")
             from .translate import analyze_video

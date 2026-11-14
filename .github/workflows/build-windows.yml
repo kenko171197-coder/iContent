@@ -18,9 +18,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
+      - name: Kiểm thử cổng MCP (Cloudflare Worker)
+        run: node cloudflare/test-worker.mjs
       - name: Kiểm thử Python
         run: |
-          pip install --quiet numpy pytest
+          pip install --quiet numpy pytest pyyaml
           python -m pytest -q tests
       - name: Kiểm tra cú pháp JavaScript
         run: |

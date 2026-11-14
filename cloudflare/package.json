@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Cổng MCP của Studio566 trên Cloudflare Workers. Studio566 tự tải lên, không cần cài gì ở đây.",
+  "scripts": { "test": "node test-worker.mjs" }
+}

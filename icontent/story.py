@@ -333,8 +333,10 @@ def _writer(cfg):
     import os
 
     from .keys import translator_ready
-    from .translate import ClaudeTranslator, OpenAICompatTranslator
+    from .translate import ClaudeTranslator, McpTranslator, OpenAICompatTranslator
     t = cfg.translate
+    if t.provider == "mcp" and translator_ready(t):
+        return McpTranslator(t)
     if t.provider in ("claude", "openai") and translator_ready(t):
         return ClaudeTranslator(t) if t.provider == "claude" else OpenAICompatTranslator(t)
     if os.environ.get("GEMINI_API_KEY"):

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 
 from .util import ROOT
 
@@ -71,6 +72,9 @@ def translator_ready(tcfg) -> bool:
     if p == "offline":
         from .offline import ready
         return ready(tcfg.get("offline_model"))
+    if p == "mcp":
+        from .mcpcloud import configured
+        return configured()
     if p == "claude":
         return bool(os.environ.get(tcfg.get("api_key_env") or "ANTHROPIC_API_KEY"))
     if p == "openai":
@@ -84,6 +88,12 @@ def test_translator(tcfg) -> str:
     """Gọi thử 1 câu rất ngắn để biết key/model dùng được. Trả về bản dịch, lỗi thì raise."""
     from .translate import make_translator
 
+    if tcfg.provider == "mcp":
+        from . import mcpcloud
+        st = mcpcloud.status()
+        seen = int(st.get("ai_seen") or 0)
+        who = f"{st.get('ai_name') or 'AI'} vào lần cuối " + time.strftime("%H:%M %d/%m", time.localtime(seen / 1000)) if seen else "chưa có AI nào nối vào"
+        return f"Cổng MCP chạy tốt ({who}, {st.get('pending', 0)} việc đang chờ)"
     tr = make_translator(tcfg)
     if hasattr(tr, "one"):
         return tr.one({"id": 1, "zh": "你好，朋友们"})

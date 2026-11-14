@@ -3,6 +3,12 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "0.9.0", "date": "11/2026", "items": [
+        "AI qua MCP: dùng Claude, ChatGPT hoặc Grok bạn đang trả phí để dịch, rút gọn câu, phân tích video, viết kịch bản. Không cần API key.",
+        "Cổng MCP đặt trên Cloudflare (tài khoản của bạn, gói miễn phí): dán API token là Studio566 tự cài. Máy bạn không mở cổng nào ra Internet.",
+        "Chờ AI nhận việc 5 phút (chỉnh được), quá thời gian thì tự dịch bằng dịch offline hoặc Google.",
+        "Bật tắt được bước phân tích video trước khi dịch (xưng hô, tiêu đề, hashtag).",
+    ]},
     {"version": "0.8.0", "date": "11/2026", "items": [
         "Giao diện mới: màu cam san hô theo logo, chữ to và dễ đọc hơn, nút bo tròn.",
         "Thanh bên chia nhóm Tạo video, Công cụ, Của tôi, tên mục dễ hiểu hơn. Cửa sổ hẹp thì tự thu gọn còn biểu tượng.",

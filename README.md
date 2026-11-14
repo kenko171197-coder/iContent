@@ -160,6 +160,22 @@ Mọi thứ đã làm ở một chỗ: video dịch, câu chuyện, quy trình, 
   
   Video, câu chuyện đang chạy hoặc đang đóng gói thì bỏ qua. Trên máy thử, một video 2 phút 19 giây có 583 MB thư mục làm việc, dọn được khoảng 300 MB.
 
+## AI qua MCP (không cần API key)
+
+Dùng Claude, ChatGPT hoặc Grok bạn đang trả phí làm "bộ não" cho các việc chữ: dịch, rút gọn câu, phân tích video, viết kịch bản.
+Vẽ ảnh và tạo video AI vẫn cần key hoặc Vẽ ảnh offline (AI chat chỉ trả về chữ).
+
+1. **Cài cổng (một lần):** Cài đặt → Kết nối AI dịch → **AI qua MCP**. Tạo tài khoản Cloudflare miễn phí, tạo API token theo mẫu
+   *Edit Cloudflare Workers*, dán vào và bấm **Cài cổng MCP**. Studio566 tự dựng cổng ở `studio566-mcp.<tên>.workers.dev`
+   (mã cổng: `cloudflare/studio566-mcp.js`).
+2. **Nối AI (một lần):** bấm **Chép địa chỉ**, dán vào Claude (Connectors → Add custom connector), ChatGPT (Developer mode →
+   Create) hoặc Grok (grok.com/connectors → Custom).
+3. **Mỗi lần làm video:** mở AI đó và nhắn *"làm việc đang chờ"*. AI dùng 3 công cụ `viec_dang_cho`, `lay_viec`, `tra_ket_qua`.
+   Quá 5 phút (chỉnh ở Cài đặt) chưa AI nào nhận việc thì Studio566 tự dịch bằng dịch offline hoặc Google.
+
+Địa chỉ MCP có sẵn mật khẩu bên trong, đừng chia sẻ; lỡ lộ thì bấm **Đổi địa chỉ**. Lời thoại gửi lên cổng nằm trong tài khoản
+Cloudflare của bạn và tự xóa sau khi xong (tối đa 2 giờ).
+
 ## Bản quyền
 
 Studio566 **không cần kích hoạt**: không cần key, mở là dùng. Giấy phép mã nguồn: xem `LICENSE`.

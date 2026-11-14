@@ -507,8 +507,40 @@ class OfflineTranslator:
         return out
 
 
+class McpTranslator:
+    """AI qua MCP: gửi việc lên cổng MCP trên Cloudflare (mcpcloud.py), Claude / ChatGPT / Grok lấy việc, làm, trả kết quả.
+    Không cần API key. Chưa AI nào vào làm sau translate.mcp_wait giây thì báo lỗi để app dùng cách dịch dự phòng."""
+
+    def __init__(self, tcfg, context: dict | None = None):
+        from . import mcpcloud
+        if not mcpcloud.configured():
+            raise RuntimeError("Chưa cài cổng MCP: vào Cài đặt > Kết nối AI dịch > AI qua MCP")
+        self.mc = mcpcloud
+        self.system = build_system_prompt(tcfg, context)
+        self.wait = float(tcfg.get("mcp_wait") or 300)
+        self.deadline: float | None = None
+
+    def call(self, user: str, ids: list[int] | None = None) -> dict[int, str]:
+        title = f"Dịch {len(ids)} câu" if ids else "Dịch phụ đề"
+        return parse_items(self.json_call(self.system, user, SCHEMA, title=title), ids)
+
+    def json_call(self, system: str, user: str, schema: dict, max_tokens: int = 16000, title: str = "") -> dict:
+        wait = self.wait
+        if self.deadline is not None:
+            wait = max(5.0, min(wait, self.deadline - time.time()))
+        if not title:
+            first = system.strip().splitlines()[0] if system.strip() else "Việc chữ"
+            title = first[:80]
+        res = self.mc.run_job(system, user, schema, title=title, wait=wait)
+        if not isinstance(res, dict):
+            raise RuntimeError("AI qua MCP trả kết quả không đúng dạng")
+        return res
+
+
 def make_translator(tcfg, context: dict | None = None):
     p = tcfg.provider
+    if p == "mcp":
+        return McpTranslator(tcfg, context)
     if p == "claude":
         return ClaudeTranslator(tcfg, context)
     if p == "openai":
@@ -585,7 +617,7 @@ ANALYZE_BUDGET = 75      # giây. Thường mất 5-15 giây; quá hạn thì d�
 def analyze_video(segs: list[Segment], cfg, meta: dict) -> dict | None:
     """Đọc toàn bộ lời thoại một lượt: tóm tắt, người nói, xưng hô, bảng tên riêng, bộ tiêu đề/caption/hashtag."""
     tc = cfg.translate
-    if tc.provider not in ("claude", "openai") or not tc.analyze:
+    if tc.provider not in ("claude", "openai", "mcp") or not tc.analyze:
         return None
     tr = make_translator(tc)
     lang = LANG_NAMES.get(tc.target_lang, tc.target_lang)
@@ -594,8 +626,12 @@ def analyze_video(segs: list[Segment], cfg, meta: dict) -> dict | None:
             + (f"Description: {meta.get('description', '')[:500]}\n" if meta.get("description") else "")
             + f"Duration: {meta.get('duration', 0):.0f}s\n\nTranscript:\n" + json.dumps(lines, ensure_ascii=False))
     log("analyze", f"Phân tích nội dung + xưng hô ({tc.provider}) ...")
-    tr.deadline = time.time() + ANALYZE_BUDGET      # bước phụ: AI quá tải thì bỏ qua sau ít phút, không bắt khách chờ
-    data = tr.json_call(ANALYZE_SYSTEM.format(lang=lang), user, ANALYZE_SCHEMA, max_tokens=8000)
+    if tc.provider != "mcp":      # qua MCP: người dùng phải mở AI và nhắn, cho chờ đủ translate.mcp_wait
+        tr.deadline = time.time() + ANALYZE_BUDGET      # bước phụ: AI quá tải thì bỏ qua sau ít phút, không bắt khách chờ
+    if tc.provider == "mcp":
+        data = tr.json_call(ANALYZE_SYSTEM.format(lang=lang), user, ANALYZE_SCHEMA, max_tokens=8000, title="Phân tích video: xưng hô, tiêu đề, hashtag")
+    else:
+        data = tr.json_call(ANALYZE_SYSTEM.format(lang=lang), user, ANALYZE_SCHEMA, max_tokens=8000)
     log("analyze", f"{data.get('genre', '')}: {data.get('summary', '')[:120]}")
     return data
 

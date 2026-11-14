@@ -21,7 +21,7 @@ asr:
   gap_retry: true          # đoạn dài chưa nghe ra lời (nhạc nền to) thì nghe lại trên tiếng gốc
 
 translate:
-  provider: claude         # claude | openai | offline (dịch trên máy, xem README) | google | none
+  provider: claude         # claude | openai | mcp (Claude/ChatGPT/Grok qua cổng MCP, không cần key) | offline | google | none
   model: claude-opus-5-5
   effort: medium           # low (rẻ, nhanh) | medium | high
   analyze: true            # đọc cả video trước khi dịch: xưng hô, tên riêng, tiêu đề + caption + hashtag
