@@ -4,12 +4,12 @@
 import { clamp, el, fmtTime, icon, speakerColor } from './core.js';
 
 const C = {
-  bg: '#0e0d0c', track: '#131210', trackAlt: '#111010', line: '#24211e', tick: '#4a453e', label: '#90887d',
-  zh: '#5f93cc', zhDim: 'rgba(111,168,232,.10)', dub: '#ffb224', dubDim: 'rgba(255,178,36,.10)',
-  block: '#262320', blockHi: '#34302a', blockEdge: '#3f3a34', blockText: '#e9e3d9', on: '#ffb224', onText: '#1a1204',
-  warn: '#ff8f3f', bad: '#ff5a3c', head: '#ff5a3c', view: 'rgba(255,240,220,.16)',
-  cut: 'rgba(12,10,8,.72)', cutLine: 'rgba(255,90,60,.55)', sel: 'rgba(255,178,36,.20)', selEdge: '#ffb224',
-  ovText: '#3a5f8a', ovImage: '#6a4a8a', ovOn: '#ffb224', scene: 'rgba(255,240,220,.2)',
+  bg: '#0c0e12', track: '#13161c', trackAlt: '#101318', line: '#232833', tick: '#454b58', label: '#8f97a5',
+  zh: '#5f93cc', zhDim: 'rgba(111,168,232,.10)', dub: '#ff6b4a', dubDim: 'rgba(255,107,74,.10)',
+  block: '#22262f', blockHi: '#2e333e', blockEdge: '#3a404c', blockText: '#e6e9ef', on: '#ff6b4a', onText: '#1b0f0b',
+  warn: '#ffc24b', bad: '#ff4f7b', head: '#ff4f7b', view: 'rgba(225,232,245,.16)',
+  cut: 'rgba(8,10,14,.72)', cutLine: 'rgba(255,79,123,.55)', sel: 'rgba(255,107,74,.20)', selEdge: '#ff6b4a',
+  ovText: '#3a5f8a', ovImage: '#6a4a8a', ovOn: '#ff6b4a', scene: 'rgba(225,232,245,.2)',
 };
 const GUTTER = 72, RULER = 24, OVERVIEW = 12, MIN_DUR = 0.2, EDGE = 7;
 const TICKS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600];

@@ -23,7 +23,7 @@ import { viewSettings } from './settings.js';
 import { openShortcuts, viewStudio } from './studio.js';
 
 const VIEWS = { home: viewHome, new: viewNew, discover: viewDiscover, library: viewLibrary, image: viewImageLab, thumb: viewThumbnail, flow: viewWorkflow, editor: viewEditor, story: viewStory, voice: viewVoiceover, merge: viewMerge, studio: viewStudio, settings: viewSettings, about: viewAbout };
-const TITLES = { home: 'Trang chủ', new: 'Dịch video', discover: 'Khám phá', library: 'Thư viện', image: 'Sửa ảnh', thumb: 'Thumbnail', flow: 'Quy trình', editor: 'Trình dựng', story: 'Kể chuyện', voice: 'Đọc văn bản', merge: 'Ghép video', studio: 'Studio', settings: 'Cài đặt', about: 'Giới thiệu' };
+const TITLES = { home: 'Trang chủ', new: 'Dịch video', discover: 'Tìm ý tưởng', library: 'Video của tôi', image: 'Sửa ảnh', thumb: 'Ảnh bìa', flow: 'Tự động hóa', editor: 'Trình dựng nâng cao', story: 'Kể chuyện từ ảnh', voice: 'Đọc thành giọng nói', merge: 'Ghép video', studio: 'Chỉnh sửa video', settings: 'Cài đặt', about: 'Giới thiệu' };
 let routeTok = 0, cleanup = null, currentHash = '', ignoreHash = false;
 
 function parseHash() {

@@ -3,6 +3,11 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "0.8.0", "date": "11/2026", "items": [
+        "Giao diện mới: màu cam san hô theo logo, chữ to và dễ đọc hơn, nút bo tròn.",
+        "Thanh bên chia nhóm Tạo video, Công cụ, Của tôi, tên mục dễ hiểu hơn. Cửa sổ hẹp thì tự thu gọn còn biểu tượng.",
+        "Trang chủ có ô dán link to: dán link, bấm Bắt đầu là sang ngay bước dịch.",
+    ]},
     {"version": "0.7.0", "date": "11/2026", "items": [
         "Tên mới: Studio566, có logo mới.",
         "Không còn mất lời thoại ở đoạn nhạc nền to: đoạn dài chưa nghe ra lời thì máy tự nghe lại trên tiếng gốc; video có sub Trung in sẵn thì lấy chữ sub làm câu.",

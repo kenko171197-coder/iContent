@@ -831,7 +831,7 @@ PAGE = r"""<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sửa lỗi · Studio566</title><link rel="icon" href="/static/icon.png">
 <style>
-:root{--bg:#0b0a09;--card:#161411;--line:rgba(255,244,228,.09);--txt:#f5f1ea;--dim:#a39b8f;--acc:#ffb432;--ok:#5fcf8a;--warn:#ffb432;--bad:#ff6b5e}
+:root{--bg:#0f1115;--card:#171a21;--line:rgba(225,232,245,.09);--txt:#f3f4f6;--dim:#a7aebb;--acc:#ff6b4a;--ok:#5fcf8a;--warn:#ffc24b;--bad:#ff6b5e}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 "Segoe UI",system-ui,sans-serif}
 main{max-width:860px;margin:0 auto;padding:28px 24px 40px}
 header{display:flex;gap:14px;align-items:center;margin-bottom:6px}header img{width:44px;height:44px;flex:none}
@@ -843,7 +843,7 @@ h1{font-size:20px;margin:0}.dim{color:var(--dim)}.small{font-size:12.5px}
 .row{display:grid;grid-template-columns:22px 1fr auto;gap:12px;padding:13px 16px;border-top:1px solid var(--line);align-items:start}
 .row:first-child{border-top:0}.row b{font-weight:600}.det{color:var(--dim);font-size:13px;white-space:pre-wrap;word-break:break-word}
 .help{margin-top:6px;font-size:13px;color:#e8dcc8}
-.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0b0a09}
+.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0f1115}
 .ok .dot{background:var(--ok)}.warn .dot{background:var(--warn)}.bad .dot{background:var(--bad)}.info .dot{background:#5b554d}.wait .dot{background:#3a352f;animation:p 1s infinite alternate}
 @keyframes p{to{opacity:.4}}
 button{font:inherit;border-radius:8px;border:1px solid var(--line);background:#24201b;color:var(--txt);padding:7px 14px;cursor:pointer;white-space:nowrap}

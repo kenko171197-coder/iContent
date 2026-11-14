@@ -125,6 +125,13 @@ jobs:
               $ok = $true; break
             } catch {}
           }
+          if ($ok) {
+            # chụp ảnh giao diện để xem lại (không bắt buộc đạt)
+            try {
+              & $py -m pip install --quiet playwright
+              & $py (Join-Path $env:GITHUB_WORKSPACE "tests\ui_screens.py") "http://127.0.0.1:8799" "$env:GITHUB_WORKSPACE\shots"
+            } catch { Write-Host "Chụp ảnh giao diện lỗi: $_" }
+          }
           Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
           Pop-Location
           if (-not $ok) { Get-Content "$env:RUNNER_TEMP\srv.err" -Tail 40; throw "Máy chủ không lên" }
@@ -132,6 +139,15 @@ jobs:
           if ($page.Content -notmatch "Studio566") { throw "Trang chính chưa đổi tên Studio566" }
           if ($page.Content -match "coffee-btn") { throw "Còn nút cà phê" }
           Write-Host ">>> Máy chủ chạy được, trang chính đúng tên Studio566, không còn thông tin tác giả"
+
+      - name: Lưu ảnh giao diện
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: anh-giao-dien
+          path: shots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Lưu file cài (tải ở trang kết quả chạy)
         uses: actions/upload-artifact@v5

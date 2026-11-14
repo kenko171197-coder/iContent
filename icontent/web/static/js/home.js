@@ -419,5 +419,8 @@ export async function viewNew(main, alive) {
   queueListeners.add(onQ);
   setTimeout(() => ta.focus(), 50);
   const tick = setInterval(() => { for (const c of cards.values()) if (c.item.state === 'running') c.update(c.item); }, 1000);
+  // link dán ở Trang chủ: điền sẵn vào ô nhập
+  const pre = sessionStorage.getItem('s566.prefill');
+  if (pre) { sessionStorage.removeItem('s566.prefill'); ta.value = pre; updSources(); setTimeout(() => ta.focus(), 30); }
   return () => { queueListeners.delete(onQ); clearInterval(tick); };
 }
