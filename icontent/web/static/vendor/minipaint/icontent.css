@@ -1,0 +1,19 @@
+/* Màu và phông của iContent cho miniPaint, không đổi cách hoạt động */
+@font-face { font-family: "Be Vietnam Pro"; font-weight: 400; font-display: swap; src: url("../../fonts/be-vietnam-pro-vietnamese-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Be Vietnam Pro"; font-weight: 700; font-display: swap; src: url("../../fonts/be-vietnam-pro-vietnamese-700-normal.woff2") format("woff2"); }
+body, button, input, select, textarea { font-family: "Be Vietnam Pro", "Segoe UI", Tahoma, sans-serif; }
+.logo { display: none !important; }
+
+/* tông phòng thu của iContent thay cho màu xanh lá mặc định */
+body.theme-dark {
+  --background: #0d0c0a; --text-color: #e9e3d9; --text-color-muted: #a59c8d; --link-color: #ffb224;
+  --section-background-color: #141310; --area-background-color: #1b1916; --block-background-color: #1b1916; --header-background-color: #24211d;
+  --button-background-color: #24211d; --button-background-color-hover: #3a352e; --button-background-color-active: #2f2b26; --button-text-color-active: #ffb224;
+  --button-toggle-background-color: #2f2b26; --button-toggle-background-color-hover: #3a352e;
+  --input-background-color: #100f0d; --input-background-color-hover: #1b1916; --input-text-color: #e9e3d9; --input-border-color: #38332c; --input-border-color-active: #ffb224; --input-group-border-color: #24211d;
+  --menu-background-color: #141310; --menu-text-color: #d6cfc3;
+  --background-color-active: #ffb224; --background-color-hover: #2f2b26; --text-color-active: #1a1204; --border-color: #38332c;
+  --scrollbar-track-color: #141310; --scrollbar-thumb-color: #38332c;
+  --menu-dropdown-hover-background-color: #ffb224; --menu-dropdown-border-color: #38332c; --menu-dropdown-background-color: #1b1916;
+  --menu-dropdown-text-color: #e9e3d9; --menu-dropdown-hover-text-color: #1a1204; --menu-dropdown-divider-color: #38332c; --menu-dropdown-text-muted-color: #8f877a;
+}

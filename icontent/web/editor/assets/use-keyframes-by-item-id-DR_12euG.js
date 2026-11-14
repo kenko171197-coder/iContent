@@ -1,0 +1,2 @@
+import{o as e}from"./rolldown-runtime-C0FnF6B9.js";import{Zt as t}from"./app-shell-DOBavobO.js";import{Pl as n,pl as r}from"./feature-editing-core-tCaXefN0.js";import"./timeline-store-DCSW8D29.js";var i=e(t(),1);function a(e){let t=n(r((0,i.useCallback)(t=>e.map(e=>t.keyframesByItemId[e]??null),[e])));return(0,i.useMemo)(()=>{let n=new Map;for(let[r,i]of e.entries())n.set(i,t[r]??null);return n},[e,t])}export{a as t};
+//# sourceMappingURL=use-keyframes-by-item-id-DR_12euG.js.map

@@ -1,0 +1,2 @@
+import{Zm as e}from"./feature-editing-core-tCaXefN0.js";function t(t){if(!t)return;let n=e.getState().mediaById[t];if(n){if(n.mimeType.startsWith(`video/`))return n.audioCodec;if(n.mimeType.startsWith(`audio/`))return n.codec}}export{t};
+//# sourceMappingURL=timeline-compositions-contract-a4tkxX3z.js.map

@@ -1,0 +1,84 @@
+# Sao chép thành config.yaml rồi sửa. Chỉ cần ghi những mục muốn đổi — còn lại dùng mặc định (icontent/config.py).
+# Hoặc chỉnh trong iContent Studio > Cài đặt (ghi đè file này, bản cũ lưu ở config.yaml.bak).
+
+work_dir: workspace        # mỗi video 1 thư mục job (cache từng bước)
+output_dir: output         # video thành phẩm
+
+download:
+  cookies_file: ""         # Douyin BẮT BUỘC: cookies.txt xuất từ trình duyệt (extension "Get cookies.txt LOCALLY")
+  cookies_from_browser: "" # hoặc để yt-dlp tự đọc: firefox (Chrome/Edge mới hay bị khóa cookie)
+  proxy: ""                # vd http://127.0.0.1:7890 nếu video bị chặn vùng
+  max_height: 1080
+  external: {}             # lệnh tải ngoài cho nền tảng yt-dlp chưa hỗ trợ, vd:
+  #  kuaishou: 'lux -o "{dir}" -O source "{url}"'
+
+asr:
+  model: large-v3-turbo    # large-v3-turbo (1,6 GB, nhanh) | large-v3 (3 GB, kỹ hơn chút) | medium | small
+  device: auto             # auto | cuda | cpu
+  max_chars: 22            # độ dài tối đa 1 câu phụ đề (ký tự Trung)
+  max_duration: 6.0
+  ocr_align: true          # video có sub Trung in sẵn: ngắt câu theo sub gốc + dùng chữ OCR để sửa lỗi nhận dạng
+
+translate:
+  provider: claude         # claude | openai | offline (dịch trên máy, xem README) | google | none
+  model: claude-opus-5-5
+  effort: medium           # low (rẻ, nhanh) | medium | high
+  analyze: true            # đọc cả video trước khi dịch: xưng hô, tên riêng, tiêu đề + caption + hashtag
+  # --- Ví dụ DeepSeek / Gemini / Ollama (API tương thích OpenAI):
+  # provider: openai
+  # model: deepseek-chat
+  # base_url: https://api.deepseek.com
+  # api_key_env: DEEPSEEK_API_KEY
+  target_lang: vi
+  style: "Tự nhiên, khẩu ngữ, hợp với video ngắn trên mạng xã hội."
+  glossary: {}             # {"小米": "Xiaomi", "宝宝": "các bạn"}
+
+tts:
+  enabled: true
+  engine: vieneu           # vieneu (local, ổn định) | edge (online, hay bị Microsoft giới hạn tần suất)
+  voice_mode: auto         # auto: mỗi người nói một giọng | per_line: đoán nam/nữ từng câu | fixed: 1 giọng | clone: bắt chước giọng gốc (thử nghiệm)
+  diarize: true            # auto: nhận diện người nói, tách câu gộp lời 2 người
+  male_voice: ""           # trống = Thiện Minh (vieneu) / vi-VN-NamMinhNeural (edge)
+  female_voice: ""         # trống = Trúc Ly (vieneu) / vi-VN-HoaiMyNeural (edge)
+  vieneu_voice: "Thiện Minh"  # dùng khi voice_mode: fixed. Trúc Ly, Mai Anh, Hải Đăng... Xem: .\icontent.cmd voices
+  ref_audio: ""            # file mẫu 3-8s -> VieNeu clone giọng (ưu tiên hơn vieneu_voice)
+  voice: vi-VN-HoaiMyNeural   # giọng khi engine: edge (vi-VN-NamMinhNeural = nam)
+  fallback_voice: ""       # edge: giọng dự phòng khi 1 câu bị từ chối
+  max_speed: 1.35          # đọc nhanh tối đa x1.35 trước khi rút gọn câu / cho trôi
+  rec_clean: true          # giọng tự thu: lọc ù, giảm ồn, hạ nền ở khoảng nghỉ, cân âm lượng
+
+audio:
+  separate: auto           # tách giọng gốc giữ nhạc nền (UVR MDX-Net chạy bằng ONNX, tự tải 67 MB lần đầu; auto: video tới 10 phút)
+  bgm_volume: 1.0
+  original_volume: 0.15    # khi không tách được: tiếng gốc nhỏ dưới giọng lồng
+  dub_volume: 1.0
+  duck: true               # tự hạ tiếng nền khi giọng lồng đang nói
+  music: ""                # thêm nhạc nền riêng (mp3/wav), tự lặp
+  music_volume: 0.12
+  music_skip_intro: true   # bỏ đoạn mở đầu quá nhỏ của nhạc nền
+
+edit:
+  burn_subs: true
+  sub_style: classic       # classic | cinema (bóng mềm kiểu phim) | box (nền hộp) | tiktok (nhấn từng chữ) | karaoke | pop (chữ hoa, phóng to)
+  uppercase: false         # viết hoa toàn bộ phụ đề
+  # sub_y: 0.8             # tâm dòng phụ đề theo chiều dọc (0..1). Bỏ trống = tự đặt. Trong Studio chỉ cần kéo trên video
+  font: Arial
+  font_size_ratio: 0.05
+  blur_hardsub: auto       # auto: OCR tự dò & che sub Trung in sẵn | true: dùng hardsub_box | false
+  hardsub_mode: inpaint    # inpaint (xóa hẳn chữ, sạch nhất) | blur (làm mờ) | band (dải nền tối)
+  hardsub_box: [0.05, 0.78, 0.90, 0.15]   # x, y, rộng, cao (tỉ lệ 0-1 của khung gốc) — chọn bằng chuột trong Studio
+  subs_over_hardsub: true  # đặt sub tiếng Việt vào đúng vùng đã che
+  flip: false
+  zoom: 1.0                # 1.05 = zoom 5%
+  speed: 1.0
+  saturation: 1.0          # chỉnh màu nhẹ: brightness (-0.1..0.1), contrast, saturation
+  watermark_text: ""       # chữ mờ góc trên, vd "@kenhcuaban"
+  aspect: keep             # keep | 9:16 | 16:9 | 1:1
+  fit: blur                # khi đổi khung: blur (nền mờ) | track (khung đi theo nhân vật) | crop (cắt cố định) | black (viền đen)
+  lut: ""                  # file bộ màu .cube
+  auto_qc: true            # dựng xong tự kiểm định thành phẩm
+  logo: ""                 # PNG nền trong suốt
+  logo_pos: top-right
+  encoder: auto            # auto = có GPU NVIDIA thì dùng | h264_nvenc | libx264
+  crf: 23
+  max_bitrate: 8M

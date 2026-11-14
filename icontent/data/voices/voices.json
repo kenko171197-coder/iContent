@@ -1,0 +1,651 @@
+{
+ "note": "Giọng tổng hợp tạo bằng VoxCPM2 voice design (Apache-2.0), không phải người thật. Mỗi giọng thử 3 seed, chọn bản Whisper nghe lại đúng lời nhất, dài 4-11,5 giây.",
+ "voices": {
+  "en": [
+   {
+    "id": "en_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.64
+   },
+   {
+    "id": "en_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 6.12
+   },
+   {
+    "id": "en_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.44
+   },
+   {
+    "id": "en_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.32
+   }
+  ],
+  "id": [
+   {
+    "id": "id_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 8.36
+   },
+   {
+    "id": "id_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 7.72
+   },
+   {
+    "id": "id_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 7.72
+   },
+   {
+    "id": "id_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 7.72
+   }
+  ],
+  "th": [
+   {
+    "id": "th_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.76
+   },
+   {
+    "id": "th_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.56
+   },
+   {
+    "id": "th_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 4.96
+   },
+   {
+    "id": "th_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 8.32
+   }
+  ],
+  "tl": [
+   {
+    "id": "tl_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 7.72
+   },
+   {
+    "id": "tl_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 8.36
+   },
+   {
+    "id": "tl_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 11,
+    "cer": 0.01,
+    "dur": 7.24
+   },
+   {
+    "id": "tl_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 8.04
+   }
+  ],
+  "ms": [
+   {
+    "id": "ms_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.8
+   },
+   {
+    "id": "ms_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 11,
+    "cer": 0.043,
+    "dur": 8.04
+   },
+   {
+    "id": "ms_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.043,
+    "dur": 6.12
+   },
+   {
+    "id": "ms_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.64
+   }
+  ],
+  "es": [
+   {
+    "id": "es_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 6.92
+   },
+   {
+    "id": "es_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.32
+   },
+   {
+    "id": "es_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.0
+   },
+   {
+    "id": "es_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.0
+   }
+  ],
+  "pt": [
+   {
+    "id": "pt_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 4.84
+   },
+   {
+    "id": "pt_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 6.28
+   },
+   {
+    "id": "pt_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.16
+   },
+   {
+    "id": "pt_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 6.12
+   }
+  ],
+  "ja": [
+   {
+    "id": "ja_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 9.44
+   },
+   {
+    "id": "ja_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 9.76
+   },
+   {
+    "id": "ja_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.44
+   },
+   {
+    "id": "ja_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.28
+   }
+  ],
+  "ko": [
+   {
+    "id": "ko_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 7.08
+   },
+   {
+    "id": "ko_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 6.44
+   },
+   {
+    "id": "ko_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.76
+   },
+   {
+    "id": "ko_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.32
+   }
+  ],
+  "hi": [
+   {
+    "id": "hi_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.019,
+    "dur": 8.2
+   },
+   {
+    "id": "hi_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.037,
+    "dur": 8.52
+   },
+   {
+    "id": "hi_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 23,
+    "cer": 0.037,
+    "dur": 8.2
+   },
+   {
+    "id": "hi_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.019,
+    "dur": 7.56
+   }
+  ],
+  "ar": [
+   {
+    "id": "ar_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 7.4
+   },
+   {
+    "id": "ar_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 6.6
+   },
+   {
+    "id": "ar_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 7.24
+   },
+   {
+    "id": "ar_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.8
+   }
+  ],
+  "fr": [
+   {
+    "id": "fr_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.64
+   },
+   {
+    "id": "fr_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.64
+   },
+   {
+    "id": "fr_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.0
+   },
+   {
+    "id": "fr_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.32
+   }
+  ],
+  "de": [
+   {
+    "id": "de_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 6.12
+   },
+   {
+    "id": "de_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.96
+   },
+   {
+    "id": "de_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.12
+   },
+   {
+    "id": "de_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.48
+   }
+  ],
+  "ru": [
+   {
+    "id": "ru_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 8.68
+   },
+   {
+    "id": "ru_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.76
+   },
+   {
+    "id": "ru_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 8.36
+   },
+   {
+    "id": "ru_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.28
+   }
+  ],
+  "it": [
+   {
+    "id": "it_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.48
+   },
+   {
+    "id": "it_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.96
+   },
+   {
+    "id": "it_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 37,
+    "cer": 0.012,
+    "dur": 6.28
+   },
+   {
+    "id": "it_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.0
+   }
+  ],
+  "tr": [
+   {
+    "id": "tr_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 6.12
+   },
+   {
+    "id": "tr_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.92
+   },
+   {
+    "id": "tr_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 8.04
+   },
+   {
+    "id": "tr_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 6.6
+   }
+  ],
+  "pl": [
+   {
+    "id": "pl_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.8
+   },
+   {
+    "id": "pl_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.64
+   },
+   {
+    "id": "pl_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 23,
+    "cer": 0.0,
+    "dur": 5.48
+   },
+   {
+    "id": "pl_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.96
+   }
+  ],
+  "nl": [
+   {
+    "id": "nl_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.8
+   },
+   {
+    "id": "nl_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 37,
+    "cer": 0.0,
+    "dur": 5.32
+   },
+   {
+    "id": "nl_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 23,
+    "cer": 0.011,
+    "dur": 6.28
+   },
+   {
+    "id": "nl_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.64
+   }
+  ],
+  "he": [
+   {
+    "id": "he_f1",
+    "gender": "female",
+    "style": "f1",
+    "seed": 23,
+    "cer": 0.033,
+    "dur": 5.48
+   },
+   {
+    "id": "he_f2",
+    "gender": "female",
+    "style": "f2",
+    "seed": 11,
+    "cer": 0.033,
+    "dur": 6.28
+   },
+   {
+    "id": "he_m1",
+    "gender": "male",
+    "style": "m1",
+    "seed": 23,
+    "cer": 0.016,
+    "dur": 5.32
+   },
+   {
+    "id": "he_m2",
+    "gender": "male",
+    "style": "m2",
+    "seed": 11,
+    "cer": 0.0,
+    "dur": 5.48
+   }
+  ]
+ }
+}

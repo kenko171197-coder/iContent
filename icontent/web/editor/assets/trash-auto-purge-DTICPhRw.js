@@ -1,0 +1,2 @@
+import{ct as e}from"./app-shell-DOBavobO.js";import{dg as t,op as n,pg as r}from"./feature-editing-core-tCaXefN0.js";var i=e(`TrashAutoPurge`);async function a(e=t){try{let{permanentlyDeleteProject:t}=n.getState(),a=await r(e,async e=>{await t(e)});a.length>0&&(i.info(`Auto-purge removed ${a.length} trashed project(s) past TTL`),await n.getState().loadProjects())}catch(e){i.warn(`autoPurgeExpiredTrash failed`,e)}}export{a as autoPurgeExpiredTrash};
+//# sourceMappingURL=trash-auto-purge-DTICPhRw.js.map

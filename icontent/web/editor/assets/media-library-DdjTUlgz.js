@@ -1,0 +1,2 @@
+import{Um as e,Zm as t,qp as n}from"./feature-editing-core-tCaXefN0.js";function r(e){if(e)return t.getState().mediaById[e]}function i(e){return t(t=>e?t.mediaById[e]:void 0)}async function a(e){let{mediaLibraryService:t}=await n();return t.getMediaFile(e)}function o(){return t(e=>e.brokenMediaIds)}export{a as getMediaFileById,r as getMediaMetadataById,e as resolveMediaUrls,o as useBrokenMediaIds,i as useMediaMetadataById};
+//# sourceMappingURL=media-library-DdjTUlgz.js.map

@@ -1,0 +1,2 @@
+import{Yt as e,v as t}from"./app-shell-DOBavobO.js";import{n,r}from"./docs-shell-C5e9vT-U.js";var i=e(),a=t(`/docs/`)({component:o});function o(){return(0,i.jsx)(r,{children:(0,i.jsx)(n,{})})}export{a as Route};
+//# sourceMappingURL=index.lazy-CAjIW4bP.js.map
