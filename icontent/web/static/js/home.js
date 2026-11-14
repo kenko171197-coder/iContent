@@ -2,7 +2,7 @@
 import {
   S, STAGE_LABEL, STATE_LABEL, Tape, api, busy, clone, confirmDialog, countLeaves, deepMerge, detectPlatform, diff, el, elapsed,
   enc, ensureConfig, fmtAgo, fmtDur, getPath, icon, langName, loadStatus, modalHead, openModal, platformBadge, pollSoon, promptDialog, queueListeners, reveal,
-  runJob, same, setPath, shortSrc, toast, uploadFile, videoModal,
+  runJob, same, setPath, shortSrc, toast, uploadFile, videoModal, copyText,
 } from './core.js';
 import { HelpPanel } from './fixes.js';
 import { openAiPack } from './localai.js';
@@ -30,6 +30,34 @@ export const RECIPES = [
     options: { tts: { enabled: false } },
   },
 ];
+
+const mmss = (x) => { const t = Math.max(0, Math.round(Number(x) || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+
+/** Đọc nhật ký của một video, rút ra những điều người dùng nên biết ngay: đang chờ AI qua MCP, đoạn nghi thiếu lời, câu chưa đọc được. */
+export function notesFromLogs(logs, state) {
+  const L = Array.isArray(logs) ? logs : [];
+  const out = [];
+  let lastMcp = '';
+  for (const l of L) if (l.startsWith('[mcp]')) lastMcp = l;
+  if (state === 'running' && lastMcp.includes('Đang chờ AI qua MCP')) {
+    out.push({ kind: 'wait', text: 'Đang chờ AI làm việc: mở Claude, ChatGPT hoặc Grok và nhắn "làm việc đang chờ".' });
+  }
+  const miss = [];
+  let found = 0;
+  for (const l of L) {
+    const m = l.match(/^\[asr\] Nghe lại ([\d.]+)s đến ([\d.]+)s: (.*)$/);
+    if (m) { if (m[3].startsWith('không có lời')) miss.push(`${mmss(m[1])}–${mmss(m[2])}`); else found += 1; }
+  }
+  if (found) out.push({ kind: 'ok', text: `Đã nghe lại ${found} đoạn nhạc nền to và tìm thêm được lời thoại.` });
+  if (miss.length) out.push({ kind: 'warn', text: `Đoạn ${miss.slice(0, 4).join(', ')}${miss.length > 4 ? '…' : ''} có tiếng nhưng chưa nghe ra lời (thường do nhạc nền to). Nên xem lại đoạn này trong Studio.` });
+  for (const l of L) {
+    let m = l.match(/^\[tts\] CẢNH BÁO: (\d+) câu chưa đọc được/);
+    if (m) out.push({ kind: 'warn', text: `${m[1]} câu chưa đọc được (có phụ đề nhưng không có tiếng). Mở Studio, bấm Đọc lại ở các câu đó.` });
+    m = l.match(/^\[tts\] CẢNH BÁO: (\d+) câu đọc lệch sau hình hơn 0,6 giây \(câu trước quá dài\): (.+?)(?:\.\s|\s\.\.\.|$)/);
+    if (m) out.push({ kind: 'warn', text: `${m[1]} câu đọc chậm hơn hình (ở ${m[2].split(', ').slice(0, 4).join(', ')}). Rút gọn câu đứng trước các mốc này trong Studio.` });
+  }
+  return out;
+}
 
 function summaryOf(v) {
   const style = { classic: 'Cổ điển', cinema: 'Phim', box: 'Nền hộp', tiktok: 'TikTok', karaoke: 'Karaoke', pop: 'Pop' }[getPath(v, 'edit.sub_style')] || 'Cổ điển';
@@ -60,6 +88,8 @@ export function QueueCard(it0) {
   const pct = el('span', { class: 'q-pct mono' });
   const msg = el('div', { class: 'q-msg' });
   const helpBox = el('div', { class: 'q-help', hidden: true });
+  const notesBox = el('div', { class: 'q-notes', hidden: true });
+  let lastNotes = '';
   const errPre = el('pre', { class: 'logbox err' });
   const errBox = el('details', { class: 'q-err', hidden: true }, el('summary', {}, 'Chi tiết lỗi'), errPre);
   const logPre = el('pre', { class: 'logbox' });
@@ -70,6 +100,7 @@ export function QueueCard(it0) {
       el('div', { class: 'q-top' }, el('div', { class: 'q-titles' }, title, sub), el('div', { class: 'q-right' }, time, badge)),
       tape.root,
       el('div', { class: 'q-status' }, msg, pct),
+      notesBox,
       helpBox,
       errBox,
       el('div', { class: 'q-foot' }, logBox, actions)));
@@ -165,6 +196,15 @@ export function QueueCard(it0) {
       const u = `/api/jobs/${enc(it.job)}/thumb.jpg?s=${st === 'done' ? 'd' : 'r'}`;
       if (u !== lastThumb) { lastThumb = u; img.src = u; }
     }
+    const notes = notesFromLogs(it.logs, st);
+    const nk = JSON.stringify(notes);
+    if (nk !== lastNotes) {
+      lastNotes = nk;
+      notesBox.hidden = !notes.length;
+      notesBox.replaceChildren(...notes.map((n) => el('div', { class: 'q-note q-note-' + n.kind },
+        icon(n.kind === 'warn' ? 'alert' : n.kind === 'ok' ? 'check' : 'clock'), el('span', { text: n.text }),
+        n.kind === 'wait' ? el('button', { class: 'btn btn-xs', onclick: () => copyText('làm việc đang chờ', 'Đã chép câu nhắn, dán vào AI') }, icon('copy'), 'Chép câu nhắn') : null)));
+    }
     const lg = (Array.isArray(it.logs) ? it.logs : []).slice(-200).join('\n');
     if (lg !== lastLog) {
       const atBottom = logPre.scrollTop + logPre.clientHeight >= logPre.scrollHeight - 24;
@@ -193,6 +233,7 @@ export async function viewNew(main, alive) {
     localStorage.setItem('ic.newOptions', JSON.stringify(overrides()));
     paintSummary();
     paintRecipes();
+    paintGo();
   };
 
   // ------------------------------------------------ ô nhập
@@ -228,7 +269,7 @@ export async function viewNew(main, alive) {
 
   const drop = el('div', { class: 'drop' },
     ta, uploads,
-    el('div', { class: 'drop-foot' }, detected, el('span', { class: 'grow' }), langPick, filePick, fileBtn, pasteBtn, startBtn),
+    el('div', { class: 'drop-foot' }, detected, el('span', { class: 'grow' }), filePick, fileBtn, pasteBtn),
     el('div', { class: 'drop-veil' }, icon('upload'), el('span', { text: 'Thả video vào đây' })));
   drop.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); drop.classList.add('over'); } });
   drop.addEventListener('dragleave', (e) => { if (!drop.contains(e.relatedTarget)) drop.classList.remove('over'); });
@@ -258,7 +299,8 @@ export async function viewNew(main, alive) {
     for (const s of src) { const p = detectPlatform(s) || 'web'; counts[p] = (counts[p] || 0) + 1; }
     detected.replaceChildren(...Object.entries(counts).map(([p, n]) => el('span', { class: 'det' }, platformBadge(p), n > 1 ? el('span', { class: 'muted small', text: '×' + n }) : null)));
     if (!src.length) detected.append(el('span', { class: 'muted small', text: 'Douyin, Bilibili, Kuaishou, Xiaohongshu, Weibo, Xigua… hoặc kéo thả file video' }));
-    startBtn.replaceChildren(icon('play'), src.length > 1 ? `Bắt đầu ${src.length} video` : 'Bắt đầu');
+    startBtn.replaceChildren(icon('play'), src.length > 1 ? `Bắt đầu ${src.length} video` : 'Bắt đầu làm video');
+    paintGo();
   }
   async function start() {
     const src = sources();
@@ -317,9 +359,38 @@ export async function viewNew(main, alive) {
   }
   const summary = el('div', { class: 'summary' });
   function paintSummary() {
-    summary.replaceChildren(...summaryOf(vals).map(([ic, t]) => el('span', { class: 'sum-chip' }, icon(ic), t)),
-      el('button', { type: 'button', class: 'btn btn-sm', onclick: openOptions }, icon('sliders'), 'Tùy chỉnh'));
+    summary.replaceChildren(...summaryOf(vals).map(([ic, t]) => el('span', { class: 'sum-chip' }, icon(ic), t)));
   }
+  // tùy chọn chi tiết gập vào "Tùy chỉnh nâng cao", chỉ dựng khi mở lần đầu
+  let advForm = null;
+  const advBody = el('div', { class: 'nv-adv-body' });
+  const adv = el('details', {
+    class: 'nv-adv', ontoggle: () => {
+      if (!adv.open || advForm) return;
+      advForm = OptionsForm({ vals, base: S.config, groups: ['translate', 'voice', 'subs', 'picture', 'sound'], storeKey: 'new', onChange: persist });
+      advBody.replaceChildren(
+        el('p', { class: 'muted small', text: 'Chỉ áp dụng cho các video bạn sắp thêm. Muốn đổi lâu dài thì vào Cài đặt.' }),
+        advForm.root,
+        el('div', { class: 'nv-adv-foot' }, el('button', { class: 'btn btn-sm btn-ghost', onclick: () => { advForm.reset(); persist(); } }, icon('undo'), 'Về cài đặt chung')));
+    },
+  }, el('summary', { class: 'nv-adv-sum' }, icon('sliders'), el('span', { class: 'nv-adv-t', text: 'Tùy chỉnh nâng cao' }), summary, icon('chev', 'nv-adv-chev')), advBody);
+
+  // bước 3: tóm tắt và nút bắt đầu
+  const goInfo = el('div', { class: 'nv-go-info' });
+  function paintGo() {
+    const n = sources().length;
+    const rec = [...RECIPES, ...userRecipes].filter((r) => applied(r)).map((r) => r.name);
+    const lang = langName(getPath(vals, 'translate.target_lang') || 'vi');
+    goInfo.replaceChildren(
+      el('b', { text: n ? `${n} video` : 'Chưa có video nào' }),
+      el('span', { class: 'dim', text: ` · Lồng tiếng ${lang}` + (rec.length ? ` · ${rec.join(', ')}` : ' · Theo cài đặt chung') }));
+    step1.classList.toggle('done', n > 0);
+    step3.classList.toggle('ready', n > 0);
+  }
+  const stepHead = (n, title, sub) => el('div', { class: 'nv-step-head' }, el('span', { class: 'nv-n' }, el('span', { text: String(n) }), icon('check')),
+    el('div', { class: 'nv-step-t' }, el('h2', { text: title }), sub ? el('p', { class: 'dim small', text: sub }) : null));
+  const step1 = el('section', { class: 'nv-step' });
+  const step3 = el('section', { class: 'nv-step nv-step-go' });
   function openOptions() {
     const form = OptionsForm({ vals, base: S.config, groups: ['translate', 'voice', 'subs', 'picture', 'sound'], storeKey: 'new', onChange: persist });
     const m = openModal([
@@ -396,18 +467,22 @@ export async function viewNew(main, alive) {
     el('div', { class: 'home' },
       el('header', { class: 'hero' },
         el('div', { class: 'eyebrow', text: 'Dịch & lồng tiếng video Trung Quốc' }),
-        el('h1', { text: 'Dán link. Phần còn lại để máy lo.' }),
+        el('h1', { text: 'Dịch video trong 3 bước' }),
         el('p', { class: 'hero-sub', text: 'Tự tải video, xóa sub Trung, nhận dạng lời thoại, dịch đúng ngữ cảnh, lồng tiếng Việt hoặc tiếng nước ngoài (Anh, Indonesia, Thái...) khớp từng câu và dựng thành video sẵn sàng đăng.' })),
       aiBanner,
       dlBanner,
-      drop,
-      el('div', { class: 'section-head' }, el('h2', { text: 'Công thức' }), el('span', { class: 'grow' }), summary),
-      recipeRow,
+      el('div', { class: 'nv-steps' },
+        (step1.append(stepHead(1, 'Chọn video', 'Dán link hoặc kéo thả file, mỗi dòng một video'), drop), step1),
+        el('section', { class: 'nv-step' }, stepHead(2, 'Chọn kiểu video', 'Bấm một công thức: Studio566 tự đặt khung hình, phụ đề và giọng đọc cho hợp'),
+          el('div', { class: 'nv-lang' }, langPick), recipeRow, adv),
+        (step3.append(stepHead(3, 'Bắt đầu'), el('div', { class: 'nv-go' }, goInfo, el('span', { class: 'grow' }),
+          el('span', { class: 'dim small nv-kbd', text: 'Ctrl + Enter' }), startBtn)), step3)),
       qWrap,
       recent));
   updSources();
   paintRecipes();
   paintSummary();
+  paintGo();
   renderQueue(S.queue);
   loadRecent();
   let doneCount = S.queue.filter((i) => i.state === 'done').length;

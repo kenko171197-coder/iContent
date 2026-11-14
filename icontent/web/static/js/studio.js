@@ -80,10 +80,26 @@ export async function viewStudio(main, alive, id) {
     }),
   }, icon('scissors'), 'Trình dựng');
   const exportBtn = el('button', { class: 'btn btn-primary', onclick: () => inspector.open('publish') }, icon('export'), 'Xuất & đăng');
+  // chế độ Đơn giản (mặc định): video + danh sách câu, bảng tùy chọn mở dạng ngăn kéo khi cần; Chuyên nghiệp: đủ timeline như cũ
+  let mode = localStorage.getItem('ic.studioMode') === 'pro' ? 'pro' : 'simple';
+  const modeBtns = {};
+  const modeSeg = el('div', { class: 'seg st-mode', role: 'radiogroup', 'aria-label': 'Chế độ Studio' },
+    ...[['simple', 'Đơn giản'], ['pro', 'Chuyên nghiệp']].map(([k, label]) => {
+      modeBtns[k] = el('button', { type: 'button', class: 'seg-btn', role: 'radio', onclick: () => setMode(k) }, label);
+      return modeBtns[k];
+    }));
+  function setMode(k) {
+    mode = k;
+    try { localStorage.setItem('ic.studioMode', k); } catch (_) { /* không lưu được cũng không sao */ }
+    main.classList.toggle('studio-simple', k === 'simple');
+    main.classList.remove('insp-open');
+    Object.entries(modeBtns).forEach(([m, b]) => { b.classList.toggle('active', m === k); b.setAttribute('aria-checked', m === k ? 'true' : 'false'); });
+    if (k === 'pro' && tl) requestAnimationFrame(() => tl.draw());
+  }
   const head = el('div', { class: 'st-head' },
-    el('a', { class: 'btn btn-icon btn-ghost', href: '#/library', title: 'Về Thư viện', 'aria-label': 'Về Thư viện' }, icon('back')),
+    el('a', { class: 'btn btn-icon btn-ghost', href: '#/library', title: 'Về Video của tôi', 'aria-label': 'Về Video của tôi' }, icon('back')),
     el('div', { class: 'st-titles' }, titleEl, metaEl),
-    el('div', { class: 'st-actions' }, scoreBtn, el('span', { class: 'tb-sep' }), undoBtn, redoBtn, el('span', { class: 'tb-sep' }), saveBtn, updateBtn, editorBtn, exportBtn));
+    el('div', { class: 'st-actions' }, modeSeg, el('span', { class: 'tb-sep' }), scoreBtn, el('span', { class: 'tb-sep st-pro-only' }), undoBtn, redoBtn, el('span', { class: 'tb-sep' }), saveBtn, updateBtn, editorBtn, exportBtn));
   function renderHead() {
     const m = meta();
     titleEl.textContent = m.title || id;
@@ -864,9 +880,16 @@ export async function viewStudio(main, alive, id) {
   });
 
   // ------------------------------------------------ dựng bố cục
+  // chế độ Đơn giản: bảng tùy chọn là ngăn kéo bên phải, mở khi bấm Kiểm tra, Xuất & đăng... và có nút đóng
+  const inspClose = el('button', { class: 'btn btn-icon btn-ghost insp-close', title: 'Đóng', 'aria-label': 'Đóng bảng tùy chọn', onclick: () => main.classList.remove('insp-open') }, icon('x'));
+  inspector.root.prepend(inspClose);
+  const openInsp = inspector.open;
+  inspector.open = (k) => { if (mode === 'simple') main.classList.add('insp-open'); return openInsp(k); };
+  editorBtn.classList.add('st-pro-only');
   main.append(head, runbar,
     el('div', { class: 'st-body' }, linesPane, el('section', { class: 'pane pl-pane' }, player.root), inspector.root),
     tlHandle, tl.root);
+  setMode(mode);
   renderHead();
   buildRows();
   st.lastHist = editState();
