@@ -66,6 +66,7 @@ jobs:
             if (-not (Test-Path (Join-Path $dir $f))) { throw "Thiếu file sau khi cài: $f" }
           }
           Push-Location $dir
+          $env:PYTHONUTF8 = "1"; $env:PYTHONIOENCODING = "utf-8"
           & "runtime\python\python.exe" -c "import sys; sys.path.insert(0, '.'); from icontent import license as l; s = l.public_state(); print(s); sys.exit(1 if l.locked() else 0)"
           if ($LASTEXITCODE) { throw "App vẫn còn khóa bản quyền" }
           Pop-Location
