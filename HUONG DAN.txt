@@ -10,17 +10,10 @@ Cách 2 (bản zip):
 Cả hai cách đều cần mạng Internet, lần đầu tải thêm khoảng 3 GB, mất 5 đến 15 phút. Máy không cần cài sẵn Python.
 Cài xong có biểu tượng iContent Studio trên màn hình nền. Lần mở đầu có hướng dẫn từng bước.
 
-KÍCH HOẠT (miễn phí)
-Lần mở đầu, iContent hiện màn Kích hoạt có MÃ MÁY (32 ký tự).
-1. Bấm "Nhận key qua Telegram": mở bot @Kichhoatkey_bot kèm sẵn mã máy (hoặc tự gửi mã máy cho bot, chọn iContent).
-2. Trong bot bấm "Yêu cầu kích hoạt". Được duyệt, bot gửi key.
-3. Chép nguyên key, dán vào ô trên màn Kích hoạt, bấm Kích hoạt.
-Mỗi key dùng cho một máy. Cài lại, cập nhật bản mới trên cùng máy không phải xin key lại. Gia hạn: Cài đặt > Bản quyền.
-
 CẬP NHẬT BẢN MỚI
 Bản .exe: chạy file cài bản mới, nó tự cài đè đúng thư mục cũ (iContent đang mở thì tự tắt trước).
 Bản zip: giải nén bản mới đè lên đúng thư mục cũ (chọn Thay thế tất cả), rồi bấm đúp "Cai dat iContent.cmd" một lần nữa.
-Video, cấu hình, key, giọng đã thu đều được giữ nguyên.
+Video, cấu hình, giọng đã thu đều được giữ nguyên.
 
 GỠ CÀI ĐẶT
 Cài bằng .exe: Cài đặt Windows > Ứng dụng > iContent Studio > Gỡ cài đặt. Trình gỡ hỏi có giữ video, cấu hình không.

@@ -160,22 +160,14 @@ Mọi thứ đã làm ở một chỗ: video dịch, câu chuyện, quy trình, 
   
   Video, câu chuyện đang chạy hoặc đang đóng gói thì bỏ qua. Trên máy thử, một video 2 phút 19 giây có 583 MB thư mục làm việc, dọn được khoảng 300 MB.
 
-## Bản quyền (kích hoạt miễn phí qua bot Telegram)
+## Bản quyền
 
-Bản phát hành cần kích hoạt; key miễn phí, do bot **@Kichhoatkey_bot** (dự án [iKey_bot](https://github.com/dienmoc86/iKey_bot)) cấp. Thầy chốt 08/11/2026: hạn 365 ngày, 2 máy cho mỗi tài khoản Telegram.
-
-- **Khách:** lần mở đầu thấy màn **Kích hoạt** có **MÃ MÁY** (32 ký tự). Bấm **Nhận key qua Telegram** là mở bot với link `t.me/Kichhoatkey_bot?start=icontent_<mã máy>` (bot hiện thẻ xác nhận iContent), bấm **Yêu cầu kích hoạt**, thầy duyệt, bot gửi key, dán vào ô (dán cả tin nhắn của bot cũng được). Gia hạn: **Cài đặt › Bản quyền**; còn 14 ngày thì Trang chủ nhắc.
-- **Kiểm key** (`icontent/license.py`, offline): key `<payload>.<chữ ký>` ký Ed25519 bằng khoá riêng của iContent trên VPS; app chỉ có khoá công khai. Phải đúng `app: "iContent"`, đúng mã máy, còn hạn. Mã máy = sha256(MachineGuid của Windows | id ngẫu nhiên của lần cài)[:32]. Key và id lần cài nằm ở `%LOCALAPPDATA%\iContent`, nên cập nhật bản mới, cài lại vào thư mục khác trên cùng máy không phải xin key lại; chép sang máy khác thì không chạy.
-- **Khoá ở máy chủ:** chưa kích hoạt thì mọi API chức năng trả 403 (chỉ còn `/api/license`, `/api/about`), kể cả từ Trình dựng; `icontent run`, `icontent download` cũng dừng và in mã máy. Hết hạn trong lúc đang mở thì lần bấm kế tiếp chuyển sang màn Gia hạn. Dòng lệnh: `.\icontent.cmd license` xem mã máy, `.\icontent.cmd license <key>` kích hoạt.
-- **Ai bị khoá:** chỉ bản đóng gói bằng `icontent release` (gói có `icontent/_build_info.py` nhúng khoá công khai, `ENFORCE = True`; sửa cấu hình, biến môi trường không tắt được). Chạy từ mã nguồn như máy tác giả thì không khoá. Thử khoá trên máy mình: đặt `ICONTENT_LICENSE_ENFORCE=1` và `ICONTENT_LICENSE_PUBKEY=<khoá công khai>`.
-- **Bật lần đầu:** trong container `ikey-bot` trên VPS chạy `python -m ikey.keygen icontent --enable`, khởi động lại bot, chép dòng khoá công khai vào `icontent/license_pubkey.txt`, rồi `.\icontent.cmd release`. Chi tiết: `ICONTENT_KICH_HOAT.md` trong iKey_bot.
-
-Đã kiểm: dùng chính mã của iKey_bot (`Store.issue_for`, `products.json` thật) cấp key cho mã máy của iContent. iContent nhận key đó (còn 365 ngày) và từ chối key iContent của máy khác, key iTube, key iNew cùng mã máy. Dán key sai không làm mất key đang chạy. Bên iKey_bot có thêm test chạy `icontent/license.py` bằng Python của chính iContent. Trên Edge: màn Kích hoạt, sao chép mã máy, key sai máy, dán cả tin nhắn bot, nhập key mới ở Cài đặt, nhắc gia hạn, mất key khi đang mở, không lỗi JS ở 1440 và 1280 điểm ảnh.
+Bản fork này **đã gỡ khóa kích hoạt**: không cần key, không cần Telegram, `icontent/license.py` luôn ở chế độ không khóa. Mã nguồn gốc của wthaibinh theo giấy phép MIT (xem `LICENSE`, giữ nguyên dòng bản quyền khi phát hành lại).
 
 ## Phát hành bản mới (cho tác giả)
 
 ```
-.\icontent.cmd release            (bản khoá bản quyền, cần icontent\license_pubkey.txt)
+.\icontent.cmd release            (bản cần icontent\license_pubkey.txt)
 .\icontent.cmd release --free     (bản không khoá)
 ```
 

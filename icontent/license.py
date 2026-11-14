@@ -52,10 +52,9 @@ def _build_info() -> Any:
 
 
 def enforced() -> bool:
-    info = _build_info()
-    if info is not None and hasattr(info, "ENFORCE"):
-        return bool(info.ENFORCE)
-    return os.environ.get("ICONTENT_LICENSE_ENFORCE", "").strip().lower() in ("1", "true", "yes", "on")
+    """Fork này đã gỡ khóa bản quyền: luôn trả False, không đọc _build_info hay biến môi trường.
+    Giữ nguyên module và các API (/api/license, lệnh `license`) để giao diện và CLI cũ vẫn chạy, nhưng không bao giờ khóa."""
+    return False
 
 
 def public_key() -> bytes | None:
