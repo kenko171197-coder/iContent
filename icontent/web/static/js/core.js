@@ -1,4 +1,4 @@
-/* iContent Studio — nền tảng dùng chung: DOM, định dạng, API, toast, modal, âm thanh, dữ liệu.
+/* Studio566 — nền tảng dùng chung: DOM, định dạng, API, toast, modal, âm thanh, dữ liệu.
  * Vanilla JS, không framework, không CDN: chạy offline hoàn toàn. */
 
 // ===================================================================== hằng số
@@ -28,7 +28,7 @@ export const PLATFORMS = {
   toutiao: ['Toutiao', '#f85959'], youtube: ['YouTube', '#ff0033'], tiktok: ['TikTok', '#25f4ee'],
   local: ['File máy', '#8f877a'], web: ['Web', '#a78bfa'],
 };
-const PREVIEW_TEXT = 'Xin chào, đây là giọng đọc thử của iContent Studio.';
+const PREVIEW_TEXT = 'Xin chào, đây là giọng đọc thử của Studio566.';
 export const ATOMIC = new Set(['glossary', 'external', 'pronounce']);
 
 const ICONS = {
@@ -282,7 +282,7 @@ export async function api(method, path, body, opts = {}) {
   let res;
   try { res = await fetch(path, init); } catch (e) {
     connHooks.forEach((fn) => fn());      // conn.js: hiện băng "Mất kết nối" và tự nối lại
-    throw new Error('Mất kết nối với iContent. Đang thử kết nối lại…');
+    throw new Error('Mất kết nối với Studio566. Đang thử kết nối lại…');
   }
   if (!res.ok) {
     let msg = `Lỗi ${res.status} ${res.statusText}`;
@@ -623,7 +623,7 @@ export async function loadStatus() {
   const dot = $('#sys-dot'), link = $('#sys-link');
   const s = S.status;
   if (!dot) return;
-  if (!s) { dot.className = 'sys-dot bad'; link.title = 'Mất kết nối với iContent'; return; }
+  if (!s) { dot.className = 'sys-dot bad'; link.title = 'Mất kết nối với Studio566'; return; }
   const ready = s.translator && s.translator.ready;
   const lvl = !s.ffmpeg ? 'bad' : !ready ? 'warn' : 'ok';
   dot.className = 'sys-dot ' + lvl;
@@ -669,7 +669,7 @@ export async function pollQueue() {
   pollAgain = false;
   pollTimer = setTimeout(pollQueue, delay);
 }
-/** Thông báo của Windows (góc màn hình) khi người dùng không nhìn cửa sổ iContent. Bấm vào thì mở đúng chỗ. */
+/** Thông báo của Windows (góc màn hình) khi người dùng không nhìn cửa sổ Studio566. Bấm vào thì mở đúng chỗ. */
 export function desktopNotify(title, body, href) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (document.visibilityState === 'visible' && document.hasFocus()) return;

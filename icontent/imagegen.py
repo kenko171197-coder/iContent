@@ -82,7 +82,7 @@ def available() -> bool:
     return any(usable(p) for p in ORDER)
 
 
-AUTO_ORDER = ("local", "cloudflare", "gemini", "openai", "meta")      # Tự chọn: miễn phí trước (tiêu chí của iContent), trả phí sau
+AUTO_ORDER = ("local", "cloudflare", "gemini", "openai", "meta")      # Tự chọn: miễn phí trước (tiêu chí của Studio566), trả phí sau
 
 
 def pick(provider: str = "") -> str:
@@ -274,7 +274,7 @@ def _gemini_friendly(code: int, body: str):
     if code == 429:
         return "Google đang giới hạn số ảnh mỗi phút. Đợi một lát rồi vẽ tiếp.", _retry_delay(err, 8.0)
     if code == 404:
-        return "Google không còn model tạo ảnh này. Cập nhật iContent hoặc đổi model trong config (story.image_model).", None
+        return "Google không còn model tạo ảnh này. Cập nhật Studio566 hoặc đổi model trong config (story.image_model).", None
     if code >= 500:
         return "Máy chủ Google đang lỗi tạm thời. Thử lại sau ít phút.", 6.0
     return f"Google từ chối yêu cầu tạo ảnh: {msg[:200]}", None

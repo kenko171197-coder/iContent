@@ -1,7 +1,7 @@
 """Thư viện: dung lượng của mọi thứ đã làm, và dọn file tạm mà không mất gì của người dùng.
 
 Chỉ dọn thứ tạo lại được, theo ba nhóm:
-- leftover: bản xuất thêm còn sót trong thư mục làm việc (final_<khung>.mp4). Bản cũ của iContent quên xóa chúng sau khi đã chép sang
+- leftover: bản xuất thêm còn sót trong thư mục làm việc (final_<khung>.mp4). Bản cũ của Studio566 quên xóa chúng sau khi đã chép sang
   thư mục output. Chỉ xóa khi output đang có bản cùng cỡ, không thì đó có thể là bản duy nhất.
 - editor: bản nền cho Trình dựng (editor_base.* của video dịch, thư mục editor của câu chuyện). Mở lại trong Trình dựng thì tự dựng lại;
   dự án đã mở trong Trình dựng giữ bản riêng của nó (FreeCut chép video vào kho của nó khi nhập).

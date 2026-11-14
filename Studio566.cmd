@@ -1,5 +1,5 @@
 @echo off
-rem Mo iContent Studio nhu mot phan mem rieng. Muon xem nhat ky tren dong lenh: icontent.cmd ui
+rem Mo Studio566 nhu mot phan mem rieng. Muon xem nhat ky tren dong lenh: icontent.cmd ui
 cd /d "%~dp0"
 set PYTHONIOENCODING=utf-8
 if exist ".venv\Scripts\pythonw.exe" (

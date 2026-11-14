@@ -48,7 +48,7 @@ export async function viewMerge(main, alive) {
 
   main.append(
     el('div', { class: 'page-head' }, el('div', { class: 'page-head-text' }, el('div', { class: 'eyebrow', text: 'Ghép video' }), el('h1', { text: 'Ghép nhiều video thành một' }),
-      el('p', { text: 'Chọn video đã làm hoặc tải file lên, sắp thứ tự, cắt đầu cuối từng đoạn. iContent tự đưa về cùng một khung hình.' }))),
+      el('p', { text: 'Chọn video đã làm hoặc tải file lên, sắp thứ tự, cắt đầu cuối từng đoạn. Studio566 tự đưa về cùng một khung hình.' }))),
     el('div', { class: 'mg-grid' },
       el('section', { class: 'panel mg-pick' }, el('div', { class: 'panel-head' }, icon('grid'), el('h3', { text: 'Thêm video' }), el('span', { class: 'grow' }),
         fileInp, el('button', { class: 'btn btn-sm', onclick: () => fileInp.click() }, icon('upload'), 'Tải file lên')), srcBox),

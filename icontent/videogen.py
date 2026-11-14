@@ -1,7 +1,7 @@
 """Tạo clip video bằng AI qua API chính thức, dùng key của chính người dùng.
 
   omni   Google Gemini Omni Flash (gemini-omni-1.2-flash), thay Veo 3.1 (Google tắt bản thử Veo trong Gemini API ngày 22/10/2026).
-         3 đến 15 giây, có tiếng (iContent tắt tiếng clip, lời dẫn là chính). Biến ảnh cảnh thành clip chuyển động (giữ đúng nhân vật
+         3 đến 15 giây, có tiếng (Studio566 tắt tiếng clip, lời dẫn là chính). Biến ảnh cảnh thành clip chuyển động (giữ đúng nhân vật
          đã vẽ), hoặc tạo từ chữ kèm tối đa 6 ảnh mẫu nhân vật. Không có gói miễn phí: key Gemini phải bật thanh toán.
          Giá (bảng giá Google 11/2026): 360p ~0,023 USD/giây, 720p ~0,07, 1080p ~0,104.
 
@@ -141,7 +141,7 @@ def friendly(code: int, body: str) -> str:
     if code in (401, 403) or "api key not valid" in low or st in ("PERMISSION_DENIED", "UNAUTHENTICATED"):
         return "Key Gemini không hợp lệ hoặc không có quyền tạo video. Kiểm tra lại key trong Cài đặt."
     if code == 404:
-        return "Google không còn model tạo video này. Cập nhật iContent."
+        return "Google không còn model tạo video này. Cập nhật Studio566."
     if code == 429:
         return "Google đang giới hạn số video mỗi phút. Đợi một lát rồi tạo tiếp."
     if code >= 500:
@@ -276,7 +276,7 @@ def generate(prompt: str, image: Path | None = None, refs: list[Path] | None = N
 
 
 def scene_prompt(story: dict, scene: dict, from_image: bool) -> str:
-    """Lời nhắn cho một cảnh. Từ ảnh: tả chuyển động, giữ nguyên nhân vật, bối cảnh trong ảnh. Không lời thoại, không chữ: lời dẫn và phụ đề là của iContent."""
+    """Lời nhắn cho một cảnh. Từ ảnh: tả chuyển động, giữ nguyên nhân vật, bối cảnh trong ảnh. Không lời thoại, không chữ: lời dẫn và phụ đề là của Studio566."""
     what = scene.get("prompt") or scene.get("text") or ""
     shape = "vertical 9:16" if story.get("aspect") == "9:16" else "horizontal 16:9"
     if from_image:

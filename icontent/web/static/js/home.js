@@ -386,7 +386,7 @@ export async function viewNew(main, alive) {
   } else if (tr && tr.chosen_ready && S.status && !S.status.offline && localStorage.getItem('ic.hide.offlinehint') !== '1') {
     const hide = el('button', { class: 'btn btn-xs btn-ghost', title: 'Ẩn gợi ý này', 'aria-label': 'Ẩn gợi ý này', onclick: () => { try { localStorage.setItem('ic.hide.offlinehint', '1'); } catch (_) { /* bỏ qua */ } aiBanner.remove(); } }, icon('x'));
     aiBanner = el('div', { class: 'banner banner-plain' }, icon('globe'),
-      el('div', {}, el('b', { text: 'Dự phòng khi AI quá tải. ' }), 'Gemini gói miễn phí hay quá tải hoặc hết lượt trong ngày. Có Dịch offline (1,2 GB) thì iContent tự dịch tiếp ngay trên máy, video không bị dừng.'),
+      el('div', {}, el('b', { text: 'Dự phòng khi AI quá tải. ' }), 'Gemini gói miễn phí hay quá tải hoặc hết lượt trong ngày. Có Dịch offline (1,2 GB) thì Studio566 tự dịch tiếp ngay trên máy, video không bị dừng.'),
       el('div', { class: 'banner-acts' }, offlineBtn('Tải Dịch offline'), hide));
   }
 

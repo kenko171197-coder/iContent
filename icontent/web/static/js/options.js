@@ -41,7 +41,7 @@ export const FIELDS = {
   'tts.engine': {
     label: 'Bộ đọc', type: 'seg', fallback: 'vieneu', showIf: dubOn,
     options: [['vieneu', 'VieNeu · tiếng Việt'], ['vox', 'Nhiều thứ tiếng · trên máy'], ['edge', 'Microsoft · online']],
-    // nút sáng là bộ đọc thật sự dùng: thị trường nước ngoài mà để VieNeu thì iContent tự dùng bộ khác
+    // nút sáng là bộ đọc thật sự dùng: thị trường nước ngoài mà để VieNeu thì Studio566 tự dùng bộ khác
     effective: (v) => effE(v),
     optDisabled: (id, v) => (id === 'vieneu' && lang(v) !== 'vi') || (id === 'vox' && !S.voices.vox_ready),
     hint: 'VieNeu chỉ đọc tiếng Việt: lồng thứ tiếng khác thì tự dùng bộ đọc nhiều thứ tiếng (tải ở Cài đặt > Mô-đun AI) hoặc Microsoft',

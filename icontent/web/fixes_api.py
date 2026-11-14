@@ -70,7 +70,7 @@ def mount(app, st) -> None:
 
     @app.post("/api/fixes/cookies/{site}/from-downloads")
     def cookies_from_downloads(site: str, body: dict = Body(...)):
-        """Trình hướng dẫn hỏi vài giây một lần: khách bấm Export trong tiện ích là file vào Tải về, iContent nạp luôn."""
+        """Trình hướng dẫn hỏi vài giây một lần: khách bấm Export trong tiện ích là file vào Tải về, Studio566 nạp luôn."""
         try:
             since = float(body.get("since") or 0)
         except (TypeError, ValueError):
@@ -84,7 +84,7 @@ def mount(app, st) -> None:
     @app.get("/api/support/checks")
     def support_checks():
         from .. import support
-        return {"checks": support.run_checks(deep=False, in_app=True)}      # đang chạy được trong iContent thì thư viện đã nạp đủ
+        return {"checks": support.run_checks(deep=False, in_app=True)}      # đang chạy được trong Studio566 thì thư viện đã nạp đủ
 
     @app.post("/api/support/report")
     def support_report(body: dict = Body(default={})):
@@ -96,7 +96,7 @@ def mount(app, st) -> None:
 
     @app.post("/api/support/tool")
     def support_tool():
-        """Mở cửa sổ Sửa lỗi iContent (chạy riêng, bằng Python kèm trong gói)."""
+        """Mở cửa sổ Sửa lỗi Studio566 (chạy riêng, bằng Python kèm trong gói)."""
         import subprocess
 
         from .. import support
@@ -133,7 +133,7 @@ def mount(app, st) -> None:
 
     @app.post("/api/fixes/open")
     def open_url(body: dict = Body(...)):
-        """Mở trang trên trình duyệt mặc định của khách (nơi có tiện ích và cookie của họ), không phải cửa sổ iContent."""
+        """Mở trang trên trình duyệt mặc định của khách (nơi có tiện ích và cookie của họ), không phải cửa sổ Studio566."""
         url = str(body.get("url") or "")
         u = urlparse(url)
         host = (u.hostname or "").lower()

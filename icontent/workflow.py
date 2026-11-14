@@ -1,7 +1,7 @@
 """Quy trình kéo thả: các khối (Ý tưởng, AI viết kịch bản, Vẽ ảnh, Giọng đọc, Dựng video, Thumbnail, Xuất...) nối với nhau thành một dây chuyền,
 bấm Chạy là chạy hết từ đầu đến cuối.
 
-Mỗi khối là một bước có sẵn của iContent (story.py, thumbs.py...), nên câu chuyện tạo ra vẫn mở được ở Kể chuyện để sửa tay. Dữ liệu chạy qua dây:
+Mỗi khối là một bước có sẵn của Studio566 (story.py, thumbs.py...), nên câu chuyện tạo ra vẫn mở được ở Kể chuyện để sửa tay. Dữ liệu chạy qua dây:
 text (ý tưởng, kịch bản), images (ảnh của tôi), story (mã câu chuyện), video (đường dẫn), image (đường dẫn thumbnail).
 
 Chạy lại không tốn thêm: AI viết kịch bản nhớ kết quả theo nội dung đầu vào, vẽ ảnh bỏ qua cảnh đã có ảnh, dựng video bỏ qua nếu câu chuyện
@@ -766,7 +766,7 @@ def _run_render(n, ins, report, ctx):
         report(1, "Dùng lại video đã dựng (câu chuyện không đổi)")
     else:
         report(None, "Đang dựng video")
-        if ctx.get("render"):      # qua hàng đợi chung của iContent: không dựng song song với video khác, không trùng lượt dựng của Kể chuyện
+        if ctx.get("render"):      # qua hàng đợi chung của Studio566: không dựng song song với video khác, không trùng lượt dựng của Kể chuyện
             out = Path(ctx["render"](sid, report))
         else:
             out = sm.render_story(store, sid, ctx["cfg"], Path(ctx["cfg"].output_dir))

@@ -55,7 +55,7 @@ export async function viewLibrary(main, alive) {
     storeBox.replaceChildren(
       el('div', { class: 'lb-store-main' },
         el('div', { class: 'lb-store-h' },
-          el('b', { class: 'lb-used num', text: fmtSize(used) }), el('span', { class: 'dim small', text: 'iContent đang dùng' }),
+          el('b', { class: 'lb-used num', text: fmtSize(used) }), el('span', { class: 'dim small', text: 'Studio566 đang dùng' }),
           el('span', { class: 'grow' }),
           disk ? el('span', { class: 'small ' + (disk.free < 15e9 ? 'warn-text' : 'dim'), text: `Ổ ${disk.path.replace(/\\$/, '')} còn trống ${fmtSize(disk.free)}` }) : ''),
         bar,
@@ -84,7 +84,7 @@ export async function viewLibrary(main, alive) {
     const m = openModal([
       modalHead('wand', 'Dọn dung lượng', () => m),
       el('div', { class: 'modal-body lb-clean' },
-        el('p', { class: 'muted small', text: 'Chỉ xóa những thứ iContent tự tạo lại được. Video gốc, video đã xuất, phụ đề, bản dịch, câu chuyện, ảnh đều giữ nguyên.' }),
+        el('p', { class: 'muted small', text: 'Chỉ xóa những thứ Studio566 tự tạo lại được. Video gốc, video đã xuất, phụ đề, bản dịch, câu chuyện, ảnh đều giữ nguyên.' }),
         groups.map((g) => el('label', { class: 'lb-group' },
           el('input', { type: 'checkbox', checked: true, onchange: (e) => { if (e.target.checked) chosen.add(g.id); else chosen.delete(g.id); upd(); } }),
           el('span', { class: 'lb-group-t' }, el('b', { text: g.label }), el('span', { class: 'small dim', text: g.detail })),

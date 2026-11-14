@@ -1,12 +1,12 @@
 """Giọng đọc nhiều thứ tiếng chạy trên máy: VoxCPM2 (OpenBMB, Apache-2.0) qua máy chủ CrispASR (MIT, bản Vulkan).
 
-Gói "voices" của Mô-đun AI miễn phí (localai.py). 30 thứ tiếng; iContent có sẵn thư viện giọng cho các thị trường trong langs.py.
+Gói "voices" của Mô-đun AI miễn phí (localai.py). 30 thứ tiếng; Studio566 có sẵn thư viện giọng cho các thị trường trong langs.py.
 
 Giữ giọng: chỉ tả giọng bằng lời thì mỗi câu một người khác (đo CAM++ giữa các câu 0,3-0,8). Vì vậy mỗi giọng có một đoạn mẫu
 (icontent/data/voices/<id>.mp3 + .txt, tạo sẵn bằng VoxCPM2 voice design, đã cho Whisper nghe lại đúng lời), mọi câu đều bắt chước
 đúng đoạn mẫu đó: độ giống giữa các câu 0,68-0,93. Đoạn mẫu là giọng tổng hợp, không phải người thật.
 
-Gắn nhãn AI: CrispASR luôn gắn dấu nước AI không nghe thấy và chứng chỉ C2PA vào file. Vì đoạn mẫu là giọng tổng hợp, iContent
+Gắn nhãn AI: CrispASR luôn gắn dấu nước AI không nghe thấy và chứng chỉ C2PA vào file. Vì đoạn mẫu là giọng tổng hợp, Studio566
 xin bỏ câu thông báo đọc thành tiếng ở đầu mỗi câu (spoken_disclaimer) và nhận trách nhiệm ghi nhãn: gói đăng bài nhắc khách
 bật nhãn "nội dung AI" khi đăng (TikTok, YouTube đều yêu cầu).
 
@@ -27,8 +27,8 @@ from .util import ROOT, check_cancel, log
 
 DATA = ROOT / "icontent" / "data" / "voices"
 IDLE = 180      # giây không đọc thì tắt máy chủ: trả card đồ họa cho việc khác
-CONSENT = "Synthetic voice made with VoxCPM2 voice design for iContent, not a real person"
-MARKING = "iContent shows an AI-content label to the user and asks them to enable the platform AI label when posting"
+CONSENT = "Synthetic voice made with VoxCPM2 voice design for Studio566, not a real person"
+MARKING = "Studio566 shows an AI-content label to the user and asks them to enable the platform AI label when posting"
 
 STYLES = {"f1": ("female", "Nữ trẻ, sôi nổi"), "f2": ("female", "Nữ, ấm áp kể chuyện"),
           "m1": ("male", "Nam trẻ, năng động"), "m2": ("male", "Nam trầm, thuyết minh")}

@@ -86,7 +86,7 @@ export async function viewHome(main, alive) {
     const s = status || {};
     const out = [];
     const tr = s.translator || {};
-    out.push(s.ffmpeg ? ['ok', 'Xử lý video', 'FFmpeg đã có'] : ['bad', 'Xử lý video', 'Thiếu FFmpeg: chạy lại trình cài iContent', '#/settings']);
+    out.push(s.ffmpeg ? ['ok', 'Xử lý video', 'FFmpeg đã có'] : ['bad', 'Xử lý video', 'Thiếu FFmpeg: chạy lại trình cài Studio566', '#/settings']);
     out.push(s.nvenc ? ['ok', 'Card đồ họa', `${home.gpu || 'NVIDIA'}: dựng video nhanh bằng NVENC${s.cuda ? ', nhận giọng bằng CUDA' : ''}`]
       : ['warn', 'Card đồ họa', 'Không có NVENC: vẫn dựng được bằng CPU, chậm hơn']);
     const dl = s.downloads || [];
@@ -140,7 +140,7 @@ export async function viewHome(main, alive) {
   main.append(
     renewBanner(S.license) || '',
     el('div', { class: 'hm-hero' },
-      el('div', { class: 'eyebrow', text: 'iContent Studio' }),
+      el('div', { class: 'eyebrow', text: 'Studio566' }),
       el('h1', { text: `${greeting()}, hôm nay làm gì?` }),
       el('div', { class: 'hm-hero-row' },
         el('p', { class: 'dim', text: 'Chọn một việc bên dưới. Mọi thứ chạy ngay trên máy của bạn, video không tải lên đâu cả.' }),

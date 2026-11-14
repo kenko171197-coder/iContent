@@ -1,11 +1,11 @@
 @echo off
-rem Bam dup de cai dat iContent Studio. Can mang Internet, lan dau mat vai phut.
+rem Bam dup de cai dat Studio566. Can mang Internet, lan dau mat vai phut.
 chcp 65001 >nul
-title Cai dat iContent Studio
+title Cai dat Studio566
 cd /d "%~dp0"
 if not exist "%~dp0setup.ps1" (
   echo Hay giai nen file zip ra mot thu muc truoc ^(chuot phai vao file zip, chon Extract All^),
-  echo roi bam dup "Cai dat iContent.cmd" trong thu muc vua giai nen.
+  echo roi bam dup "Cai dat Studio566.cmd" trong thu muc vua giai nen.
   if not defined ICONTENT_NO_PAUSE pause
   exit /b 1
 )

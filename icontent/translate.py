@@ -243,7 +243,7 @@ class ClaudeTranslator:
 
 
 GEMINI_HOST = "generativelanguage.googleapis.com"
-GEMINI_AUTO = "gemini-auto"      # trong cấu hình: để iContent tự chọn model Flash
+GEMINI_AUTO = "gemini-auto"      # trong cấu hình: để Studio566 tự chọn model Flash
 GEMINI_FALLBACK = "gemini-3.5-flash"
 GEMINI_PICK_TTL = 1800
 _GEMINI_PICK: dict[tuple, tuple[float, str]] = {}

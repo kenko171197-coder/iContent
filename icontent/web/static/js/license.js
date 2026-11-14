@@ -44,16 +44,16 @@ export function showLicenseGate(st) {
   const kb = keyBox(() => { setTimeout(() => location.reload(), 1200); });
   const why = el('div', { class: 'ob-out err lic-why', hidden: st.reason === 'no_license' }, icon('alert'), el('span', { text: st.message }));
   const tg = el('a', { class: 'btn btn-primary', href: st.telegram, target: '_blank', rel: 'noreferrer' }, icon('send'), 'Nhận key qua Telegram');
-  const gate = el('div', { class: 'lic-gate', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Kích hoạt iContent' },
+  const gate = el('div', { class: 'lic-gate', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Kích hoạt Studio566' },
     el('div', { class: 'lic-card' },
       el('div', { class: 'lic-head' }, el('img', { src: '/static/icon.png', alt: '', class: 'lic-logo' }),
-        el('div', {}, el('h1', { text: st.reason === 'expired' ? 'Gia hạn iContent' : 'Kích hoạt iContent' }),
+        el('div', {}, el('h1', { text: st.reason === 'expired' ? 'Gia hạn Studio566' : 'Kích hoạt Studio566' }),
           el('p', { class: 'dim', text: 'Mỗi máy cần một key. Key do bot Telegram cấp, thường chỉ mất một phút.' }))),
       why,
       machineBox(st),
       el('ol', { class: 'ob-steps lic-steps' },
         el('li', {}, 'Bấm ', el('b', { text: 'Nhận key qua Telegram' }), `: mở bot @${st.bot} với mã máy có sẵn. `, tg,
-          el('div', { class: 'small dim', text: `Máy này không có Telegram? Trên điện thoại, nhắn mã máy ở trên cho @${st.bot} rồi chọn iContent.` })),
+          el('div', { class: 'small dim', text: `Máy này không có Telegram? Trên điện thoại, nhắn mã máy ở trên cho @${st.bot} rồi chọn Studio566.` })),
         el('li', {}, 'Trong bot bấm ', el('b', { text: 'Yêu cầu kích hoạt' }), '. Được duyệt, bot gửi key cho bạn.'),
         el('li', {}, 'Chép nguyên key, dán vào ô dưới, bấm ', el('b', { text: 'Kích hoạt' }), '.')),
       kb.root,
@@ -85,7 +85,7 @@ export function licensePanel(st) {
 export function renewBanner(st) {
   if (!st || !st.enforced || !st.licensed || st.days_left == null || st.days_left > 14) return null;
   return el('div', { class: 'lic-banner' }, icon('clock'),
-    el('span', { class: 'lic-banner-t' }, el('b', { text: `Bản quyền iContent còn ${st.days_left} ngày` }), ` (hết hạn ${fmtDate(st.expires)}). Gia hạn sớm để không bị gián đoạn.`),
+    el('span', { class: 'lic-banner-t' }, el('b', { text: `Bản quyền Studio566 còn ${st.days_left} ngày` }), ` (hết hạn ${fmtDate(st.expires)}). Gia hạn sớm để không bị gián đoạn.`),
     el('a', { class: 'btn btn-sm btn-primary', href: st.telegram, target: '_blank', rel: 'noreferrer' }, icon('send'), 'Gia hạn qua Telegram'),
     el('a', { class: 'btn btn-sm btn-ghost', href: '#/settings' }, 'Nhập key mới'));
 }

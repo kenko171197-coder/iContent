@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<title>iContent Studio</title>
+<title>Studio566</title>
 <link rel="icon" type="image/png" href="icon.png">
 <style>
   html, body { height: 100%; margin: 0; background: #0b0a09; color: #bab2a6; font: 13px/1.5 "Segoe UI", system-ui, sans-serif; overflow: hidden; }
@@ -21,7 +21,7 @@
 <body>
 <main>
   <img src="icon.png" alt="">
-  <h1>iContent Studio</h1>
+  <h1>Studio566</h1>
   <div class="bar" id="bar"><i></i></div>
   <p id="msg">Đang khởi động</p>
 </main>
@@ -34,13 +34,13 @@
     im.onload = () => location.replace(to);
     im.onerror = () => {
       // không bao giờ bỏ cuộc: máy chậm khởi động lâu thì máy chủ vẫn lên, nếu ngừng dò thì không ai vào được nữa
-      if (Date.now() - started > 45000) document.getElementById('msg').textContent = 'Vẫn đang khởi động, lần đầu có thể lâu hơn. Nếu đợi quá lâu, mở Sửa lỗi iContent trong menu Start.';
+      if (Date.now() - started > 45000) document.getElementById('msg').textContent = 'Vẫn đang khởi động, lần đầu có thể lâu hơn. Nếu đợi quá lâu, mở Sửa lỗi Studio566 trong menu Start.';
       setTimeout(probe, 350);
     };
     im.src = to + '/static/icon.png?t=' + Date.now();
   }
   probe();
-  // iContent không mở được: biểu tượng (icontent/start.py) mở công cụ Sửa lỗi ở cổng 8766 và chỉ trả ảnh này khi đó;
+  // Studio566 không mở được: biểu tượng (icontent/start.py) mở công cụ Sửa lỗi ở cổng 8766 và chỉ trả ảnh này khi đó;
   // cửa sổ này chuyển luôn sang trang Sửa lỗi thay vì đứng chờ mãi
   function handoff() {
     const im = new Image();

@@ -1,4 +1,4 @@
-"""iContent — tải video nền tảng Trung Quốc, tự làm phụ đề, dịch, lồng tiếng theo timeline và dựng lại."""
+"""Studio566 — tải video nền tảng Trung Quốc, tự làm phụ đề, dịch, lồng tiếng theo timeline và dựng lại."""
 
 import os as _os
 

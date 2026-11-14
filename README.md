@@ -1,4 +1,6 @@
-# iContent Studio
+# Studio566
+
+> Studio566 được phát triển từ [iContent](https://github.com/wthaibinh/iContent1) của wthaibinh (giấy phép MIT, xem `LICENSE`).
 
 Dán link Douyin / Bilibili / Xiaohongshu / Weibo... → tool tự **tải video → nhận dạng tiếng Trung (ghép với sub gốc in trên video) → dịch sang tiếng Việt có ngữ cảnh → lồng tiếng giọng nam/nữ khớp timeline → xóa hẳn sub gốc, burn phụ đề kiểu TikTok → xuất video nhiều khung + ảnh bìa + tiêu đề/caption/hashtag**. Có giao diện web để sửa từng câu, nghe thử và xuất lại.
 
@@ -11,7 +13,7 @@ link ─► download ─► audio ─► separate ─► hardsub ─► asr ─�
 
 Mỗi bước lưu kết quả vào `workspace/<job>/`, nên chạy lại sẽ bỏ qua bước đã xong và chỉ làm lại phần thay đổi.
 
-**iContent miễn phí.** Thấy hữu ích thì [mời tác giả ly cà phê](#mời-tác-giả-cà-phê). Việc ủng hộ hoàn toàn tự nguyện, không ảnh hưởng đến quyền sử dụng.
+**Studio566 miễn phí.** Thấy hữu ích thì [mời tác giả ly cà phê](#mời-tác-giả-cà-phê). Việc ủng hộ hoàn toàn tự nguyện, không ảnh hưởng đến quyền sử dụng.
 
 ## Điểm nổi bật
 
@@ -27,7 +29,7 @@ Mỗi bước lưu kết quả vào `workspace/<job>/`, nên chạy lại sẽ b
 - **Video kể chuyện từ ảnh:** dán kịch bản hoặc nhờ AI viết từ một ý tưởng, mỗi cảnh một ảnh (ảnh tự có, ảnh trong thư viện, hoặc Gemini vẽ), lời dẫn và phụ đề tự khớp, máy quay zoom và lia nhẹ, chuyển cảnh, nhạc nền tự nhỏ đi khi có lời. Có sẵn một loạt ảnh thì chọn cùng lúc, mỗi ảnh thành một cảnh.
 - **Nhân vật nhất quán:** mỗi nhân vật lưu 1 đến 4 ảnh mẫu (tải lên hoặc AI vẽ từ mô tả), AI vẽ mọi cảnh giữ đúng mặt, tóc, quần áo. Nguồn vẽ: Google Gemini, OpenAI (ChatGPT), Meta Muse Image, Cloudflare (có hạn mức miễn phí), hoặc chép lời nhắn sang ChatGPT, Copilot trên web rồi dán ảnh về.
 - **Đọc văn bản:** dán chữ, chọn giọng (VieNeu chạy trên máy hoặc Edge), ra file MP3 kèm phụ đề SRT khớp từng câu.
-- **Trình dựng tự do kiểu CapCut:** nhiều track hình và tiếng, keyframe, chuyển cảnh, hiệu ứng, chỉnh màu, chữ chuyển động, giao diện tiếng Việt. Từ Studio bấm một nút là mở video đã xóa sub và lồng tiếng, phụ đề nằm trên track riêng sửa được; dựng xong gửi về iContent để kiểm định và đóng gói đăng. Dựa trên [FreeCut](https://github.com/walterlow/freecut) (giấy phép MIT).
+- **Trình dựng tự do kiểu CapCut:** nhiều track hình và tiếng, keyframe, chuyển cảnh, hiệu ứng, chỉnh màu, chữ chuyển động, giao diện tiếng Việt. Từ Studio bấm một nút là mở video đã xóa sub và lồng tiếng, phụ đề nằm trên track riêng sửa được; dựng xong gửi về Studio566 để kiểm định và đóng gói đăng. Dựa trên [FreeCut](https://github.com/walterlow/freecut) (giấy phép MIT).
 - **Sửa ảnh:** trình sửa ảnh đầy đủ (lớp, chữ, hiệu ứng, cắt, tẩy) nhúng sẵn, giao diện tiếng Việt, mở thẳng khung hình đã xóa sub, lưu làm ảnh bìa hoặc sticker. Dựa trên [miniPaint](https://github.com/viliusle/miniPaint) (giấy phép MIT).
 - **Lồng tiếng từng câu:** thu giọng của bạn bằng micro hoặc tải file âm thanh cho đúng câu đó, đọc thử bản đang sửa, dịch lại một câu.
 - **Studio như phần mềm dựng phim:**
@@ -42,7 +44,7 @@ Mỗi bước lưu kết quả vào `workspace/<job>/`, nên chạy lại sẽ b
 - **Mỗi người một giọng:** tự nghe ra video có mấy người nói, câu nào của ai, và cho mỗi người một giọng cố định. Câu nhận dạng gộp lời 2 người được tách đôi ngay chỗ đổi người. Trong Studio đặt tên, đổi giọng từng người, sửa người nói từng câu; mỗi người một màu trên timeline. Video một người đóng nhiều vai vẫn dùng một giọng.
 - **Mô-đun AI miễn phí chạy trên máy:** Cài đặt > Mô-đun AI miễn phí, bấm Tải là có **Dịch offline** (1,1 GB) và **Vẽ ảnh offline** (5,3 GB). Không cần key, không cần mạng khi chạy, không phải cài Ollama; tải tiếp được khi rớt mạng, mọi file ghim phiên bản và kiểm SHA-256. Xem mục [Mô-đun AI miễn phí](#mô-đun-ai-miễn-phí).
 - **Làm video cho thị trường nước ngoài:** chọn **Lồng tiếng sang** ngay ở ô dán link: 22 thứ tiếng (Anh, Indonesia, Thái, Philippines, Malaysia, Tây Ban Nha, Bồ Đào Nha, Nhật, Hàn, Hindi, Ả Rập, Pháp, Đức, Nga...). Dịch, phụ đề, giọng đọc, tiêu đề và hashtag đều theo thứ tiếng đó. Xem [Thị trường nước ngoài](#thị-trường-nước-ngoài).
-- **Dịch không bao giờ dừng giữa chừng:** Gemini quá tải, hết lượt, sai key hay Google chặn thì iContent dịch tiếp đúng các câu còn thiếu bằng dịch offline (nếu đã tải), rồi Google. Hết cách thì khung Cách khắc phục có nút Tải Dịch offline.
+- **Dịch không bao giờ dừng giữa chừng:** Gemini quá tải, hết lượt, sai key hay Google chặn thì Studio566 dịch tiếp đúng các câu còn thiếu bằng dịch offline (nếu đã tải), rồi Google. Hết cách thì khung Cách khắc phục có nút Tải Dịch offline.
 - **Dịch offline:** không cần API key, không cần mạng khi dịch. Nhanh, nhưng chưa bằng AI lớn (xem bảng bên dưới). Tên riêng còn để pinyin (`Li Shimin`) được đối chiếu với câu gốc rồi đổi về Hán-Việt (`Lý Thế Dân`); thương hiệu quen thuộc như Xiaomi, Huawei giữ nguyên.
 - **Giọng lồng:** tự chọn nam/nữ theo cao độ giọng gốc. **Từ điển phát âm** sửa cách đọc mà không đổi phụ đề (`TikTok` → `Tíc Tốc`). Chế độ `clone` bắt chước âm sắc người nói gốc (thử nghiệm).
 - **Phụ đề 6 kiểu** có xem trước: `classic`, `cinema` (viền mỏng, bóng mềm như phụ đề phim), `box`, `tiktok` (nhấn từng âm tiết), `karaoke`, `pop` (chữ hoa, phóng to theo lời). Đổi được font (chỉ liệt kê font có đủ dấu tiếng Việt), cỡ, màu, viền, vị trí.
@@ -54,33 +56,33 @@ Mỗi bước lưu kết quả vào `workspace/<job>/`, nên chạy lại sẽ b
 
 ## Cài đặt (Windows)
 
-Giải nén file zip, rồi bấm đúp file **`Cai dat iContent.cmd`**. Cần mạng Internet, lần đầu mất khoảng 5 đến 15 phút.
+Giải nén file zip, rồi bấm đúp file **`Cai dat Studio566.cmd`**. Cần mạng Internet, lần đầu mất khoảng 5 đến 15 phút.
 
-Bộ cài tự tìm Python 3.11 đến 3.13 (chưa có thì cài Python 3.13 qua `winget`), môi trường cũ bị hỏng thì tự tạo lại, tạo `.venv`, cài thư viện, kiểm tra ffmpeg (chưa có thì cài qua `winget`), tạo `config.yaml`, chạy `doctor`, đặt biểu tượng **iContent Studio** lên màn hình nền rồi mở phần mềm. Lỗi mạng giữa chừng thì chạy lại, phần đã tải không phải tải lại. Thư mục cài có dấu tiếng Việt hay dấu nháy đều được. Tạo lại biểu tượng bất cứ lúc nào bằng `.\icontent.cmd shortcut`.
+Bộ cài tự tìm Python 3.11 đến 3.13 (chưa có thì cài Python 3.13 qua `winget`), môi trường cũ bị hỏng thì tự tạo lại, tạo `.venv`, cài thư viện, kiểm tra ffmpeg (chưa có thì cài qua `winget`), tạo `config.yaml`, chạy `doctor`, đặt biểu tượng **Studio566** lên màn hình nền rồi mở phần mềm. Lỗi mạng giữa chừng thì chạy lại, phần đã tải không phải tải lại. Thư mục cài có dấu tiếng Việt hay dấu nháy đều được. Tạo lại biểu tượng bất cứ lúc nào bằng `.\icontent.cmd shortcut`.
 
 Bộ cài dừng sớm, báo đúng một câu dễ hiểu, khi gặp lỗi hay gặp: bấm đúp ngay trong cửa sổ xem file zip (chưa giải nén), đặt trong Program Files (không ghi được), ổ còn dưới 4 GB, Windows 32-bit. Thư mục nằm trong OneDrive thì nhắc chuyển ra ngoài. Bản phát hành có `constraints.txt`: thư viện được cài đúng phiên bản đã chạy qua bộ test; không cài được thì tự thử lại với phiên bản mới nhất.
 
-**Cập nhật bản mới:** giải nén đè lên đúng thư mục cũ rồi bấm đúp `Cai dat iContent.cmd` lần nữa. Video, cấu hình, key, giọng đã thu được giữ nguyên. Lần mở đầu sau khi cập nhật, Trang chủ hiện **Có gì mới**.
+**Cập nhật bản mới:** giải nén đè lên đúng thư mục cũ rồi bấm đúp `Cai dat Studio566.cmd` lần nữa. Video, cấu hình, key, giọng đã thu được giữ nguyên. Lần mở đầu sau khi cập nhật, Trang chủ hiện **Có gì mới**.
 
-### Cài xong mà không mở được: Sửa lỗi iContent
+### Cài xong mà không mở được: Sửa lỗi Studio566
 
-Biểu tượng **iContent Studio** của bản cài .exe chạy `icontent/start.py` bằng Python kèm trong gói (`runtime\python`), không chạy thẳng `.venv`. iContent không lên được (thoát với lỗi, hoặc chưa có `.venv`) thì nó mở cửa sổ **Sửa lỗi iContent**; màn hình chờ đang mở cũng tự chuyển sang trang đó. Menu Start có thêm biểu tượng **Sửa lỗi iContent**, và trang cuối của trình cài có ô mở nó khi phần cài thư viện chưa xong.
+Biểu tượng **Studio566** của bản cài .exe chạy `icontent/start.py` bằng Python kèm trong gói (`runtime\python`), không chạy thẳng `.venv`. Studio566 không lên được (thoát với lỗi, hoặc chưa có `.venv`) thì nó mở cửa sổ **Sửa lỗi Studio566**; màn hình chờ đang mở cũng tự chuyển sang trang đó. Menu Start có thêm biểu tượng **Sửa lỗi Studio566**, và trang cuối của trình cài có ô mở nó khi phần cài thư viện chưa xong.
 
-Công cụ (`icontent/support.py`) chỉ dùng thư viện chuẩn của Python, nên chạy được cả khi thư viện của iContent hỏng. Nó là một trang web nhỏ ở `127.0.0.1:8766` và kiểm tra:
+Công cụ (`icontent/support.py`) chỉ dùng thư viện chuẩn của Python, nên chạy được cả khi thư viện của Studio566 hỏng. Nó là một trang web nhỏ ở `127.0.0.1:8766` và kiểm tra:
 
 - lỗi lần mở gần nhất (`workspace/start-error.txt`, do `cli.py` ghi lại);
-- file của iContent bị xóa (thường do phần mềm diệt virus);
+- file của Studio566 bị xóa (thường do phần mềm diệt virus);
 - thư mục cài: ghi được không, còn bao nhiêu chỗ, có nằm trong OneDrive không;
 - Windows, RAM, bộ chạy Visual C++ (`msvcp140.dll`);
 - nạp thử thư viện trong `.venv`: lỗi "DLL load failed" được tách khỏi lỗi thiếu thư viện;
 - ffmpeg, Edge/Chrome;
-- cổng 8765: iContent cũ bị treo hay chương trình khác giữ;
+- cổng 8765: Studio566 cũ bị treo hay chương trình khác giữ;
 - mạng tới pypi, GitHub, Hugging Face, Bilibili, Douyin, Gemini, giọng Microsoft (phân biệt lỗi chứng chỉ do phần mềm diệt virus quét HTTPS);
 - cookie Douyin.
 
-Nút sửa: **Cài lại thư viện** (chạy lại `setup.ps1`, chỉ tải phần thiếu), **Cài bộ chạy Microsoft** (bộ cài chính thức `vc_redist.x64.exe`, Windows hỏi quyền), **Tắt iContent bị treo**, **Làm mới cửa sổ iContent**, **Mở iContent**.
+Nút sửa: **Cài lại thư viện** (chạy lại `setup.ps1`, chỉ tải phần thiếu), **Cài bộ chạy Microsoft** (bộ cài chính thức `vc_redist.x64.exe`, Windows hỏi quyền), **Tắt Studio566 bị treo**, **Làm mới cửa sổ Studio566**, **Mở Studio566**.
 
-**Tạo gói báo lỗi** lưu `iContent-goi-bao-loi-<ngày>.zip` ra màn hình nền. Gói gồm kết quả kiểm tra, card đồ họa, `studio.log`, nhật ký trình cài (`%TEMP%\Setup Log*.txt`), `config.yaml`, danh sách thư viện và danh sách thư mục. Key (cả giá trị thật trong `keys.json`), token, cookie, email, đường dẫn thư mục người dùng, tên người dùng và tên máy đều bị thay trước khi ghi. Trong iContent: **Cài đặt → Sửa lỗi nhanh** có **Kiểm tra máy**, **Tạo gói báo lỗi**, **Mở công cụ Sửa lỗi**; thẻ lỗi chưa có cách sửa sẵn có nút **Tạo gói báo lỗi**. Dòng lệnh: `python -m icontent.support --check` hoặc `--report`.
+**Tạo gói báo lỗi** lưu `Studio566-goi-bao-loi-<ngày>.zip` ra màn hình nền. Gói gồm kết quả kiểm tra, card đồ họa, `studio.log`, nhật ký trình cài (`%TEMP%\Setup Log*.txt`), `config.yaml`, danh sách thư viện và danh sách thư mục. Key (cả giá trị thật trong `keys.json`), token, cookie, email, đường dẫn thư mục người dùng, tên người dùng và tên máy đều bị thay trước khi ghi. Trong Studio566: **Cài đặt → Sửa lỗi nhanh** có **Kiểm tra máy**, **Tạo gói báo lỗi**, **Mở công cụ Sửa lỗi**; thẻ lỗi chưa có cách sửa sẵn có nút **Tạo gói báo lỗi**. Dòng lệnh: `python -m icontent.support --check` hoặc `--report`.
 
 Để dịch hay nhất, vào **Cài đặt → Kết nối AI**, chọn nhà cung cấp, dán API key, bấm **Dịch thử** (người mới thì làm ngay ở bước 1 của hướng dẫn lần đầu):
 
@@ -99,9 +101,9 @@ Lần đầu chạy, tool tải model nhận dạng (`large-v3-turbo` khoảng 1
 
 **Tách nhạc nền** để lồng tiếng sạch mà vẫn giữ BGM: có sẵn, không phải cài thêm. `separate.py` chạy mô hình UVR-MDX-NET-Inst_HQ_3 bằng ONNX Runtime (tự tải 67 MB lần đầu, kiểm SHA-256), STFT và ghép đoạn chồng 25 % viết lại bằng numpy theo đúng cách audio-separator làm. Đo trên máy này (CPU): 139 s âm thanh mất 92 s; trộn giọng nói với nhạc rồi tách lại được giọng 19,2 dB, nhạc 16,1 dB SDR. Chế độ `auto` chỉ tách video tới 10 phút, `on` luôn tách. Máy đã tự cài `audio-separator[gpu]` thì dùng nó (nhanh hơn trên GPU).
 
-## iContent Studio (giao diện)
+## Studio566 (giao diện)
 
-Bấm đúp biểu tượng **iContent Studio** hoặc file **`iContent Studio.cmd`**: phần mềm mở thành cửa sổ riêng (dùng Edge hoặc Chrome có sẵn trên máy, hồ sơ riêng, không đụng tới trình duyệt của bạn). Đóng cửa sổ thì khoảng 3 phút sau phần mềm tự tắt; còn video đang xử lý, hoặc còn tab trình duyệt đang mở iContent, thì chưa tắt. Nhật ký nằm ở `workspace/studio.log`.
+Bấm đúp biểu tượng **Studio566** hoặc file **`Studio566.cmd`**: phần mềm mở thành cửa sổ riêng (dùng Edge hoặc Chrome có sẵn trên máy, hồ sơ riêng, không đụng tới trình duyệt của bạn). Đóng cửa sổ thì khoảng 3 phút sau phần mềm tự tắt; còn video đang xử lý, hoặc còn tab trình duyệt đang mở Studio566, thì chưa tắt. Nhật ký nằm ở `workspace/studio.log`.
 
 Muốn xem nhật ký trên dòng lệnh, hoặc dùng trình duyệt thường: `.\icontent.cmd ui` rồi mở http://127.0.0.1:8765.
 
@@ -126,22 +128,22 @@ Cài đặt ở trang này được lưu vào `config.yaml` (bản cũ lưu ở 
 
 ## Trang chủ
 
-Mở iContent là vào **Trang chủ**:
+Mở Studio566 là vào **Trang chủ**:
 
 - **Bạn muốn làm gì:** 8 việc thường làm (dịch và lồng tiếng video, truyện AI từ ý tưởng, video từ ảnh của tôi, kể chuyện từng cảnh, đọc văn bản, thumbnail, dựng tự do, tìm video thịnh hành). Bấm là vào thẳng, hai việc làm video từ ý tưởng, từ ảnh mở sẵn quy trình mẫu.
 - **Đang chạy:** video đang dịch, đang dựng, quy trình đang chạy, kèm tiến độ.
 - **Gần đây:** mọi thứ vừa làm ở một chỗ (video dịch, câu chuyện, quy trình, giọng đọc), lọc theo loại, bấm là mở lại.
-- **Máy đã sẵn sàng chưa:** FFmpeg, card đồ họa, mô hình AI trên máy, AI dịch và viết kịch bản, AI vẽ ảnh, giọng của tôi, trình dựng, ổ đĩa còn trống. Mục nào thiếu có nút sửa ngay. Trạng thái key vẽ ảnh lấy từ lần vẽ thật gần nhất: key Gemini gói miễn phí có key nhưng không vẽ được ảnh nào, iContent nói rõ điều đó thay vì báo "sẵn sàng".
+- **Máy đã sẵn sàng chưa:** FFmpeg, card đồ họa, mô hình AI trên máy, AI dịch và viết kịch bản, AI vẽ ảnh, giọng của tôi, trình dựng, ổ đĩa còn trống. Mục nào thiếu có nút sửa ngay. Trạng thái key vẽ ảnh lấy từ lần vẽ thật gần nhất: key Gemini gói miễn phí có key nhưng không vẽ được ảnh nào, Studio566 nói rõ điều đó thay vì báo "sẵn sàng".
 
-Video xong hay lỗi trong lúc bạn đang ở cửa sổ khác thì Windows hiện thông báo ở góc màn hình, bấm vào là mở đúng video (lần bấm đầu tiên trong iContent sẽ hỏi cho phép thông báo).
+Video xong hay lỗi trong lúc bạn đang ở cửa sổ khác thì Windows hiện thông báo ở góc màn hình, bấm vào là mở đúng video (lần bấm đầu tiên trong Studio566 sẽ hỏi cho phép thông báo).
 
-Có key Gemini mà AI dịch đang chọn (Claude, OpenAI...) chưa có key thì iContent tự dịch bằng Gemini, không phải dịch offline.
+Có key Gemini mà AI dịch đang chọn (Claude, OpenAI...) chưa có key thì Studio566 tự dịch bằng Gemini, không phải dịch offline.
 
 ### Hướng dẫn lần đầu
 
-Người mới mở iContent (chưa có video, câu chuyện nào) thì hướng dẫn 3 bước tự bật; ai cũng mở lại được bằng nút **Hướng dẫn 3 bước** ở Trang chủ hoặc `Ctrl+K`:
+Người mới mở Studio566 (chưa có video, câu chuyện nào) thì hướng dẫn 3 bước tự bật; ai cũng mở lại được bằng nút **Hướng dẫn 3 bước** ở Trang chủ hoặc `Ctrl+K`:
 
-1. **Kết nối AI miễn phí:** nút mở trang lấy key Gemini, chỉ cách bấm, một ô dán key. iContent dịch thử một câu bằng chính key đó; đúng thì mới lưu và từ đó dịch bằng Gemini (trừ khi đang dùng Claude, DeepSeek có key), sai thì không lưu gì và nói lý do.
+1. **Kết nối AI miễn phí:** nút mở trang lấy key Gemini, chỉ cách bấm, một ô dán key. Studio566 dịch thử một câu bằng chính key đó; đúng thì mới lưu và từ đó dịch bằng Gemini (trừ khi đang dùng Claude, DeepSeek có key), sai thì không lưu gì và nói lý do.
 2. **Chuẩn bị máy:** **Tải trước** mô hình AI còn thiếu (nhận giọng, giọng đọc VieNeu, nhận diện người nói) qua hàng đợi chung, có tiến độ, hủy được, để video đầu tiên chạy ngay. Thu **Giọng của tôi**. Cho biết có card NVIDIA không.
 3. **Làm video đầu tiên:** ba việc kèm cách làm một dòng: dịch video từ link, truyện AI từ ý tưởng, đọc văn bản.
 
@@ -153,7 +155,7 @@ Mọi thứ đã làm ở một chỗ: video dịch, câu chuyện, quy trình, 
 
 - **Chọn nhiều** rồi xóa một lần. Mặc định giữ video, phụ đề, ảnh bìa đã xuất trong thư mục output; muốn giải phóng hết thì đánh dấu **Xóa luôn video đã xuất**. Mục đang chạy không xóa được.
 - **Dung lượng:** thanh màu cho biết ổ đĩa đang dùng cho video dịch, kể chuyện, quy trình, video đã xuất, mô hình AI.
-- **Dọn dẹp** chỉ xóa thứ iContent tự tạo lại được, không mất video nào:
+- **Dọn dẹp** chỉ xóa thứ Studio566 tự tạo lại được, không mất video nào:
   - bản xuất thêm còn sót trong thư mục làm việc (bản cũ quên xóa sau khi đã chép sang output; chỉ xóa khi output có bản cùng cỡ);
   - bản nền cho Trình dựng (mở lại sẽ tự dựng; dự án đã mở trong Trình dựng giữ bản riêng);
   - ảnh khung hình xem trước, giọng nghe thử, file dựng dở.
@@ -171,7 +173,7 @@ Bản fork này **đã gỡ khóa kích hoạt**: không cần key, không cần
 .\icontent.cmd release --free     (bản không khoá)
 ```
 
-ra `dist\iContent-<phiên bản>.zip` (khoảng 95 MB) và file `.sha256`. Gói gồm mã nguồn, giao diện, Trình dựng đã build, bộ cài, `HUONG DAN.txt` cho người dùng, và `constraints.txt` (đúng phiên bản thư viện của máy đóng gói). Không bao giờ có `keys.json`, `config.yaml`, thư mục làm việc, output, giọng đã thu. Trước khi nén, lệnh dò lại toàn bộ: file nào chứa đúng một key đang có trên máy, hay mã của iContent có chuỗi giống API key, là dừng. File `.cmd`, `.ps1` luôn được ghi xuống dòng kiểu Windows. Nhớ tăng `__version__` trong `icontent/__init__.py` và thêm dòng vào `CHANGES` trong `icontent/about.py` (người dùng thấy ở **Có gì mới**).
+ra `dist\Studio566-<phiên bản>.zip` (khoảng 95 MB) và file `.sha256`. Gói gồm mã nguồn, giao diện, Trình dựng đã build, bộ cài, `HUONG DAN.txt` cho người dùng, và `constraints.txt` (đúng phiên bản thư viện của máy đóng gói). Không bao giờ có `keys.json`, `config.yaml`, thư mục làm việc, output, giọng đã thu. Trước khi nén, lệnh dò lại toàn bộ: file nào chứa đúng một key đang có trên máy, hay mã của Studio566 có chuỗi giống API key, là dừng. File `.cmd`, `.ps1` luôn được ghi xuống dòng kiểu Windows. Nhớ tăng `__version__` trong `icontent/__init__.py` và thêm dòng vào `CHANGES` trong `icontent/about.py` (người dùng thấy ở **Có gì mới**).
 
 ## Quy trình kéo thả
 
@@ -181,7 +183,7 @@ ra `dist\iContent-<phiên bản>.zip` (khoảng 95 MB) và file `.sha256`. Gói 
 - **Các khối:** Ý tưởng, Kịch bản có sẵn, Ảnh của tôi; AI viết kịch bản, Chia cảnh; Ảnh mẫu nhân vật, Vẽ ảnh từng cảnh, Video nền miễn phí, AI làm clip từ ảnh; Giọng đọc (có Giọng của tôi), Nhạc nền; Dựng video; Thumbnail, Mở Trình dựng, Xuất bộ đăng bài.
 - **Thao tác:** kéo khối từ bảng trái vào (bấm vào khối thì nó tự nối tiếp khối đang chọn). Nối dây bằng cách kéo từ chấm bên phải khối này sang chấm cùng màu bên trái khối kia; mỗi màu là một loại dữ liệu (chữ, ảnh, câu chuyện, video, thumbnail), sai loại thì không nối được. Bấm khối để chỉnh thiết lập, phím Delete để xóa khối hoặc dây. Kéo nền để di chuyển, lăn chuột để phóng to.
 - **Khi chạy:** từng khối sáng lên, xong thì hiện kết quả ngay trên khối (ảnh cảnh, video, thumbnail, nút mở thư mục xuất). Câu chuyện tạo ra nằm trong Kể chuyện để sửa tay. Chạy lại không tốn thêm: AI không viết lại khi đầu vào không đổi, cảnh đã có ảnh không vẽ lại, video không dựng lại khi câu chuyện không đổi.
-- **Khối có dấu $** gọi AI trả phí (vẽ ảnh, làm clip). Trước khi chạy, iContent hỏi lại kèm số ảnh, số clip ước tính và giá.
+- **Khối có dấu $** gọi AI trả phí (vẽ ảnh, làm clip). Trước khi chạy, Studio566 hỏi lại kèm số ảnh, số clip ước tính và giá.
 - **Xuất bộ đăng bài:** thư mục `output\dang_bai\<tên>` gồm video, `thumbnail.jpg` và `mo_ta.txt` (có video nền thì kèm tên tác giả, giấy phép, và file `nguon_video.txt`).
 
 ## Thumbnail
@@ -201,7 +203,7 @@ Trang Sửa ảnh cũ (miniPaint) vẫn dùng để thiết kế lớp ảnh ph�
 
 **Kể chuyện** (thanh bên trái): bấm **Câu chuyện mới**, chọn một trong ba cách:
 
-1. **AI viết từ ý tưởng:** viết một câu ý tưởng, chọn độ dài. AI viết lời dẫn tiếng Việt, chia cảnh, mô tả hình từng cảnh và lập danh sách nhân vật. Dùng AI đang kết nối trong Cài đặt (Claude, DeepSeek...), không có thì dùng Gemini nếu đã có key (gói miễn phí của Gemini viết kịch bản được). iContent tự chọn model Gemini Flash mới nhất đang trả lời nhanh, vì Google cho model cũ nghỉ hưu và model mới ra có lúc quá tải.
+1. **AI viết từ ý tưởng:** viết một câu ý tưởng, chọn độ dài. AI viết lời dẫn tiếng Việt, chia cảnh, mô tả hình từng cảnh và lập danh sách nhân vật. Dùng AI đang kết nối trong Cài đặt (Claude, DeepSeek...), không có thì dùng Gemini nếu đã có key (gói miễn phí của Gemini viết kịch bản được). Studio566 tự chọn model Gemini Flash mới nhất đang trả lời nhanh, vì Google cho model cũ nghỉ hưu và model mới ra có lúc quá tải.
 2. **Tôi có kịch bản:** dán kịch bản. Mỗi đoạn văn ít nhất một cảnh, đoạn dài chia theo câu. Có AI thì tick để AI chia cảnh và gợi ý hình, giữ nguyên lời.
 3. **Từ ảnh của tôi:** chọn nhiều ảnh cùng lúc, mỗi ảnh thành một cảnh theo đúng thứ tự, thêm lời dẫn sau nếu muốn. Cảnh không có lời dài 3 giây.
 
@@ -211,7 +213,7 @@ Trong câu chuyện:
 - **Từng cảnh:** chọn chuyển động máy quay, kiểu chuyển cảnh vào cảnh đó (để trống là theo kiểu chung) và thời lượng. Cảnh có lời: thời lượng là tối thiểu, lời dài hơn thì cảnh tự dài theo, lời không bao giờ bị cắt. Cảnh im lặng: đúng thời lượng đặt, để trống là 3 giây.
 - **Chuyển cảnh, mở đầu, kết thúc** (bảng bên phải): kiểu chuyển cảnh chung (mờ chồng, trượt, quét, mở tròn, cắt thẳng...) và độ dài chuyển. Bật **Cảnh mở đầu** để có tiêu đề lớn trên ảnh cảnh đầu làm mờ (trống thì lấy tên câu chuyện, thêm dòng phụ như "Tập 1"), bật **Cảnh kết thúc** để có lời kêu gọi và tên kênh trên ảnh cảnh cuối.
 - **Dựng video:** đọc lời dẫn, ghép ảnh với chuyển động máy quay, chuyển cảnh, phụ đề, nhạc nền (tự nhỏ đi khi có lời). File ra trong thư mục `output`, tên bắt đầu bằng `kechuyen_`, kèm `.srt`.
-- **Trình dựng:** mở câu chuyện trong trình dựng tự do để tự sắp xếp như CapCut. Mỗi cảnh là một clip riêng ở V1, lời dẫn của cảnh đó ở A1 (kéo đổi chỗ cảnh thì lời đi theo), phụ đề từng cảnh ở V2, chữ mở đầu và kết thúc là lớp chữ sửa được ở V3, nhạc nền ở A2 tự nhỏ đi khi có lời. Các cảnh nối thẳng, chuyển cảnh thêm trong trình dựng. Lần đầu iContent đọc lời và dựng từng cảnh (vài giây mỗi cảnh); sửa câu chuyện rồi mở lại thì cảnh nào không đổi được dùng lại. Xuất xong bấm **Gửi về iContent**: file `kechuyen_..._dung.mp4` nằm trong `output` và hiện ở mục **Kết quả** của câu chuyện.
+- **Trình dựng:** mở câu chuyện trong trình dựng tự do để tự sắp xếp như CapCut. Mỗi cảnh là một clip riêng ở V1, lời dẫn của cảnh đó ở A1 (kéo đổi chỗ cảnh thì lời đi theo), phụ đề từng cảnh ở V2, chữ mở đầu và kết thúc là lớp chữ sửa được ở V3, nhạc nền ở A2 tự nhỏ đi khi có lời. Các cảnh nối thẳng, chuyển cảnh thêm trong trình dựng. Lần đầu Studio566 đọc lời và dựng từng cảnh (vài giây mỗi cảnh); sửa câu chuyện rồi mở lại thì cảnh nào không đổi được dùng lại. Xuất xong bấm **Gửi về Studio566**: file `kechuyen_..._dung.mp4` nằm trong `output` và hiện ở mục **Kết quả** của câu chuyện.
 
 Nguồn vẽ ảnh, chọn ở đầu trang câu chuyện (key nhập trong Cài đặt, mục **Tạo ảnh AI**; giá theo trang của từng hãng, 11/2026):
 
@@ -223,11 +225,11 @@ Nguồn vẽ ảnh, chọn ở đầu trang câu chuyện (key nhập trong Cài
 | Cloudflare Workers AI, FLUX.1 schnell | miễn phí trong hạn mức hằng ngày | không, chỉ giữ bằng mô tả |
 | ChatGPT, Copilot bản miễn phí trên web | miễn phí | tự đính kèm ảnh mẫu khi dán lời nhắn |
 
-ChatGPT và Copilot bản miễn phí không có API, iContent không tự động hóa trang web của họ (trái điều khoản, và hỏng mỗi khi họ đổi giao diện). Ở từng cảnh bấm **Chép lời nhắn** (đã kèm mô tả nhân vật), dán sang đó để vẽ, chép ảnh vẽ xong rồi bấm **Dán ảnh** (hoặc bấm vào cảnh và nhấn Ctrl+V). Trước khi vẽ hàng loạt, iContent hỏi lại kèm giá; một cảnh đang vẽ thì không bấm vẽ lần nữa được, để không bị tính tiền hai lần. Ảnh do Gemini vẽ có watermark ẩn SynthID của Google.
+ChatGPT và Copilot bản miễn phí không có API, Studio566 không tự động hóa trang web của họ (trái điều khoản, và hỏng mỗi khi họ đổi giao diện). Ở từng cảnh bấm **Chép lời nhắn** (đã kèm mô tả nhân vật), dán sang đó để vẽ, chép ảnh vẽ xong rồi bấm **Dán ảnh** (hoặc bấm vào cảnh và nhấn Ctrl+V). Trước khi vẽ hàng loạt, Studio566 hỏi lại kèm giá; một cảnh đang vẽ thì không bấm vẽ lần nữa được, để không bị tính tiền hai lần. Ảnh do Gemini vẽ có watermark ẩn SynthID của Google.
 
 ### Chi phí: ưu tiên miễn phí
 
-Cài đặt, mục **Chi phí**: công tắc **Cho phép tính năng trả phí**. Tắt thì iContent chỉ dùng cách miễn phí: vẽ trên máy hoặc Cloudflare, video nền từ kho miễn phí, AI viết bằng Gemini gói miễn phí hoặc AI trên máy, giọng đọc trên máy. Nút và khối tính tiền (vẽ bằng Gemini, OpenAI, Meta Muse; AI làm clip) bị khóa, Quy trình báo ngay ở khối đó trước khi chạy. Chưa bật tắt lần nào: máy đã từng vẽ được bằng nguồn trả phí thì coi như bật, không thì tắt. Bật rồi vẫn vậy: **Tự chọn** luôn dùng nguồn miễn phí trước, mỗi lần tốn tiền đều báo giá và hỏi lại. Dịch bằng Claude, DeepSeek do người dùng tự dán key ở Kết nối AI, không thuộc công tắc này.
+Cài đặt, mục **Chi phí**: công tắc **Cho phép tính năng trả phí**. Tắt thì Studio566 chỉ dùng cách miễn phí: vẽ trên máy hoặc Cloudflare, video nền từ kho miễn phí, AI viết bằng Gemini gói miễn phí hoặc AI trên máy, giọng đọc trên máy. Nút và khối tính tiền (vẽ bằng Gemini, OpenAI, Meta Muse; AI làm clip) bị khóa, Quy trình báo ngay ở khối đó trước khi chạy. Chưa bật tắt lần nào: máy đã từng vẽ được bằng nguồn trả phí thì coi như bật, không thì tắt. Bật rồi vẫn vậy: **Tự chọn** luôn dùng nguồn miễn phí trước, mỗi lần tốn tiền đều báo giá và hỏi lại. Dịch bằng Claude, DeepSeek do người dùng tự dán key ở Kết nối AI, không thuộc công tắc này.
 
 **AI viết kịch bản trên máy:** không có key AI nào mà đã tải Dịch offline và Vẽ ảnh offline thì AI viết từ ý tưởng bằng Qwen3 4B (chính là bộ đọc lời nhắn của gói Vẽ ảnh), chạy bằng bộ chạy llama.cpp của gói Dịch. AI có key bị lỗi giữa chừng (Gemini quá tải) cũng tự viết tiếp bằng AI trên máy. Đo trên máy này: kịch bản 3 đến 5 cảnh khoảng 11 giây, bật bộ chạy lần đầu 17 giây. Viết tiếng Việt tự nhiên, đôi khi mô tả hình bằng tiếng Việt (bộ vẽ trên máy tự dịch sang tiếng Anh).
 
@@ -235,11 +237,11 @@ Cài đặt, mục **Chi phí**: công tắc **Cho phép tính năng trả phí*
 
 ### Video nền miễn phí và clip AI
 
-Cảnh có clip thì video dùng clip thay ảnh (cắt đầy khung, hoặc nền mờ nếu chọn giữ cả ảnh). Ảnh vẫn giữ làm ảnh bìa, cảnh mở đầu, kết thúc và thumbnail; cảnh chỉ có clip thì iContent lấy một khung của clip làm ảnh.
+Cảnh có clip thì video dùng clip thay ảnh (cắt đầy khung, hoặc nền mờ nếu chọn giữ cả ảnh). Ảnh vẫn giữ làm ảnh bìa, cảnh mở đầu, kết thúc và thumbnail; cảnh chỉ có clip thì Studio566 lấy một khung của clip làm ảnh.
 
-- **Video nền** (ở từng cảnh): tìm video quay thật trong kho miễn phí, rê chuột để xem, bấm để dùng. Từ khóa tiếng Anh nằm trong ô dưới mô tả hình; AI viết kịch bản đã điền sẵn, để trống thì AI (hoặc iContent tự rút từ mô tả hình) nghĩ giúp.
+- **Video nền** (ở từng cảnh): tìm video quay thật trong kho miễn phí, rê chuột để xem, bấm để dùng. Từ khóa tiếng Anh nằm trong ô dưới mô tả hình; AI viết kịch bản đã điền sẵn, để trống thì AI (hoặc Studio566 tự rút từ mô tả hình) nghĩ giúp.
 - **Tìm video nền cho mọi cảnh** (bảng bên phải): làm một lượt các cảnh chưa có clip. Cảnh có nhân vật của câu chuyện được giữ để vẽ: video quay thật không có nhân vật đó, chèn người lạ vào là lệch truyện (muốn vẫn dùng thì bấm Video nền ở cảnh đó). Chỉ nhận clip có tên hoặc nhãn chứa từ khóa (đo thật: kho trả về cả video phỏng vấn khi tìm "ruộng lúa"). Chọn clip đúng chiều khung, đủ dài, nét, trong mười kết quả liên quan nhất, không dùng một clip cho hai cảnh. Clip dài (phim tư liệu) thì bỏ phần mở đầu, viền đen sẵn trong clip được cắt bỏ. Clip ngắn hơn cảnh tới 30% thì chậm lại cho vừa, ngắn hơn nữa thì lặp lại.
-- **AI làm clip:** Google Gemini Omni Flash biến ảnh cảnh thành clip chuyển động 3 đến 15 giây, đúng độ dài cảnh, giữ nhân vật như trong ảnh (cảnh chưa có ảnh thì tạo từ mô tả kèm ảnh mẫu nhân vật). Clip không lời, không chữ; tiếng của clip được tắt, lời dẫn là chính. Chọn độ nét ở bảng bên phải. Trước khi làm, iContent báo giá; cảnh lỗi không tính tiền.
+- **AI làm clip:** Google Gemini Omni Flash biến ảnh cảnh thành clip chuyển động 3 đến 15 giây, đúng độ dài cảnh, giữ nhân vật như trong ảnh (cảnh chưa có ảnh thì tạo từ mô tả kèm ảnh mẫu nhân vật). Clip không lời, không chữ; tiếng của clip được tắt, lời dẫn là chính. Chọn độ nét ở bảng bên phải. Trước khi làm, Studio566 báo giá; cảnh lỗi không tính tiền.
 - **Chọn lại:** bấm vào ảnh cảnh để chọn giữa các clip và ảnh đã có, hoặc **Dùng ảnh** để quay lại ảnh có máy quay chuyển động. **Nguồn clip** cho xem và chép danh sách nguồn.
 
 | Nguồn | Giá | Ghi chú |
@@ -249,13 +251,13 @@ Cảnh có clip thì video dùng clip thay ảnh (cắt đầy khung, hoặc n�
 | Wikimedia Commons | miễn phí, không cần key | chỉ lấy phạm vi công cộng, CC0, CC BY (bỏ CC BY-SA, NC, ND); ít video dọc, chất lượng không đều |
 | Google Gemini Omni Flash | 360p ~0,023, 720p ~0,07, 1080p ~0,104 USD/giây (11/2026) | không có gói miễn phí: key Gemini phải bật thanh toán |
 
-Nguồn từng clip (tác giả, giấy phép, trang gốc) được ghi vào `<video>.nguon.txt` cạnh video và vào `mo_ta.txt`, `nguon_video.txt` của bộ đăng bài. iContent không lấy video YouTube, Douyin, TikTok làm nguồn: "video free" trên đó không phải miễn phí bản quyền. Google tắt Veo 3.1 bản thử trong Gemini API ngày 22/10/2026, Gemini Omni Flash là model video thay thế. Meta Muse Video chưa có API chính thức (11/2026); các dịch vụ "Muse API" hiện có đều tự điều khiển trang muse.ai, trái điều khoản, nên không cắm vào.
+Nguồn từng clip (tác giả, giấy phép, trang gốc) được ghi vào `<video>.nguon.txt` cạnh video và vào `mo_ta.txt`, `nguon_video.txt` của bộ đăng bài. Studio566 không lấy video YouTube, Douyin, TikTok làm nguồn: "video free" trên đó không phải miễn phí bản quyền. Google tắt Veo 3.1 bản thử trong Gemini API ngày 22/10/2026, Gemini Omni Flash là model video thay thế. Meta Muse Video chưa có API chính thức (11/2026); các dịch vụ "Muse API" hiện có đều tự điều khiển trang muse.ai, trái điều khoản, nên không cắm vào.
 
 Đo trên máy này (11/2026): tìm và tải 3 clip Wikimedia mất 20 đến 90 giây (tùy độ dài file gốc), dựng 3 cảnh clip thành video 1080x1920 dài 18 giây mất 4,4 giây (NVENC). Mẫu **Video tư liệu từ kho miễn phí** từ một câu ý tưởng ra video 29 giây kèm thumbnail và bộ đăng bài trong khoảng 6 phút, phần lớn là chờ giọng Edge qua mạng. Key Gemini gói miễn phí gọi Omni thì Google từ chối ngay (chạy nền báo RESOURCE_EXHAUSTED, chạy trực tiếp báo "limit: 0 ... Free Tier"), không tính tiền.
 
 **Đọc văn bản** (thanh bên trái): dán chữ (tối đa 30.000 ký tự một lần), chọn bộ giọng, giọng, tốc độ, bấm **Tạo giọng đọc**. File MP3 và phụ đề SRT nằm trong `output\giong_doc`. VieNeu chạy trên máy, đọc bao nhiêu cũng được; Edge cần mạng và đôi khi bị Microsoft giới hạn nếu đọc quá nhiều.
 
-**Giọng của tôi:** bấm nút micro cạnh ô chọn giọng (Đọc văn bản, Kể chuyện, phần Giọng đọc của Studio). Bấm **Thu âm** rồi đọc to đoạn gợi ý 10 đến 20 giây ở chỗ yên tĩnh, hoặc **Tải file ghi âm** (mp3, m4a, wav, cả video). iContent tự lấy 8 giây có tiếng nói rõ nhất, cắt ở chỗ lặng, chỉnh âm lượng, rồi báo nếu mẫu ngắn, ồn hoặc rè. Giọng đó hiện trong nhóm **Giọng của tôi** ở mọi ô chọn giọng VieNeu: đọc văn bản, lời dẫn kể chuyện, lồng tiếng video đều dùng được, chạy hẳn trên máy. Mẫu nằm trong `assets\voices` (không đưa lên git). Chỉ dùng giọng của chính mình, hoặc của người đã đồng ý.
+**Giọng của tôi:** bấm nút micro cạnh ô chọn giọng (Đọc văn bản, Kể chuyện, phần Giọng đọc của Studio). Bấm **Thu âm** rồi đọc to đoạn gợi ý 10 đến 20 giây ở chỗ yên tĩnh, hoặc **Tải file ghi âm** (mp3, m4a, wav, cả video). Studio566 tự lấy 8 giây có tiếng nói rõ nhất, cắt ở chỗ lặng, chỉnh âm lượng, rồi báo nếu mẫu ngắn, ồn hoặc rè. Giọng đó hiện trong nhóm **Giọng của tôi** ở mọi ô chọn giọng VieNeu: đọc văn bản, lời dẫn kể chuyện, lồng tiếng video đều dùng được, chạy hẳn trên máy. Mẫu nằm trong `assets\voices` (không đưa lên git). Chỉ dùng giọng của chính mình, hoặc của người đã đồng ý.
 
 Đo trên máy này: VieNeu đọc một đoạn hai câu tiếng Việt bằng giọng nhại trong 7 đến 14 giây (lần đầu với mỗi mẫu lâu hơn). Độ giống với mẫu đo bằng mô hình nhận diện người nói (1 là giống hệt): khoảng 0,85 với mẫu giọng nữ tiếng Việt, khoảng 0,7 với mẫu người thật nói tiếng Trung có nhạc nền; các giọng có sẵn của VieNeu chỉ được 0,02 đến 0,58 so với cùng mẫu. Nhận dạng lời lại bằng Whisper đúng khoảng 85% số từ, ngang các giọng có sẵn.
 
@@ -263,13 +265,13 @@ Nguồn từng clip (tác giả, giấy phép, trang gốc) được ghi vào `<
 
 Mở từ mục **Trình dựng** trên thanh bên, nút **Trình dựng** ở Studio để dựng tiếp một video đã làm, hoặc nút **Trình dựng** trong một câu chuyện của Kể chuyện (xem phần trên). Trình dựng chạy ở cửa sổ riêng, ngay trên máy, không tải video lên đâu.
 
-1. **Lần đầu** trình dựng hỏi một thư mục để lưu dự án: tạo một thư mục mới (ví dụ `D:\iContent Editor`) rồi bấm Cho phép. Trình duyệt không cho chọn thư mục hệ thống hay `AppData`. Dự án và tư liệu nằm trong thư mục đó dưới dạng file thường. Đóng hẳn rồi mở lại, trình dựng có thể hỏi lại quyền: bấm **Kết nối lại**.
-2. **Video mở ra** đã xóa sub, đã cắt, đổi khung và lồng tiếng theo đúng những gì đã chỉnh trong Studio, vì iContent dựng một bản không ghi phụ đề (`editor_base.mp4`). Phụ đề tiếng Việt nằm trên một track riêng, đúng cỡ chữ và vị trí đã chọn. Phần hình và tiếng này đã được ghép sẵn, nên muốn sửa giọng lồng từng câu thì sửa bên Studio rồi mở lại và chọn tạo dự án mới.
-3. **Dựng xong** bấm **Xuất**, rồi **Gửi về iContent**. File nằm trong thư mục `output` với đuôi `_dung`, hiện ở Studio tab **Đăng**, phần **Bản từ trình dựng**, kiểm định được, và gói đăng bài tự kèm bản mới nhất (`video_da_dung`).
+1. **Lần đầu** trình dựng hỏi một thư mục để lưu dự án: tạo một thư mục mới (ví dụ `D:\Studio566 Editor`) rồi bấm Cho phép. Trình duyệt không cho chọn thư mục hệ thống hay `AppData`. Dự án và tư liệu nằm trong thư mục đó dưới dạng file thường. Đóng hẳn rồi mở lại, trình dựng có thể hỏi lại quyền: bấm **Kết nối lại**.
+2. **Video mở ra** đã xóa sub, đã cắt, đổi khung và lồng tiếng theo đúng những gì đã chỉnh trong Studio, vì Studio566 dựng một bản không ghi phụ đề (`editor_base.mp4`). Phụ đề tiếng Việt nằm trên một track riêng, đúng cỡ chữ và vị trí đã chọn. Phần hình và tiếng này đã được ghép sẵn, nên muốn sửa giọng lồng từng câu thì sửa bên Studio rồi mở lại và chọn tạo dự án mới.
+3. **Dựng xong** bấm **Xuất**, rồi **Gửi về Studio566**. File nằm trong thư mục `output` với đuôi `_dung`, hiện ở Studio tab **Đăng**, phần **Bản từ trình dựng**, kiểm định được, và gói đăng bài tự kèm bản mới nhất (`video_da_dung`).
 
 Cần Edge hoặc Chrome đời mới và card đồ họa dùng được WebGPU; trang Trình dựng tự kiểm tra và báo trước nếu máy không đủ. Các tính năng AI có sẵn trong trình dựng (chép lời, giọng đọc, tạo nhạc) tải model riêng từ Hugging Face khi bấm dùng, không ảnh hưởng tới phần dựng. Phông chữ lấy từ Google Fonts khi có mạng, không có mạng thì dùng phông của máy.
 
-Sửa trình dựng hoặc lên bản FreeCut mới: xem `third_party/freecut/build.py` (cần git và Node 22 trở lên). Người dùng iContent không cần gì trong số này, bản đã build nằm sẵn ở `icontent/web/editor`.
+Sửa trình dựng hoặc lên bản FreeCut mới: xem `third_party/freecut/build.py` (cần git và Node 22 trở lên). Người dùng Studio566 không cần gì trong số này, bản đã build nằm sẵn ở `icontent/web/editor`.
 
 ## Dòng lệnh
 
@@ -329,7 +331,7 @@ Sản phẩm phụ để kéo vào CapCut hoặc Premiere chỉnh tiếp:
 2. Kết quả trả về: tóm tắt, người nói, quy tắc xưng hô, bảng tên riêng, tiêu đề/caption/hashtag.
 3. Lượt dịch dùng các thông tin đó trong prompt. Mỗi câu kèm giới hạn **số âm tiết tối đa** (≈ 5 âm tiết/giây × độ dài khe), để bản dịch vừa đủ đọc kịp.
 
-**Dịch offline.** Hy-MT2 1.8B dịch từng câu bằng llama-server do iContent tự bật khi cần và tắt sau 2 phút rảnh (máy đã cài Ollama với model khác thì đi qua Ollama). Có chữ OCR gần giống lời nhận dạng thì dịch chữ OCR, nhờ đó sửa được lỗi đồng âm (智力 → 智利). Từ điển thuật ngữ chỉ đưa vào prompt khi câu có từ đó, câu chỉ có một từ gọi nhau (老板) thì tra bảng, và đơn vị vạn được đổi về cách nói quen (mười vạn → một trăm nghìn). Câu đọc không kịp được dịch lại theo kiểu ngắn gọn, chỉ nhận khi thật sự ngắn hơn.
+**Dịch offline.** Hy-MT2 1.8B dịch từng câu bằng llama-server do Studio566 tự bật khi cần và tắt sau 2 phút rảnh (máy đã cài Ollama với model khác thì đi qua Ollama). Có chữ OCR gần giống lời nhận dạng thì dịch chữ OCR, nhờ đó sửa được lỗi đồng âm (智力 → 智利). Từ điển thuật ngữ chỉ đưa vào prompt khi câu có từ đó, câu chỉ có một từ gọi nhau (老板) thì tra bảng, và đơn vị vạn được đổi về cách nói quen (mười vạn → một trăm nghìn). Câu đọc không kịp được dịch lại theo kiểu ngắn gọn, chỉ nhận khi thật sự ngắn hơn.
 
 **Nhận diện người nói** (trước khi dịch).
 1. Lời được cắt thành các cụm theo thời gian từng từ của Whisper.
@@ -356,17 +358,17 @@ Sản phẩm phụ để kéo vào CapCut hoặc Premiere chỉnh tiếp:
 
 ## Mô-đun AI miễn phí
 
-Cài đặt > **Mô-đun AI miễn phí (chạy trên máy)**. Mỗi gói một thẻ: Tải về (có tiến độ, tốc độ, thời gian còn lại), Dừng, Tải tiếp, Dịch thử / Vẽ thử, Xóa. Tải xong iContent tự chạy thử ngay trên máy đó.
+Cài đặt > **Mô-đun AI miễn phí (chạy trên máy)**. Mỗi gói một thẻ: Tải về (có tiến độ, tốc độ, thời gian còn lại), Dừng, Tải tiếp, Dịch thử / Vẽ thử, Xóa. Tải xong Studio566 tự chạy thử ngay trên máy đó.
 
 | Gói | Tải về | Gồm | Dùng ở |
 |---|---|---|---|
 | Dịch offline | 1,1 GB | bộ chạy [llama.cpp](https://github.com/ggml-org/llama.cpp) (MIT) bản Vulkan + Hy-MT2 1.8B (Tencent, Apache-2.0) | dịch video, dự phòng khi AI lỗi, dịch tiêu đề ở Khám phá, dịch lời nhắn vẽ ảnh sang tiếng Anh |
-| Giọng đọc nhiều thứ tiếng | 2,9 GB | bộ chạy [CrispASR](https://github.com/CrispStrobe/CrispASR) (MIT) bản Vulkan + VoxCPM2 Q8_0 (OpenBMB, Apache-2.0) | lồng tiếng 30 thứ tiếng, Đọc văn bản; iContent có sẵn 4 giọng mỗi thị trường |
+| Giọng đọc nhiều thứ tiếng | 2,9 GB | bộ chạy [CrispASR](https://github.com/CrispStrobe/CrispASR) (MIT) bản Vulkan + VoxCPM2 Q8_0 (OpenBMB, Apache-2.0) | lồng tiếng 30 thứ tiếng, Đọc văn bản; Studio566 có sẵn 4 giọng mỗi thị trường |
 | Vẽ ảnh offline | 5,3 GB | bộ chạy [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) (MIT) bản Vulkan + FLUX.2 klein 4B (Black Forest Labs, Apache-2.0) + Qwen3 4B đọc lời nhắn (Apache-2.0) + bộ giải mã ảnh FLUX.2 | nguồn ảnh **Vẽ trên máy (miễn phí)** ở Kể chuyện và Quy trình, nhận 2 ảnh mẫu để giữ nhân vật |
 
 - Bản Vulkan chạy trên card NVIDIA, AMD, Intel; không có card thì tự chạy bằng CPU (chậm). Bộ chạy tự chia mô hình vừa với bộ nhớ card còn trống.
-- File nằm trong thư mục `ai/` cạnh iContent. Ghim đúng bản phát hành GitHub và commit Hugging Face, kiểm SHA-256 sau khi tải; file bị sửa hay thiếu thì coi như chưa tải. Cập nhật iContent không xóa thư mục này.
-- Bộ chạy là tiến trình con gắn Job Object của Windows: iContent tắt (kể cả bị tắt ngang) thì bộ chạy tắt theo, không giữ card đồ họa. Bộ dịch tắt sau 2 phút rảnh và trước khi vẽ ảnh để nhường bộ nhớ card.
+- File nằm trong thư mục `ai/` cạnh Studio566. Ghim đúng bản phát hành GitHub và commit Hugging Face, kiểm SHA-256 sau khi tải; file bị sửa hay thiếu thì coi như chưa tải. Cập nhật Studio566 không xóa thư mục này.
+- Bộ chạy là tiến trình con gắn Job Object của Windows: Studio566 tắt (kể cả bị tắt ngang) thì bộ chạy tắt theo, không giữ card đồ họa. Bộ dịch tắt sau 2 phút rảnh và trước khi vẽ ảnh để nhường bộ nhớ card.
 - Lời nhắn vẽ ảnh đi qua file UTF-8 (`--prompt-file`) và đường dẫn có dấu được đổi sang tên ngắn 8.3: bộ chạy đọc dòng lệnh theo bảng mã ANSI nên tiếng Việt sẽ hỏng.
 - Dòng "No text..." của lời nhắn bị bỏ khi vẽ trên máy: FLUX hiểu câu khẳng định, nhắc tới chữ lại làm hiện chữ.
 
@@ -388,7 +390,7 @@ Chọn **Lồng tiếng sang** ở ô dán link (hoặc Tùy chỉnh > Dịch > 
 (`icontent/data/voices/<id>.mp3` + `.txt`) tạo sẵn bằng mô tả giọng; mỗi giọng thử 3 seed, Whisper nghe lại chọn bản đúng lời nhất, đủ dài và khác các giọng
 còn lại. Mọi câu bắt chước đúng đoạn mẫu: độ giống giữa các câu 0,68-0,93. Đoạn mẫu là giọng tổng hợp, không phải người thật.
 
-**Ghi nhãn AI.** CrispASR luôn gắn dấu nước AI không nghe thấy và chứng chỉ C2PA. iContent xin bỏ câu thông báo đọc thành tiếng ở đầu mỗi câu
+**Ghi nhãn AI.** CrispASR luôn gắn dấu nước AI không nghe thấy và chứng chỉ C2PA. Studio566 xin bỏ câu thông báo đọc thành tiếng ở đầu mỗi câu
 (giọng mẫu là giọng tổng hợp) và nhận trách nhiệm ghi nhãn: khi đăng nên bật nhãn nội dung AI của TikTok, YouTube.
 
 ## Douyin
@@ -397,9 +399,9 @@ Douyin hiện ký mọi request (a_bogus) và chặn client không có cookie, n
 
 1. Mở https://www.douyin.com bằng trình duyệt, xem 1 video.
 2. Dùng extension **Get cookies.txt LOCALLY** để xuất cookie (nút Export).
-3. Trong Studio: bấm **Thêm cookie Douyin** ở thẻ lỗi (hoặc Cài đặt → Cookie tải video). Khi hộp hướng dẫn đang mở, bấm Export trong tiện ích là iContent tự nhận file mới trong thư mục Tải về (chỉ file tên có chữ `cookie`, sửa sau lúc mở hộp); không tự nhận thì kéo file vào. File là cookie của trang khác (bấm Export khi đang ở tab khác) thì iContent nói rõ là trang nào. iContent chỉ giữ cookie của douyin.com, lưu ở `cookies/douyin.txt`, rồi tự thử lại video. Dòng lệnh: `--cookies cookies.txt`, hoặc `download.cookies_file` trong `config.yaml` (file trong `cookies/` được ưu tiên).
+3. Trong Studio: bấm **Thêm cookie Douyin** ở thẻ lỗi (hoặc Cài đặt → Cookie tải video). Khi hộp hướng dẫn đang mở, bấm Export trong tiện ích là Studio566 tự nhận file mới trong thư mục Tải về (chỉ file tên có chữ `cookie`, sửa sau lúc mở hộp); không tự nhận thì kéo file vào. File là cookie của trang khác (bấm Export khi đang ở tab khác) thì Studio566 nói rõ là trang nào. Studio566 chỉ giữ cookie của douyin.com, lưu ở `cookies/douyin.txt`, rồi tự thử lại video. Dòng lệnh: `--cookies cookies.txt`, hoặc `download.cookies_file` trong `config.yaml` (file trong `cookies/` được ưu tiên).
 
-Đọc cookie thẳng từ trình duyệt (`cookies_from_browser`) không dùng được với Edge, Chrome, Brave trên Windows: đo trên máy này, yt-dlp 2026.10.26 báo "Failed to decrypt with DPAPI" hoặc "Could not copy Chrome cookie database" (Chrome và Edge mã hóa cookie gắn với chính trình duyệt). Chỉ Firefox đọc được, nên iContent vẫn dùng tiện ích xuất file. Cookie hết hạn thì xuất lại. Nếu extractor Douyin của yt-dlp hỏng, bấm **Cập nhật bộ tải video** (Cài đặt → Sửa lỗi nhanh), tương đương `.\.venv\Scripts\pip install -U yt-dlp`. Cách khác là cấu hình một trình tải ngoài qua `download.external` (xem dưới), hoặc tải tay rồi chạy `run file.mp4`.
+Đọc cookie thẳng từ trình duyệt (`cookies_from_browser`) không dùng được với Edge, Chrome, Brave trên Windows: đo trên máy này, yt-dlp 2026.10.26 báo "Failed to decrypt with DPAPI" hoặc "Could not copy Chrome cookie database" (Chrome và Edge mã hóa cookie gắn với chính trình duyệt). Chỉ Firefox đọc được, nên Studio566 vẫn dùng tiện ích xuất file. Cookie hết hạn thì xuất lại. Nếu extractor Douyin của yt-dlp hỏng, bấm **Cập nhật bộ tải video** (Cài đặt → Sửa lỗi nhanh), tương đương `.\.venv\Scripts\pip install -U yt-dlp`. Cách khác là cấu hình một trình tải ngoài qua `download.external` (xem dưới), hoặc tải tay rồi chạy `run file.mp4`.
 
 Gặp lỗi thì thẻ trong hàng đợi hiện khung **Cách khắc phục** (`icontent/fixes.py` nhận ra lỗi quen: Douyin cần cookie, link không phải trang video, máy chủ bận, mô hình hỏng hoặc lưu dạng symlink, mất mạng, ổ đầy...), kèm nút sửa ngay và nút **Chép thông tin lỗi** (đã bỏ tên người dùng Windows) để gửi tác giả.
 
@@ -438,7 +440,7 @@ download:
 | [edge-tts](https://github.com/rany2/edge-tts) | TTS Microsoft miễn phí, có giọng vi-VN | engine phụ (khi test bị giới hạn tần suất sau vài trăm câu) |
 | [python-audio-separator](https://github.com/nomadkaraoke/python-audio-separator) | các model UVR (MDX/Roformer) | tách giọng gốc, giữ nhạc nền |
 
-Thay vì cài nguyên một bộ lớn như pyVideoTrans/VideoLingo (nặng, khó chỉnh theo quy trình riêng), iContent là một pipeline gọn. Mỗi bước là một module nhỏ trong `icontent/`, nên dễ thay engine:
+Thay vì cài nguyên một bộ lớn như pyVideoTrans/VideoLingo (nặng, khó chỉnh theo quy trình riêng), Studio566 là một pipeline gọn. Mỗi bước là một module nhỏ trong `icontent/`, nên dễ thay engine:
 - ASR: thêm FunASR / SenseVoice / Qwen3-ASR (tốt hơn Whisper với tiếng Trung).
 - TTS: thêm F5-TTS, CosyVoice hoặc GPT-SoVITS.
 - Tải: gọi thêm API Douyin self-host.
@@ -529,7 +531,7 @@ Cài như khách, trên máy này (đã có sẵn Python và ffmpeg):
 
 | Phép thử | Kết quả |
 |---|---|
-| Bấm `Cai dat iContent.cmd` trong thư mục mới `Công cụ làm phim's` | cài xong khoảng 8,5 phút khi phải tải hết, khoảng 3 phút khi pip đã có sẵn gói tải về |
+| Bấm `Cai dat Studio566.cmd` trong thư mục mới `Công cụ làm phim's` | cài xong khoảng 8,5 phút khi phải tải hết, khoảng 3 phút khi pip đã có sẵn gói tải về |
 | Cài trên môi trường không có lệnh `py`, chỉ có `python` | chạy được |
 | Làm hỏng `.venv` (trỏ tới Python không tồn tại) rồi bấm cài lại | tự nhận ra, tạo lại, cài xong |
 | Một video thật 70 giây bằng đúng bản cài đó, dịch offline, khung 9:16 theo nhân vật | chạy trọn 192 giây, 53/53 câu có dịch và có giọng, điểm kiểm định 100/100 |
@@ -550,11 +552,11 @@ Trình dựng tự do, cùng video thử 139 giây, Edge 156:
 | Bước | Kết quả |
 |---|---|
 | Dựng bản không phụ đề cho trình dựng | 19 giây khi bản chính còn mới; 135 giây khi phải cập nhật cả bản chính |
-| Mở dự án từ Studio, thư mục làm việc thật có tên tiếng Việt trên ổ D | vào trình dựng sau 11 giây: 3 track (phụ đề, hình, tiếng), 89 câu phụ đề đúng dấu, đúng cỡ chữ và vị trí như iContent |
+| Mở dự án từ Studio, thư mục làm việc thật có tên tiếng Việt trên ổ D | vào trình dựng sau 11 giây: 3 track (phụ đề, hình, tiếng), 89 câu phụ đề đúng dấu, đúng cỡ chữ và vị trí như Studio566 |
 | Cắt clip, lưu, tải lại trang | phụ đề đi theo clip, mở lại vẫn đủ |
 | Xuất MP4 1080x1920 trong trình duyệt (H.264 bằng card đồ họa) | 17 đến 20 giây |
 | So bản xuất với bản nền | tiếng lệch 0 ms, tương quan 1,0000; hình đúng từng khung (giống nhất ở đúng thời điểm, không lệch 1 khung) |
-| Gửi về iContent | dưới 1 giây, đã tối ưu phát ngay khi tải, gửi lần sau không ghi đè lần trước, gói đăng bài kèm `video_da_dung.mp4` |
+| Gửi về Studio566 | dưới 1 giây, đã tối ưu phát ngay khi tải, gửi lần sau không ghi đè lần trước, gói đăng bài kèm `video_da_dung.mp4` |
 | Hủy giữa lúc dựng bản nền rồi bấm Thử lại | báo đã hủy, không để lại file dở, thử lại chạy tiếp được |
 | Build lại trình dựng từ mã gốc + bản vá | 71 giây, ra đúng bản đang dùng |
 
@@ -619,7 +621,7 @@ icontent/
   langs.py      thị trường: tên, đơn vị đếm độ dài câu, tốc độ nói, mã Google, tên cho Hy-MT2, giọng Microsoft, câu nghe thử
   voxtts.py     giọng đọc nhiều thứ tiếng: máy chủ CrispASR (VoxCPM2), thư viện giọng mẫu, đọc từng câu, giữ giọng
   localai.py    Mô-đun AI miễn phí: tải (tiếp tục được, kiểm SHA-256), bộ chạy llama.cpp / stable-diffusion.cpp (Vulkan), vẽ ảnh, dịch lời nhắn sang tiếng Anh
-  offline.py    dịch offline: Hy-MT2 qua bộ chạy của iContent (hoặc Ollama đã cài), mẫu lời nhắn, sửa kết quả
+  offline.py    dịch offline: Hy-MT2 qua bộ chạy của Studio566 (hoặc Ollama đã cài), mẫu lời nhắn, sửa kết quả
   speakers.py   nhận diện người nói: dấu giọng + gom nhóm, tách câu gộp 2 người, chia giọng từng người
   voice.py      danh sách giọng (giới tính), đo cao độ → nam/nữ, lấy mẫu clone
   tts.py        VieNeu / edge-tts, cắt khoảng lặng, co giãn, đặt vào timeline → dub.wav
@@ -627,7 +629,7 @@ icontent/
   render.py     ffmpeg: ghép dải đã xóa sub / làm mờ, lật, zoom, màu, đổi khung, burn ASS, watermark, logo, ducking, nhạc, loudnorm
   models.py     Segment, SRT, ASS (classic / box / tiktok / karaoke / pop)
   pipeline.py   điều phối + cache + options.json + nhận file sửa tay
-  web/          iContent Studio: server.py (FastAPI, hàng đợi), content_api.py (Kể chuyện, Đọc văn bản) + static/ (giao diện: js/ theo module, không framework, chạy offline) + editor/ (FreeCut đã build)
+  web/          Studio566: server.py (FastAPI, hàng đợi), content_api.py (Kể chuyện, Đọc văn bản) + static/ (giao diện: js/ theo module, không framework, chạy offline) + editor/ (FreeCut đã build)
   data/         model dò mặt YuNet (232 KB), bảng Hán-Việt, giấy phép
   cli.py        lệnh ui / run / download / voices / doctor / shortcut / release / license
 third_party/freecut/  build.py + icontent.patch: dựng lại trình dựng từ mã gốc FreeCut
@@ -636,28 +638,28 @@ tests/          test_basic.py, test_studio.py, test_features.py  (chạy: .venv\
 
 ## Phần mềm bên thứ ba đi kèm
 
-- [miniPaint](https://github.com/viliusle/miniPaint) v4.14.3 của ViliusL, giấy phép MIT: trình sửa ảnh, nằm ở `icontent/web/static/vendor/minipaint/` kèm giấy phép. Dùng nguyên bản dựng sẵn của tác giả, iContent chỉ thêm lớp giao diện tiếng Việt và màu sắc ở bên ngoài.
-- [FreeCut](https://github.com/walterlow/freecut) của walterlow, giấy phép MIT: trình dựng tự do, bản đã build nằm ở `icontent/web/editor/`. Các chỗ iContent sửa (tiếng Việt, cầu nối, bỏ trang giới thiệu) ghi đủ trong `third_party/freecut/icontent.patch`. Giấy phép của FreeCut và các thư viện nằm trong bản build ở `icontent/web/editor/THIRD_PARTY_NOTICES.txt`, không có thư viện GPL hay AGPL, bước build tự dừng nếu gặp.
+- [miniPaint](https://github.com/viliusle/miniPaint) v4.14.3 của ViliusL, giấy phép MIT: trình sửa ảnh, nằm ở `icontent/web/static/vendor/minipaint/` kèm giấy phép. Dùng nguyên bản dựng sẵn của tác giả, Studio566 chỉ thêm lớp giao diện tiếng Việt và màu sắc ở bên ngoài.
+- [FreeCut](https://github.com/walterlow/freecut) của walterlow, giấy phép MIT: trình dựng tự do, bản đã build nằm ở `icontent/web/editor/`. Các chỗ Studio566 sửa (tiếng Việt, cầu nối, bỏ trang giới thiệu) ghi đủ trong `third_party/freecut/icontent.patch`. Giấy phép của FreeCut và các thư viện nằm trong bản build ở `icontent/web/editor/THIRD_PARTY_NOTICES.txt`, không có thư viện GPL hay AGPL, bước build tự dừng nếu gặp.
 - [YuNet](https://huggingface.co/opencv/face_detection_yunet) của Shiqi Yu (qua OpenCV), giấy phép MIT: model dò khuôn mặt, nằm ở `icontent/data/` kèm giấy phép.
 - Be Vietnam Pro, JetBrains Mono: phông chữ giấy phép SIL OFL.
 - Mô-đun AI miễn phí **không đóng gói sẵn**, khách tự tải khi cần (xem [Mô-đun AI miễn phí](#mô-đun-ai-miễn-phí)): llama.cpp, stable-diffusion.cpp, CrispASR (MIT, giấy phép nằm trong thư mục bộ chạy sau khi tải), Hy-MT2 1.8B, FLUX.2 klein 4B, Qwen3 4B, VoxCPM2 (Apache-2.0).
-- Thư viện giọng mẫu `icontent/data/voices/`: do iContent tạo bằng VoxCPM2 (đầu ra của mô hình Apache-2.0), giọng tổng hợp, không phải người thật.
+- Thư viện giọng mẫu `icontent/data/voices/`: do Studio566 tạo bằng VoxCPM2 (đầu ra của mô hình Apache-2.0), giọng tổng hợp, không phải người thật.
 - Không dùng OmniVoice: mô hình đã huấn luyện theo giấy phép CC-BY-NC (cấm dùng thương mại) do dữ liệu huấn luyện, khách làm video kiếm tiền.
-- [Unihan](https://www.unicode.org/charts/unihan.html) của Unicode, giấy phép Unicode License V3: pinyin trong `icontent/data/hanviet.tsv`, kèm giấy phép. Âm Hán-Việt trong file đó do iContent tự viết.
+- [Unihan](https://www.unicode.org/charts/unihan.html) của Unicode, giấy phép Unicode License V3: pinyin trong `icontent/data/hanviet.tsv`, kèm giấy phép. Âm Hán-Việt trong file đó do Studio566 tự viết.
 
 ### Vì sao không nhúng OpenMontage
 
-Đã đọc kỹ [OpenMontage](https://github.com/calesthio/OpenMontage) (hệ thống sản xuất video chạy bằng AI coding assistant) và học nhiều ý tưởng hay: khung theo khuôn mặt, kiểm định sau khi dựng, nhiều bản theo nền tảng, gói đăng bài. Nhưng iContent **tự viết lại các kỹ thuật này, không dùng dòng mã nào của dự án đó**, vì:
+Đã đọc kỹ [OpenMontage](https://github.com/calesthio/OpenMontage) (hệ thống sản xuất video chạy bằng AI coding assistant) và học nhiều ý tưởng hay: khung theo khuôn mặt, kiểm định sau khi dựng, nhiều bản theo nền tảng, gói đăng bài. Nhưng Studio566 **tự viết lại các kỹ thuật này, không dùng dòng mã nào của dự án đó**, vì:
 
-- OpenMontage dùng giấy phép **AGPL-3.0**: nhúng mã vào rồi phát cho người dùng thì toàn bộ iContent phải theo AGPL và công khai mã nguồn. Đây là quyết định của tác giả iContent, không nên xảy ra ngầm.
-- Nó không có phần điều phối bằng code: cần một AI coding assistant (Claude Code, Cursor...) cầm lái, người dùng iContent không có.
+- OpenMontage dùng giấy phép **AGPL-3.0**: nhúng mã vào rồi phát cho người dùng thì toàn bộ Studio566 phải theo AGPL và công khai mã nguồn. Đây là quyết định của tác giả Studio566, không nên xảy ra ngầm.
+- Nó không có phần điều phối bằng code: cần một AI coding assistant (Claude Code, Cursor...) cầm lái, người dùng Studio566 không có.
 - Phần dựng hình dùng Remotion (Node, dùng thương mại miễn phí chỉ cho cá nhân và công ty tới 3 người) và phần tạo video AI cần key trả phí.
 
-Nếu dùng riêng cho mình thì vẫn có thể clone OpenMontage và mở trong Claude Code để làm video giải thích, hoạt hình: đó là việc iContent không làm, và hai bên không ảnh hưởng nhau.
+Nếu dùng riêng cho mình thì vẫn có thể clone OpenMontage và mở trong Claude Code để làm video giải thích, hoạt hình: đó là việc Studio566 không làm, và hai bên không ảnh hưởng nhau.
 
 ## Mời tác giả cà phê
 
-iContent được làm ra với tinh thần chia sẻ, mong góp một phần nhỏ giúp những người làm nội dung bớt vất vả hơn mỗi ngày. Nếu iContent đã giúp ích cho công việc của bạn, bạn có thể mời tác giả một ly cà phê.
+Studio566 được làm ra với tinh thần chia sẻ, mong góp một phần nhỏ giúp những người làm nội dung bớt vất vả hơn mỗi ngày. Nếu Studio566 đã giúp ích cho công việc của bạn, bạn có thể mời tác giả một ly cà phê.
 
 | | |
 |---|---|

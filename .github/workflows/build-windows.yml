@@ -1,4 +1,4 @@
-# Dựng file cài Windows (.exe) cho iContent Studio trên máy Windows của GitHub, tự cài thử, rồi đưa lên mục Release.
+# Dựng file cài Windows (.exe) cho Studio566 trên máy Windows của GitHub, tự cài thử, rồi đưa lên mục Release.
 # Chạy mỗi khi có code mới đẩy lên nhánh main (và khi mở pull request để thử), hoặc bấm tay: tab Actions → "Dựng bản Windows (.exe)" → Run workflow.
 name: Dựng bản Windows (.exe)
 
@@ -50,19 +50,19 @@ jobs:
         run: |
           $v = "${{ steps.ver.outputs.version }}"
           New-Item -ItemType Directory -Force dist | Out-Null
-          & $env:ISCC /Q "/DAppVersion=$v" "/DStageDir=$PWD" "/DOutputDir=$PWD\dist" "/DOutputBase=iContent-Setup-$v" installer\iContent.iss
+          & $env:ISCC /Q "/DAppVersion=$v" "/DStageDir=$PWD" "/DOutputDir=$PWD\dist" "/DOutputBase=Studio566-Setup-$v" installer\Studio566.iss
           if ($LASTEXITCODE) { throw "Inno Setup báo lỗi" }
-          $f = Get-Item "dist\iContent-Setup-$v.exe"
+          $f = Get-Item "dist\Studio566-Setup-$v.exe"
           Write-Host ("Đã tạo {0} ({1:N1} MB)" -f $f.Name, ($f.Length / 1MB))
           "SETUP_EXE=$($f.FullName)" >> $env:GITHUB_ENV
 
       - name: Cài thử (im lặng) và kiểm tra không còn khóa bản quyền
         shell: pwsh
         run: |
-          $dir = "$env:RUNNER_TEMP\iContent-thu"
+          $dir = "$env:RUNNER_TEMP\Studio566-thu"
           $p = Start-Process -FilePath $env:SETUP_EXE -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/DIR=$dir" -PassThru -Wait
           if ($p.ExitCode) { throw "Cài thử lỗi, mã $($p.ExitCode)" }
-          foreach ($f in "iContent Studio.cmd","Cai dat iContent.cmd","setup.ps1","runtime\python\python.exe","icontent\web\static\index.html") {
+          foreach ($f in "Studio566.cmd","Cai dat Studio566.cmd","setup.ps1","runtime\python\python.exe","icontent\web\static\index.html") {
             if (-not (Test-Path (Join-Path $dir $f))) { throw "Thiếu file sau khi cài: $f" }
           }
           Push-Location $dir
@@ -75,7 +75,7 @@ jobs:
       - name: Lưu file cài (tải ở trang kết quả chạy)
         uses: actions/upload-artifact@v5
         with:
-          name: iContent-Setup-${{ steps.ver.outputs.version }}
+          name: Studio566-Setup-${{ steps.ver.outputs.version }}
           path: dist/*.exe
           retention-days: 7
 

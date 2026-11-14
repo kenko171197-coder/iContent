@@ -1,6 +1,6 @@
-"""Bản quyền iContent: key do bot Telegram @Kichhoatkey_bot (dự án iKey_bot) cấp, ký Ed25519, gắn với mã máy. Kiểm hoàn toàn offline.
+"""Bản quyền Studio566: key do bot Telegram @Kichhoatkey_bot (dự án iKey_bot) cấp, ký Ed25519, gắn với mã máy. Kiểm hoàn toàn offline.
 
-Key là `<payload>.<chữ ký>` (base64url). Payload là JSON kiểu iTube mà bot ký cho iContent:
+Key là `<payload>.<chữ ký>` (base64url). Payload là JSON kiểu iTube mà bot ký cho Studio566:
     {"app": "iContent", "license_id", "customer", "issued", "features", "fingerprint", "expires"}
 chữ ký Ed25519 trên đúng các byte của payload. Máy người dùng chỉ có khoá CÔNG KHAI: kiểm được key, không tự tạo được key.
 
@@ -141,7 +141,7 @@ def verify_token(token: str) -> tuple[bool, dict[str, Any] | None, str]:
     """-> (đúng chữ ký và đúng phần mềm, claims, lý do nếu sai). Chưa xét máy, hạn."""
     pub = public_key()
     if not pub:
-        return False, None, "Bản iContent này chưa gắn khoá bản quyền của tác giả. Hãy tải bản cài mới."
+        return False, None, "Bản Studio566 này chưa gắn khoá bản quyền của tác giả. Hãy tải bản cài mới."
     token = extract_token(token)
     if token.count(".") != 1:
         return False, None, "Key sai định dạng. Hãy chép nguyên dòng key bot gửi (rất dài, có một dấu chấm ở giữa)."
@@ -159,7 +159,7 @@ def verify_token(token: str) -> tuple[bool, dict[str, Any] | None, str]:
     except ValueError:
         return False, None, "Nội dung key không hợp lệ."
     if claims.get("app") not in (None, APP):
-        return False, None, f"Đây là key của {claims.get('app')}, không phải iContent."
+        return False, None, f"Đây là key của {claims.get('app')}, không phải Studio566."
     return True, claims, ""
 
 
@@ -199,7 +199,7 @@ def _load_token() -> str:
 def _evaluate(token: str) -> dict[str, Any]:
     fp = machine_fingerprint()
     if not token:
-        return {"licensed": False, "reason": "no_license", "claims": None, "message": "Máy này chưa kích hoạt iContent."}
+        return {"licensed": False, "reason": "no_license", "claims": None, "message": "Máy này chưa kích hoạt Studio566."}
     ok, claims, err = verify_token(token)
     if not ok:
         return {"licensed": False, "reason": "invalid", "claims": None, "message": err}
@@ -253,7 +253,7 @@ def install_token(text: str) -> tuple[bool, str]:
     tmp.write_text(json.dumps({"token": extract_token(text), "installed": _now().isoformat(timespec="seconds")}), encoding="utf-8")
     os.replace(tmp, f)
     state(refresh=True)
-    return True, "Đã kích hoạt iContent."
+    return True, "Đã kích hoạt Studio566."
 
 
 def telegram_link(fp: str | None = None) -> str:

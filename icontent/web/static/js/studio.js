@@ -75,7 +75,7 @@ export async function viewStudio(main, alive, id) {
       if (st.dirty) await save(true);
       const fresh = await api('GET', `/api/jobs/${enc(id)}`);
       // có thay đổi chưa cập nhật: mở trình dựng sẽ phải cập nhật video trước, tức dựng lại bản chính và thay file trong thư mục output
-      if (fresh.stale && !(await confirmDialog('Video có thay đổi chưa cập nhật', 'Trình dựng cần bản mới nhất, nên iContent sẽ cập nhật video trước (lồng tiếng lại câu đã sửa, dựng lại bản chính, thay file trong thư mục output) rồi mới mở. Tiếp tục?', { okText: 'Cập nhật và mở' }))) return;
+      if (fresh.stale && !(await confirmDialog('Video có thay đổi chưa cập nhật', 'Trình dựng cần bản mới nhất, nên Studio566 sẽ cập nhật video trước (lồng tiếng lại câu đã sửa, dựng lại bản chính, thay file trong thư mục output) rồi mới mở. Tiếp tục?', { okText: 'Cập nhật và mở' }))) return;
       await openEditor(id);
     }),
   }, icon('scissors'), 'Trình dựng');

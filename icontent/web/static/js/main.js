@@ -57,7 +57,7 @@ async function route() {
   main.removeAttribute('style');
   main.replaceChildren();
   main.scrollTop = 0;
-  document.title = TITLES[name] + ' · iContent Studio';
+  document.title = TITLES[name] + ' · Studio566';
   try {
     main.classList.remove('enter');
     const c = await VIEWS[name](main, alive, arg);

@@ -1,4 +1,4 @@
-/* Luồng nền hỏi thăm máy chủ iContent: "cửa sổ còn mở". Trình duyệt hãm bộ hẹn giờ của trang bị thu nhỏ (một lần mỗi phút,
+/* Luồng nền hỏi thăm máy chủ Studio566: "cửa sổ còn mở". Trình duyệt hãm bộ hẹn giờ của trang bị thu nhỏ (một lần mỗi phút,
    có khi ngừng hẳn), luồng nền thì không bị hãm như vậy. Kết quả gửi về trang (conn.js): {ok, boot} hoặc {ok: false}. */
 async function ping() {
   try {

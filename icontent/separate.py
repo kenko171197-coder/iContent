@@ -33,7 +33,7 @@ class SeparateError(RuntimeError):
 
 
 def available() -> bool:
-    """Có tách được nhạc nền không (luôn có: onnxruntime đi kèm iContent; mô hình tải khi cần)."""
+    """Có tách được nhạc nền không (luôn có: onnxruntime đi kèm Studio566; mô hình tải khi cần)."""
     try:
         import onnxruntime  # noqa: F401
         return True

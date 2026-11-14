@@ -1,4 +1,4 @@
-"""iContent Studio — web UI chạy local (FastAPI).
+"""Studio566 — web UI chạy local (FastAPI).
 
   python -m icontent ui            -> http://127.0.0.1:8765
 
@@ -81,7 +81,7 @@ def is_local_origin(origin: str) -> bool:
 
 
 class _NoCacheStatic(StaticFiles):
-    """Trình duyệt luôn hỏi lại file giao diện -> cập nhật iContent là thấy ngay, không cần xóa cache."""
+    """Trình duyệt luôn hỏi lại file giao diện -> cập nhật Studio566 là thấy ngay, không cần xóa cache."""
 
     async def get_response(self, path, scope):
         r = await super().get_response(path, scope)
@@ -272,12 +272,12 @@ def create_app(config_path: str | None = None) -> FastAPI:
     load_keys()
     st = Studio(config_path)
     boot_id = uuid.uuid4().hex[:10]
-    app = FastAPI(title="iContent Studio", version=__version__)
+    app = FastAPI(title="Studio566", version=__version__)
     app.state.studio = st
 
     @app.middleware("http")
     async def same_origin_only(request: Request, call_next):
-        """Trang web lạ đang mở trong trình duyệt không được ra lệnh cho iContent chạy trên máy (xóa video, ghi file...)."""
+        """Trang web lạ đang mở trong trình duyệt không được ra lệnh cho Studio566 chạy trên máy (xóa video, ghi file...)."""
         if getattr(app.state, "check_host", False):
             # trang lạ trỏ tên miền của nó về 127.0.0.1 thì Origin vẫn trùng Host: phải kiểm tra chính Host
             host = (request.headers.get("host") or "").rsplit(":", 1)[0].strip("[]")
@@ -399,7 +399,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         bak = p.with_suffix(".yaml.bak")
         if p.exists() and not bak.exists():
             shutil.copy2(p, bak)          # giữ bản gốc (có chú thích) lần đầu ghi đè
-        p.write_text("# Ghi bởi iContent Studio. Bản trước: config.yaml.bak\n"
+        p.write_text("# Ghi bởi Studio566. Bản trước: config.yaml.bak\n"
                      + yaml.safe_dump(user, allow_unicode=True, sort_keys=False), encoding="utf-8")
         return {"ok": True}
 
@@ -480,7 +480,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         bak = p.with_suffix(".yaml.bak")
         if p.exists() and not bak.exists():
             shutil.copy2(p, bak)
-        p.write_text("# Ghi bởi iContent Studio. Bản trước: config.yaml.bak\n"
+        p.write_text("# Ghi bởi Studio566. Bản trước: config.yaml.bak\n"
                      + yaml.safe_dump(user, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
     @app.post("/api/onboard/gemini")
@@ -1443,7 +1443,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
 
     @app.post("/api/editor/heartbeat")
     def editor_heartbeat(body: dict = Body(default={})):
-        """Cửa sổ trình dựng còn mở. Gọi /api/ là đủ để iContent không tự tắt (xem middleware), job chỉ để chặn mở trùng."""
+        """Cửa sổ trình dựng còn mở. Gọi /api/ là đủ để Studio566 không tự tắt (xem middleware), job chỉ để chặn mở trùng."""
         jid = str(body.get("job") or "")
         if jid:
             if body.get("closing"):
@@ -1503,13 +1503,13 @@ def create_app(config_path: str | None = None) -> FastAPI:
             raise HTTPException(400, "Chỉ nhận video MP4, WebM, MOV hoặc MKV")
         p = st.job_dir(job) if job and not story else None
         if p is not None and not (p / "meta.json").exists():
-            raise HTTPException(404, "Không thấy video gốc của dự án này trong iContent")
+            raise HTTPException(404, "Không thấy video gốc của dự án này trong Studio566")
         sstore = story_store() if story else None
         if sstore is not None:
             try:
                 s0 = sstore.get(story)
             except KeyError:
-                raise HTTPException(404, "Không thấy câu chuyện của dự án này trong iContent") from None
+                raise HTTPException(404, "Không thấy câu chuyện của dự án này trong Studio566") from None
             name = f"kechuyen_{safe_name(s0.get('title') or story, 60).strip(' .')}_{story[1:6]}_dung{ext}"
         out_dir = Path(st.cfg().output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)

@@ -362,7 +362,7 @@ def mount(app, st) -> None:
         except RuntimeError as e:
             raise HTTPException(400, str(e)) from None
         if script and len(script) > 12000:
-            raise HTTPException(400, f"Kịch bản dài {len(script):,} ký tự, AI chỉ chia được tối đa 12.000 ký tự một lần. Bỏ chọn nhờ AI để iContent tự chia cảnh.".replace(",", "."))
+            raise HTTPException(400, f"Kịch bản dài {len(script):,} ký tự, AI chỉ chia được tối đa 12.000 ký tự một lần. Bỏ chọn nhờ AI để Studio566 tự chia cảnh.".replace(",", "."))
 
         def job(report):
             report(None, "AI đang viết kịch bản")
@@ -1381,7 +1381,7 @@ def mount(app, st) -> None:
         _get(sid)      # câu chuyện không có: 404, không phải lỗi 500
         m = story_mod.editor_pack_ready(store(), sid)
         music = (m or {}).get("music")
-        path = story_mod._music_path(music.get("path")) if music else ""      # chỉ nhạc trong thư mục nhạc của iContent
+        path = story_mod._music_path(music.get("path")) if music else ""      # chỉ nhạc trong thư mục nhạc của Studio566
         if not path or music.get("name") != name:
             raise HTTPException(404, "Không có nhạc này")
         return FileResponse(path, headers={"Cache-Control": "no-store"})

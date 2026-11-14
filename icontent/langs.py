@@ -1,4 +1,4 @@
-"""Ngôn ngữ đích (thị trường) iContent hỗ trợ: dịch, đo độ dài câu, giọng đọc, phụ đề.
+"""Ngôn ngữ đích (thị trường) Studio566 hỗ trợ: dịch, đo độ dài câu, giọng đọc, phụ đề.
 
 Một bảng duy nhất cho mọi nơi cần biết về ngôn ngữ đích, để thêm thị trường mới chỉ phải thêm một dòng.
   unit   cách đếm độ dài câu để đọc kịp trong khe thời gian: "syllable" (tiếng Việt, mỗi âm tiết cách nhau dấu cách),
@@ -104,28 +104,28 @@ def public() -> list[dict]:
 
 # câu nghe thử giọng (nút Nghe thử): ngắn, tự nhiên, đúng ngôn ngữ của giọng
 SAMPLES = {
-    "vi": "Xin chào, đây là giọng đọc thử của iContent Studio.",
-    "en": "Hi there, this is a voice preview from iContent Studio.",
-    "id": "Halo, ini contoh suara dari iContent Studio.",
-    "th": "สวัสดีค่ะ นี่คือเสียงตัวอย่างจาก iContent Studio",
-    "tl": "Hello, ito ang sample na boses mula sa iContent Studio.",
-    "ms": "Hai, ini contoh suara daripada iContent Studio.",
-    "es": "Hola, esta es una muestra de voz de iContent Studio.",
-    "pt": "Olá, esta é uma amostra de voz do iContent Studio.",
-    "ja": "こんにちは。これは iContent Studio の音声サンプルです。",
-    "ko": "안녕하세요, iContent Studio의 음성 샘플입니다.",
-    "hi": "नमस्ते, यह iContent Studio की आवाज़ का नमूना है।",
+    "vi": "Xin chào, đây là giọng đọc thử của Studio566.",
+    "en": "Hi there, this is a voice preview from Studio566.",
+    "id": "Halo, ini contoh suara dari Studio566.",
+    "th": "สวัสดีค่ะ นี่คือเสียงตัวอย่างจาก Studio566",
+    "tl": "Hello, ito ang sample na boses mula sa Studio566.",
+    "ms": "Hai, ini contoh suara daripada Studio566.",
+    "es": "Hola, esta es una muestra de voz de Studio566.",
+    "pt": "Olá, esta é uma amostra de voz do Studio566.",
+    "ja": "こんにちは。これは Studio566 の音声サンプルです。",
+    "ko": "안녕하세요, Studio566의 음성 샘플입니다.",
+    "hi": "नमस्ते, यह Studio566 की आवाज़ का नमूना है।",
     "ar": "مرحبا، هذا نموذج صوتي من آي كونتنت ستوديو.",
-    "fr": "Bonjour, ceci est un aperçu de voix d'iContent Studio.",
-    "de": "Hallo, das ist eine Stimmprobe von iContent Studio.",
-    "ru": "Привет, это пример голоса из iContent Studio.",
-    "it": "Ciao, questo è un esempio di voce di iContent Studio.",
-    "tr": "Merhaba, bu iContent Studio'dan bir ses örneğidir.",
-    "pl": "Cześć, to jest próbka głosu z iContent Studio.",
-    "nl": "Hallo, dit is een stemvoorbeeld van iContent Studio.",
-    "km": "សួស្តី នេះជាសំឡេងគំរូពី iContent Studio។",
-    "my": "မင်္ဂလာပါ၊ ဒါက iContent Studio ရဲ့ အသံနမူနာပါ။",
-    "he": "שלום, זו דוגמת קול של iContent Studio.",
+    "fr": "Bonjour, ceci est un aperçu de voix d'Studio566.",
+    "de": "Hallo, das ist eine Stimmprobe von Studio566.",
+    "ru": "Привет, это пример голоса из Studio566.",
+    "it": "Ciao, questo è un esempio di voce di Studio566.",
+    "tr": "Merhaba, bu Studio566'dan bir ses örneğidir.",
+    "pl": "Cześć, to jest próbka głosu z Studio566.",
+    "nl": "Hallo, dit is een stemvoorbeeld van Studio566.",
+    "km": "សួស្តី នេះជាសំឡេងគំរូពី Studio566។",
+    "my": "မင်္ဂလာပါ၊ ဒါက Studio566 ရဲ့ အသံနမူနာပါ။",
+    "he": "שלום, זו דוגמת קול של Studio566.",
 }
 
 

@@ -231,7 +231,7 @@ def translate_resilient(segs, cfg, meta: dict, only: set, context: dict | None =
         text += f" Đã thử {name}: {m}"
     if not ready(cfg.translate.get("offline_model")):
         text += (" Cách chắc chắn nhất: tải Dịch offline miễn phí (khoảng 1,2 GB, Cài đặt > Mô-đun AI miễn phí), "
-                 "iContent sẽ tự dịch ngay trên máy khi AI hay Google lỗi.")
+                 "Studio566 sẽ tự dịch ngay trên máy khi AI hay Google lỗi.")
     raise TranslateFailed(text)
 
 

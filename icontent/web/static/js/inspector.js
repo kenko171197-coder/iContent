@@ -612,7 +612,7 @@ export function Inspector({ st, id, meta, getBox, hasFile, player, retranslate, 
     }
     function paintCover() {
       put(coverBox, el('h4', { text: 'Ảnh bìa' }),
-        el('p', { class: 'muted small', text: 'iContent chấm điểm khung hình (nét, đủ sáng, có người) rồi gợi ý các khung đẹp nhất. Sub gốc được xóa tự động.' }),
+        el('p', { class: 'muted small', text: 'Studio566 chấm điểm khung hình (nét, đủ sáng, có người) rồi gợi ý các khung đẹp nhất. Sub gốc được xóa tự động.' }),
         grid, el('div', { class: 'opt-row' }, el('div', { class: 'opt-label', text: 'Chữ trên ảnh' }), titleInp),
         el('div', { class: 'opt-row' }, el('div', { class: 'opt-label', text: 'Kiểu' }), styleSeg),
         el('div', { class: 'opt-row' }, el('div', { class: 'opt-label', text: 'Khung' }), aspSeg),

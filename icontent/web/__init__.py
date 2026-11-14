@@ -1,1 +1,1 @@
-"""iContent Studio (web UI)."""
+"""Studio566 (web UI)."""

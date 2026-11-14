@@ -45,7 +45,7 @@ def edge_voices(prefix: str = "vi") -> list[dict]:
 
 
 def edge_voices_all() -> list[dict]:
-    """Giọng Microsoft cho mọi ngôn ngữ đích trong langs.py (một lần gọi mạng), kèm mã ngôn ngữ iContent."""
+    """Giọng Microsoft cho mọi ngôn ngữ đích trong langs.py (một lần gọi mạng), kèm mã ngôn ngữ Studio566."""
     from . import langs
     from .tts import list_voices
 

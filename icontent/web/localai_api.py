@@ -33,7 +33,7 @@ def test_pack(pid: str) -> str:
         p = _test_audio_path()
         p.unlink(missing_ok=True)
         t0 = time.time()
-        failed = voxtts.synth_many([("Hi everyone! This is the multilingual voice of iContent Studio, ready to dub your videos.", "en_f1", "", p)])
+        failed = voxtts.synth_many([("Hi everyone! This is the multilingual voice of Studio566, ready to dub your videos.", "en_f1", "", p)])
         if failed or not p.is_file():
             raise RuntimeError("Bộ đọc nhiều thứ tiếng chưa đọc được. Xem nhật ký ở thư mục ai/logs/voices.log")
         return f"Đọc thử xong trong {time.time() - t0:.0f} giây (gồm cả lúc bật bộ đọc lần đầu)."

@@ -1,5 +1,5 @@
 # Sao chép thành config.yaml rồi sửa. Chỉ cần ghi những mục muốn đổi — còn lại dùng mặc định (icontent/config.py).
-# Hoặc chỉnh trong iContent Studio > Cài đặt (ghi đè file này, bản cũ lưu ở config.yaml.bak).
+# Hoặc chỉnh trong Studio566 > Cài đặt (ghi đè file này, bản cũ lưu ở config.yaml.bak).
 
 work_dir: workspace        # mỗi video 1 thư mục job (cache từng bước)
 output_dir: output         # video thành phẩm
