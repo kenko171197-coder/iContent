@@ -341,7 +341,7 @@ def main(argv: list[str] | None = None) -> int:
     rl.add_argument("--out", help="thư mục ghi file zip (mặc định: dist)")
     rl.add_argument("--pubkey", help="khoá công khai iContent của bot cấp key (mặc định: icontent/license_pubkey.txt)")
     rl.add_argument("--bot", default="", help="tên bot Telegram cấp key (mặc định Kichhoatkey_bot)")
-    rl.add_argument("--free", action="store_true", help="bản không khoá bản quyền")
+    rl.add_argument("--free", action="store_true", default=True, help="bản không khoá bản quyền (mặc định trong bản fork)")
     rl.set_defaults(fn=cmd_release)
 
     li = sub.add_parser("license", help="xem mã máy, trạng thái bản quyền; kèm key để kích hoạt")

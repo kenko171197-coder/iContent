@@ -218,7 +218,7 @@ def resolve_pubkey(pubkey: str | None, root: Path = ROOT) -> str:
 
 def build_info(pubkey: str, bot: str, version: str) -> str:
     return ('"""Sinh tự động bởi `icontent release`. Không sửa tay: bản phát hành này khoá bản quyền, key do bot Telegram cấp."""\n'
-            f"PUBLIC_KEY = {pubkey!r}\nENFORCE = True\nTELEGRAM = {bot!r}\nVERSION = {version!r}\n")
+            f"PUBLIC_KEY = {pubkey!r}\nENFORCE = {bool(pubkey)}\nTELEGRAM = {bot!r}\nVERSION = {version!r}\n")
 
 
 def stage(files: list[tuple[Path, str]], extra: dict[str, str], dest: Path) -> None:
@@ -259,8 +259,8 @@ def _installer(iscc: str, iss: Path, src: Path, out_dir: Path, name: str) -> Pat
 
 
 def build(out_dir: Path | None = None, root: Path = ROOT, python: str | None = None, pubkey: str | None = None,
-          free: bool = False, bot: str = "", runtime: str | Path | None = None, exe: bool = False, iscc: str | None = None) -> dict:
-    """free=False (mặc định): bản phát hành khoá bản quyền, cần khoá công khai iContent của bot (tham số hoặc icontent/license_pubkey.txt).
+          free: bool = True, bot: str = "", runtime: str | Path | None = None, exe: bool = False, iscc: str | None = None) -> dict:
+    """free=True (mặc định trong bản fork): bản phát hành KHÔNG khoá bản quyền. free=False: bản khoá, cần khoá công khai iContent của bot (tham số hoặc icontent/license_pubkey.txt).
     runtime: thư mục Python kèm vào gói (lệnh release truyền sys.base_prefix). exe: tạo thêm bộ cài .exe bằng Inno Setup."""
     from .license import DEFAULT_BOT
     out_dir = Path(out_dir or root / "dist")
