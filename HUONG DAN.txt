@@ -1,28 +1,28 @@
-﻿iContent Studio 0.6.2: phần mềm miễn phí làm video tiếng Việt
+﻿Studio566 0.6.2: phần mềm miễn phí làm video tiếng Việt
 
 CÀI ĐẶT LẦN ĐẦU
-Cách 1 (dễ nhất): bấm đúp file iContent-Setup-0.6.2.exe, bấm Tiếp cho tới khi xong.
+Cách 1 (dễ nhất): bấm đúp file Studio566-Setup-0.6.2.exe, bấm Tiếp cho tới khi xong.
    Windows hiện "Windows đã bảo vệ máy tính của bạn" thì bấm "Thông tin bổ sung" rồi "Vẫn chạy".
 Cách 2 (bản zip):
-1. Giải nén file zip ra một thư mục, ví dụ D:\iContent. Đừng chạy thẳng trong cửa sổ xem file zip.
+1. Giải nén file zip ra một thư mục, ví dụ D:\Studio566. Đừng chạy thẳng trong cửa sổ xem file zip.
    Nên để ở ổ có nhiều chỗ trống (cần khoảng 8 GB), tránh thư mục OneDrive và Program Files.
-2. Bấm đúp file "Cai dat iContent.cmd".
+2. Bấm đúp file "Cai dat Studio566.cmd".
 Cả hai cách đều cần mạng Internet, lần đầu tải thêm khoảng 3 GB, mất 5 đến 15 phút. Máy không cần cài sẵn Python.
-Cài xong có biểu tượng iContent Studio trên màn hình nền. Lần mở đầu có hướng dẫn từng bước.
+Cài xong có biểu tượng Studio566 trên màn hình nền. Lần mở đầu có hướng dẫn từng bước.
 
 CẬP NHẬT BẢN MỚI
-Bản .exe: chạy file cài bản mới, nó tự cài đè đúng thư mục cũ (iContent đang mở thì tự tắt trước).
-Bản zip: giải nén bản mới đè lên đúng thư mục cũ (chọn Thay thế tất cả), rồi bấm đúp "Cai dat iContent.cmd" một lần nữa.
+Bản .exe: chạy file cài bản mới, nó tự cài đè đúng thư mục cũ (Studio566 đang mở thì tự tắt trước).
+Bản zip: giải nén bản mới đè lên đúng thư mục cũ (chọn Thay thế tất cả), rồi bấm đúp "Cai dat Studio566.cmd" một lần nữa.
 Video, cấu hình, giọng đã thu đều được giữ nguyên.
 
 GỠ CÀI ĐẶT
-Cài bằng .exe: Cài đặt Windows > Ứng dụng > iContent Studio > Gỡ cài đặt. Trình gỡ hỏi có giữ video, cấu hình không.
+Cài bằng .exe: Cài đặt Windows > Ứng dụng > Studio566 > Gỡ cài đặt. Trình gỡ hỏi có giữ video, cấu hình không.
 
 MÁY CẦN CÓ
 Windows 10 hoặc 11 bản 64-bit, RAM từ 8 GB, ổ đĩa trống từ 8 GB.
 Card NVIDIA (GTX 1650 trở lên) giúp dựng video nhanh hơn nhiều; không có vẫn chạy được, chậm hơn.
 
 GẶP LỖI
-Chụp màn hình cửa sổ cài đặt gửi cho tác giả. Đã mở được iContent thì xem Trang chủ, mục Máy đã sẵn sàng chưa.
+Chụp màn hình cửa sổ cài đặt gửi cho người hỗ trợ. Đã mở được Studio566 thì xem Trang chủ, mục Máy đã sẵn sàng chưa.
 
-Miễn phí. Thấy hữu ích thì mời tác giả ly cà phê: Vietcombank 1079328888 (NGUYEN KHAC DIEN)
+Lưu ý: chỉ dùng Studio566 với video bạn có quyền sử dụng hoặc đã được phép đăng lại.

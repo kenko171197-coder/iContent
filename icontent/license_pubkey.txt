@@ -1,4 +1,4 @@
-# Dán vào dòng dưới cùng khoá CÔNG KHAI iContent mà bot in ra sau lệnh (trong container ikey-bot trên VPS):
+# Dán vào dòng dưới cùng khoá CÔNG KHAI Studio566 mà bot in ra sau lệnh (trong container ikey-bot trên VPS):
 #     python -m ikey.keygen icontent --enable
 # Một dòng 43 ký tự. Khoá công khai đưa lên git được. Không bao giờ dán khoá bí mật vào đây.
 # Có dòng khoá thì `icontent.cmd release` ra bản khoá bản quyền; chưa có thì lệnh đó từ chối (trừ khi thêm --free).

@@ -14,7 +14,7 @@ function etaText(s) {
 function deviceNote(pack, devs) {
   if (pack.id !== 'image' && pack.id !== 'voices') return null;
   const what = pack.id === 'image' ? 'vẽ' : 'đọc';
-  if (devs == null) return pack.ready ? null : el('p', { class: 'dim small', text: `Tải xong, iContent tự ${what} thử để biết máy này ${what} nhanh hay chậm.` });
+  if (devs == null) return pack.ready ? null : el('p', { class: 'dim small', text: `Tải xong, Studio566 tự ${what} thử để biết máy này ${what} nhanh hay chậm.` });
   if (!devs.length) return el('p', { class: 'small prov-warn-msg', text: `Không thấy card đồ họa nào dùng được: sẽ ${what} bằng CPU, chậm hơn nhiều. Cập nhật driver card đồ họa nếu máy có card rời.` });
   const best = devs.slice().sort((a, b) => b.vram_mb - a.vram_mb)[0];
   const gb = (best.vram_mb / 1024).toFixed(0);
@@ -39,7 +39,7 @@ function packCard(pack, ctx) {
     kids.push(el('div', { class: 'off-line' }, el('span', { class: 'grow small', text: t.message || 'Đang tải' }), stop),
       el('div', { class: 'off-bar' + (pct == null ? ' busy' : ''), role: 'progressbar', 'aria-valuenow': pct == null ? null : pct }, el('i', { style: pct == null ? {} : { width: pct + '%' } })),
       line ? el('p', { class: 'dim small mono', text: line }) : null,
-      el('p', { class: 'dim small', text: 'Có thể đóng trang này, làm việc khác: iContent vẫn tải tiếp. Rớt mạng thì bấm Tải tiếp, không phải tải lại từ đầu.' }));
+      el('p', { class: 'dim small', text: 'Có thể đóng trang này, làm việc khác: Studio566 vẫn tải tiếp. Rớt mạng thì bấm Tải tiếp, không phải tải lại từ đầu.' }));
     return el('div', { class: 'aip-card running' }, kids);
   }
 
@@ -86,7 +86,7 @@ function packCard(pack, ctx) {
   else if (paused) kids.push(el('p', { class: 'dim small', text: t.message }));
   kids.push(el('div', { class: 'off-line' }, go,
     el('span', { class: 'dim small', text: lowDisk ? `Ổ đĩa chỉ còn trống ${gbText(ctx.free_mb)}, cần khoảng ${gbText(need)}.` : `Ổ đĩa còn trống ${gbText(ctx.free_mb)}. Chỉ tải một lần.` })),
-  pack.reuse_ollama ? el('p', { class: 'small ok-text', text: 'Máy đã có mô hình dịch từ Ollama: iContent dùng lại, không phải tải lại phần đó.' }) : null,
+  pack.reuse_ollama ? el('p', { class: 'small ok-text', text: 'Máy đã có mô hình dịch từ Ollama: Studio566 dùng lại, không phải tải lại phần đó.' }) : null,
   el('p', { class: 'dim small', text: pack.limits }), deviceNote(pack, ctx.devices));
   return el('div', { class: 'aip-card' }, kids);
 }

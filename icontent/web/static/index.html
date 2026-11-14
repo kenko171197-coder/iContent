@@ -3,89 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>iContent Studio</title>
+  <title>Studio566</title>
   <link rel="icon" type="image/png" href="/static/icon.png">
-  <meta name="theme-color" content="#121110">
+  <meta name="theme-color" content="#0f1115">
   <link rel="preload" href="/static/fonts/be-vietnam-pro-vietnamese-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <div class="app">
     <aside class="rail" aria-label="Điều hướng chính">
-      <a class="logo" href="#/home" title="iContent Studio" aria-label="iContent Studio">
-        <svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true">
-          <rect width="32" height="32" rx="8" fill="#ffb224"/>
-          <g fill="#1a1204">
-            <rect x="7" y="8" width="3" height="16" rx="1.5"/><rect x="11.5" y="9.5" width="3" height="13" rx="1.5"/>
-            <rect x="16" y="11" width="3" height="10" rx="1.5"/><rect x="20.5" y="12.5" width="3" height="7" rx="1.5"/>
-            <rect x="25" y="14.5" width="2" height="3" rx="1"/>
-          </g>
-        </svg>
+      <a class="logo" href="#/home" title="Studio566" aria-label="Studio566">
+        <svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#FF6B4A"/><path d="M14.5 14.2v19.6L28.6 24z" fill="#fff" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><path d="M32.2 18.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M36.4 14.8a13 13 0 0 1 0 18.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".7"/></svg>
+        <span class="logo-word">Studio<b>566</b></span>
       </a>
       <nav class="rail-nav">
-        <a class="rail-item" href="#/home" data-route="home">
+        <a class="rail-item" href="#/home" data-route="home" title="Trang chủ">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg>
           <span>Trang chủ</span>
         </a>
-        <a class="rail-item" href="#/new" data-route="new">
+        <div class="rail-group" aria-hidden="true">Tạo video</div>
+        <a class="rail-item" href="#/new" data-route="new" title="Dịch video">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
           <span>Dịch video</span>
         </a>
-        <a class="rail-item" href="#/discover" data-route="discover">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
-          <span>Khám phá</span>
-        </a>
-        <a class="rail-item" href="#/library" data-route="library">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
-          <span>Thư viện</span>
-        </a>
-        <a class="rail-item" href="#/studio" data-route="studio" id="nav-studio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18M8 15v5M14 15v5M10 7.5v4l3.5-2z"/></svg>
-          <span>Studio</span>
-        </a>
-        <a class="rail-item" href="#/flow" data-route="flow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="7" height="5" rx="1.5"/><rect x="14.5" y="4" width="7" height="5" rx="1.5"/><rect x="8.5" y="15" width="7" height="5" rx="1.5"/><path d="M9.5 6.5h5M18 9v2.5a2 2 0 0 1-2 2h-4M12 13.5V15"/></svg>
-          <span>Quy trình</span>
-        </a>
-        <a class="rail-item" href="#/story" data-route="story">
+        <a class="rail-item" href="#/story" data-route="story" title="Kể chuyện từ ảnh">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M10.5 8.2v5.6l4.4-2.8z"/></svg>
-          <span>Kể chuyện</span>
+          <span>Kể chuyện từ ảnh</span>
         </a>
-        <a class="rail-item" href="#/voice" data-route="voice">
+        <a class="rail-item" href="#/voice" data-route="voice" title="Đọc thành giọng nói">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M4 11h7M4 15h5"/><rect x="15" y="4" width="5" height="9" rx="2.5"/><path d="M13 11.5a4.5 4.5 0 0 0 9 0M17.5 16v4"/></svg>
-          <span>Đọc văn bản</span>
+          <span>Đọc thành giọng nói</span>
         </a>
-        <a class="rail-item" href="#/editor" data-route="editor">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6.5" r="2.5"/><circle cx="6" cy="17.5" r="2.5"/><path d="M8 8l12 10M8 16L20 6"/></svg>
-          <span>Trình dựng</span>
+        <div class="rail-group" aria-hidden="true">Công cụ</div>
+        <a class="rail-item" href="#/studio" data-route="studio" id="nav-studio" title="Chỉnh sửa video">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18M8 15v5M14 15v5M10 7.5v4l3.5-2z"/></svg>
+          <span>Chỉnh sửa video</span>
         </a>
-        <a class="rail-item" href="#/merge" data-route="merge">
+        <a class="rail-item" href="#/merge" data-route="merge" title="Ghép video">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/><path d="M10 12h4"/></svg>
           <span>Ghép video</span>
         </a>
-        <a class="rail-item" href="#/thumb" data-route="thumb">
+        <a class="rail-item" href="#/thumb" data-route="thumb" title="Ảnh bìa">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M6 15h7M6 11.5h4.5"/><path d="M15.5 9.5l3.5 2.5-3.5 2.5z"/></svg>
-          <span>Thumbnail</span>
+          <span>Ảnh bìa</span>
         </a>
-        <a class="rail-item" href="#/settings" data-route="settings" id="sys-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
-          <span>Cài đặt</span>
-          <i class="sys-dot" id="sys-dot"></i>
+        <a class="rail-item" href="#/editor" data-route="editor" title="Trình dựng nâng cao">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6.5" r="2.5"/><circle cx="6" cy="17.5" r="2.5"/><path d="M8 8l12 10M8 16L20 6"/></svg>
+          <span>Trình dựng nâng cao</span>
+        </a>
+        <a class="rail-item" href="#/flow" data-route="flow" title="Tự động hóa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="7" height="5" rx="1.5"/><rect x="14.5" y="4" width="7" height="5" rx="1.5"/><rect x="8.5" y="15" width="7" height="5" rx="1.5"/><path d="M9.5 6.5h5M18 9v2.5a2 2 0 0 1-2 2h-4M12 13.5V15"/></svg>
+          <span>Tự động hóa</span>
+        </a>
+        <div class="rail-group" aria-hidden="true">Của tôi</div>
+        <a class="rail-item" href="#/library" data-route="library" title="Video của tôi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+          <span>Video của tôi</span>
+        </a>
+        <a class="rail-item" href="#/discover" data-route="discover" title="Tìm ý tưởng">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
+          <span>Tìm ý tưởng</span>
         </a>
       </nav>
       <div class="rail-foot">
         <div class="onair" id="onair" hidden title="Đang xử lý video"><i class="tally"></i><span>ON AIR</span><b class="onair-n"></b></div>
+        <a class="rail-item" href="#/settings" data-route="settings" id="sys-link" title="Cài đặt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+          <span>Cài đặt</span>
+          <i class="sys-dot" id="sys-dot"></i>
+        </a>
         <button class="rail-item" id="cmdk-btn" type="button" title="Bảng lệnh nhanh (Ctrl+K)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-          <span>Tìm lệnh</span>
-        </button>
-        <button class="rail-item rail-coffee" id="coffee-btn" type="button" title="iContent miễn phí. Thấy hữu ích thì mời tác giả ly cà phê nhé">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5.5A5.5 5.5 0 0 1 11.5 20h-2A5.5 5.5 0 0 1 4 14.5z"/><path d="M17 10.5h1.2a2.8 2.8 0 0 1 0 5.6H17"/><path d="M8 3.5c-.6.9-.6 1.6 0 2.5M12 3.5c-.6.9-.6 1.6 0 2.5"/></svg>
-          <span>Cà phê</span>
+          <span>Tìm nhanh</span><kbd class="rail-kbd">Ctrl K</kbd>
         </button>
       </div>
     </aside>
-    <main id="main" class="main"><div class="splash"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#ffb224"/><g fill="#1a1204"><rect x="7" y="8" width="3" height="16" rx="1.5"/><rect x="11.5" y="9.5" width="3" height="13" rx="1.5"/><rect x="16" y="11" width="3" height="10" rx="1.5"/><rect x="20.5" y="12.5" width="3" height="7" rx="1.5"/><rect x="25" y="14.5" width="2" height="3" rx="1"/></g></svg><span class="spinner"></span></div></main>
+    <main id="main" class="main"><div class="splash"><svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#FF6B4A"/><path d="M14.5 14.2v19.6L28.6 24z" fill="#fff" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><path d="M32.2 18.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M36.4 14.8a13 13 0 0 1 0 18.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".7"/></svg><span class="spinner"></span></div></main>
   </div>
   <div id="toasts" aria-live="polite"></div>
   <div id="modal-root"></div>

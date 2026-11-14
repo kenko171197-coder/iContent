@@ -127,7 +127,8 @@ def _ensure_translator(cfg):
     tc = cfg.translate
     if translator_ready(tc):
         return cfg
-    why = "Chưa bật được dịch offline" if tc.provider == "offline" else f"Chưa có API key cho {tc.provider}"
+    why = ("Chưa bật được dịch offline" if tc.provider == "offline" else "Chưa cài cổng AI qua MCP" if tc.provider == "mcp"
+           else f"Chưa có API key cho {tc.provider}")
     if tc.provider in ("claude", "openai") and os.environ.get("GEMINI_API_KEY"):
         # đã có key Gemini (gói miễn phí cũng dịch được): hiểu ngữ cảnh, xưng hô, gợi ý tiêu đề, hơn hẳn dịch offline
         from .translate import GEMINI_AUTO, GEMINI_HOST
@@ -143,7 +144,7 @@ def _ensure_translator(cfg):
     return with_overrides(cfg, {"translate": {"provider": "google"}})
 
 
-PROVIDER_NAMES = {"claude": "Claude", "offline": "dịch offline", "google": "Google dịch"}
+PROVIDER_NAMES = {"claude": "Claude", "mcp": "AI qua MCP", "offline": "dịch offline", "google": "Google dịch"}
 
 
 def provider_name(tc) -> str:
@@ -231,7 +232,7 @@ def translate_resilient(segs, cfg, meta: dict, only: set, context: dict | None =
         text += f" Đã thử {name}: {m}"
     if not ready(cfg.translate.get("offline_model")):
         text += (" Cách chắc chắn nhất: tải Dịch offline miễn phí (khoảng 1,2 GB, Cài đặt > Mô-đun AI miễn phí), "
-                 "iContent sẽ tự dịch ngay trên máy khi AI hay Google lỗi.")
+                 "Studio566 sẽ tự dịch ngay trên máy khi AI hay Google lỗi.")
     raise TranslateFailed(text)
 
 
@@ -387,6 +388,24 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
             ffmpeg(["-i", (sep[0] if sep else audio).name, "-ac", "1", "-ar", "16000", "asr.wav"], cwd=job)
             log("asr", "Nhận dạng giọng nói ...")
             words = transcribe_words(job / "asr.wav", cfg.asr)
+            if sep and cfg.asr.get("gap_retry", True):
+                # bộ tách giọng có thể làm mất lời ở đoạn nhạc nền to: nghe lại các khoảng trống dài trên tiếng gốc
+                from .asr import find_gaps, transcribe_gaps
+                ffmpeg(["-i", audio.name, "-ac", "1", "-ar", "16000", "asr_orig.wav"], cwd=job)
+                total = float(meta.get("duration") or 0)
+                gaps = find_gaps(words, total, job / "asr_orig.wav")
+                if gaps:
+                    log("asr", f"{len(gaps)} đoạn dài chưa nghe ra lời mà vẫn có tiếng (thường do nhạc nền to): nghe lại trên tiếng gốc")
+                    try:
+                        extra = transcribe_gaps(job / "asr_orig.wav", gaps, cfg.asr, total)
+                    except Cancelled:
+                        raise
+                    except Exception as e:      # noqa: BLE001 — bước bổ sung: lỗi thì giữ kết quả cũ
+                        log("asr", f"Nghe lại lỗi, bỏ qua: {str(e)[:200]}")
+                        extra = []
+                    if extra:
+                        words = sorted(words + [(round(float(a), 3), round(float(b), 3), w, k) for a, b, w, k in extra],
+                                       key=lambda x: x[0])
             words_path.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
         words = [tuple(w) for w in json.loads(words_path.read_text(encoding="utf-8"))]
         from .asr import resegment
@@ -435,7 +454,7 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
         before_srt = [(s.start, s.end, s.trans) for s in segs]
         segs = _import_srt_edits(job, segs, lang)
         edits_imported = before_srt != [(s.start, s.end, s.trans) for s in segs]
-        if cfg.translate.provider in ("claude", "openai") and cfg.translate.analyze and \
+        if cfg.translate.provider in ("claude", "openai", "mcp") and cfg.translate.analyze and \
                 ("translate" in force or context is None):
             stage("analyze")
             from .translate import analyze_video

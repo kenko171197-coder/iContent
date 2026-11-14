@@ -17,7 +17,7 @@ export function openOnboarding({ step = 0 } = {}) {
   const nextBtn = el('button', { class: 'btn btn-primary', onclick: () => (cur === 2 ? m.close() : go(cur + 1)) });
   const later = el('button', { class: 'btn btn-ghost', onclick: () => m.close() }, 'Để sau');
   const m = openModal([
-    modalHead('book', 'Bắt đầu với iContent', () => m),
+    modalHead('book', 'Bắt đầu với Studio566', () => m),
     dots, body,
     el('div', { class: 'modal-foot' }, later, el('span', { class: 'grow' }), backBtn, nextBtn),
   ], {
@@ -46,7 +46,7 @@ export function openOnboarding({ step = 0 } = {}) {
     const other = tr.chosen_ready && tr.provider === 'claude';
     const intro = [
       el('h2', { text: 'Kết nối AI miễn phí' }),
-      el('p', { class: 'muted', text: 'Gemini của Google có gói miễn phí, không cần thẻ ngân hàng. Có AI thì iContent dịch theo ngữ cảnh, có xưng hô, viết được kịch bản kể chuyện, gợi ý tiêu đề và chữ cho thumbnail.' }),
+      el('p', { class: 'muted', text: 'Gemini của Google có gói miễn phí, không cần thẻ ngân hàng. Có AI thì Studio566 dịch theo ngữ cảnh, có xưng hô, viết được kịch bản kể chuyện, gợi ý tiêu đề và chữ cho thumbnail.' }),
     ];
     if (has || other) {
       box.append(...intro, el('div', { class: 'ob-ok' }, icon('check'),
@@ -89,7 +89,7 @@ export function openOnboarding({ step = 0 } = {}) {
       el('div', { class: 'key-row' }, inp, paste, connect),
       out,
       el('p', { class: 'small dim', text: 'Key chỉ lưu trên máy này và chỉ gửi tới Google. Gói miễn phí dịch và viết được; riêng vẽ ảnh bằng AI cần bật thanh toán, không bắt buộc.' }),
-      el('p', { class: 'small dim', text: 'Chưa muốn kết nối? Bấm Tiếp: iContent vẫn dịch được bằng cách miễn phí, kém tự nhiên hơn.' }));
+      el('p', { class: 'small dim', text: 'Chưa muốn kết nối? Bấm Tiếp: Studio566 vẫn dịch được bằng cách miễn phí, kém tự nhiên hơn.' }));
     setTimeout(() => inp.focus(), 80);
     return box;
   }
@@ -139,7 +139,7 @@ export function openOnboarding({ step = 0 } = {}) {
       el('span', { class: 'ob-card-ic' + (mine.length ? ' ok' : '') }, icon(mine.length ? 'check' : 'mic')),
       el('div', { class: 'ob-card-t' },
         el('b', { text: mine.length ? `Đã có ${mine.length} giọng của bạn` : 'Giọng của chính bạn (không bắt buộc)' }),
-        el('span', { class: 'small dim', text: 'Thu khoảng 10 giây đọc một đoạn bất kỳ. iContent đọc mọi văn bản, lồng tiếng video bằng chính giọng đó.' }),
+        el('span', { class: 'small dim', text: 'Thu khoảng 10 giây đọc một đoạn bất kỳ. Studio566 đọc mọi văn bản, lồng tiếng video bằng chính giọng đó.' }),
         el('button', { class: 'btn btn-sm', onclick: () => openMyVoices() }, icon('mic'), mine.length ? 'Quản lý giọng' : 'Thu giọng')));
     const gpu = el('div', { class: 'ob-card' },
       el('span', { class: 'ob-card-ic' + (status.nvenc ? ' ok' : '') }, icon(status.nvenc ? 'check' : 'monitor')),
@@ -169,7 +169,7 @@ export function openOnboarding({ step = 0 } = {}) {
     const nav = (h) => () => { m.close(); location.hash = h; };
     return el('div', { class: 'ob-step' },
       el('h2', { text: 'Làm video đầu tiên' }),
-      el('p', { class: 'muted', text: 'Chọn một việc, iContent dẫn tiếp từng bước. Mọi thứ bạn làm đều nằm trong Thư viện.' }),
+      el('p', { class: 'muted', text: 'Chọn một việc, Studio566 dẫn tiếp từng bước. Mọi thứ bạn làm đều nằm trong Thư viện.' }),
       el('div', { class: 'ob-picks' },
         pick('globe', 'Dịch và lồng tiếng một video', 'Video Douyin, Bilibili, Kuaishou ra tiếng Việt có phụ đề, giọng đọc khớp từng câu.', 'Cách làm: dán link vào ô, bấm Bắt đầu.', nav('#/new')),
         pick('spark', 'Truyện AI từ một câu ý tưởng', 'AI viết kịch bản, vẽ ảnh, đọc lời, dựng video và làm thumbnail.', 'Cách làm: gõ ý tưởng vào khối đầu tiên, bấm Chạy.', (b) => startFlow('ai_story', b)),
@@ -197,7 +197,7 @@ export async function maybeWhatsNew(firstRun) {
   const ch = (about.changes || []).filter((c) => !seen || newer(c.version, seen));
   if (!ch.length) return;
   const m = openModal([
-    modalHead('spark', `iContent ${ver}: có gì mới`, () => m),
+    modalHead('spark', `Studio566 ${ver}: có gì mới`, () => m),
     el('div', { class: 'modal-body ob-news' }, ch.map((c) => el('section', {},
       el('h4', { text: `Bản ${c.version}` + (c.date ? ` · ${c.date}` : '') }),
       el('ul', {}, c.items.map((t) => el('li', { text: t })))))),

@@ -12,11 +12,11 @@ scipy>=1.11
 soundfile>=0.12     # đọc/ghi wav (tách nhạc nền)
 onnxruntime>=1.18    # chạy mô hình tách nhạc nền UVR MDX-Net (separate.py)
 rapidocr>=3.0         # OCR (ONNX): tự dò + đọc phụ đề Trung in sẵn
-fastapi>=0.110        # iContent Studio (web UI)
+fastapi>=0.110        # Studio566 (web UI)
 uvicorn>=0.30
 # GPU NVIDIA cho faster-whisper (CUDA 12)
 nvidia-cublas-cu12; sys_platform == "win32" or sys_platform == "linux"
 nvidia-cudnn-cu12>=9,<10; sys_platform == "win32" or sys_platform == "linux"
 # Tùy chọn:
-#   pip install "audio-separator[gpu]"       -> tách nhạc nền bằng GPU / mô hình khác (không bắt buộc: iContent tự tách bằng ONNX)
+#   pip install "audio-separator[gpu]"       -> tách nhạc nền bằng GPU / mô hình khác (không bắt buộc: Studio566 tự tách bằng ONNX)
 pillow>=10          # ảnh bìa

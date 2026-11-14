@@ -14,8 +14,8 @@ export async function editorSupport() {
 
 export async function openEditor(job) {
   const r = await api('POST', '/api/editor/open', job ? { job } : {});
-  if (r.already_open) toast('Video này đang mở trong trình dựng. Bấm biểu tượng iContent trên thanh tác vụ để chuyển sang cửa sổ đó.', 'info', { timeout: 6000 });
-  else if (job) toast('Đang mở trình dựng. Lần đầu mỗi video, iContent cần dựng một bản không phụ đề nên hơi lâu.', 'info', { timeout: 5000 });
+  if (r.already_open) toast('Video này đang mở trong trình dựng. Bấm biểu tượng Studio566 trên thanh tác vụ để chuyển sang cửa sổ đó.', 'info', { timeout: 6000 });
+  else if (job) toast('Đang mở trình dựng. Lần đầu mỗi video, Studio566 cần dựng một bản không phụ đề nên hơi lâu.', 'info', { timeout: 5000 });
   else toast('Đang mở trình dựng', 'info', { timeout: 2200 });
   return r;
 }
@@ -23,8 +23,8 @@ export async function openEditor(job) {
 /** Mở một câu chuyện của Kể chuyện: mỗi cảnh một clip, lời dẫn, phụ đề, chữ mở đầu và kết thúc sửa được. */
 export async function openStoryInEditor(story) {
   const r = await api('POST', '/api/editor/open', { story });
-  if (r.already_open) toast('Câu chuyện này đang mở trong trình dựng. Bấm biểu tượng iContent trên thanh tác vụ để chuyển sang cửa sổ đó.', 'info', { timeout: 6000 });
-  else toast('Đang mở trình dựng. iContent chuẩn bị từng cảnh (đọc lời dẫn, máy quay chuyển động) nên lần đầu hơi lâu.', 'info', { timeout: 5000 });
+  if (r.already_open) toast('Câu chuyện này đang mở trong trình dựng. Bấm biểu tượng Studio566 trên thanh tác vụ để chuyển sang cửa sổ đó.', 'info', { timeout: 6000 });
+  else toast('Đang mở trình dựng. Studio566 chuẩn bị từng cảnh (đọc lời dẫn, máy quay chuyển động) nên lần đầu hơi lâu.', 'info', { timeout: 5000 });
   return r;
 }
 
@@ -44,9 +44,9 @@ export async function viewEditor(main, alive) {
       el('div', { class: 'actions' }, openBtn)),
     notice,
     !status.available ? el('div', { class: 'ed-note ed-warn' }, icon('alert'), el('span', { text: 'Bản cài này chưa có trình dựng. Xem third_party/freecut/build.py để build lại.' })) : null,
-    el('div', { class: 'ed-note' }, icon('info'), el('span', { text: 'Lần đầu mở, trình dựng hỏi một thư mục để lưu dự án: tạo một thư mục mới, ví dụ D:\\iContent Editor, rồi bấm Cho phép. Trình duyệt không cho chọn thư mục hệ thống hay AppData. Những lần sau, nếu trình dựng hỏi lại thì bấm Kết nối lại.' })),
+    el('div', { class: 'ed-note' }, icon('info'), el('span', { text: 'Lần đầu mở, trình dựng hỏi một thư mục để lưu dự án: tạo một thư mục mới, ví dụ D:\\Studio566 Editor, rồi bấm Cho phép. Trình duyệt không cho chọn thư mục hệ thống hay AppData. Những lần sau, nếu trình dựng hỏi lại thì bấm Kết nối lại.' })),
     el('h3', { class: 'ed-head', text: 'Dựng tiếp video đã làm' }),
-    el('p', { class: 'muted small', text: 'Video mở ra đã xóa sub, đã lồng tiếng, phụ đề tiếng Việt nằm trên track riêng sửa được. Dựng xong bấm Gửi về iContent để kiểm định và đóng gói đăng.' }),
+    el('p', { class: 'muted small', text: 'Video mở ra đã xóa sub, đã lồng tiếng, phụ đề tiếng Việt nằm trên track riêng sửa được. Dựng xong bấm Gửi về Studio566 để kiểm định và đóng gói đăng.' }),
     jobs.length ? el('div', { class: 'ed-jobs' }, jobs.map((j) => {
       const b = el('button', {
         class: 'ed-job', disabled: !status.available, onclick: () => busy(b, () => openEditor(j.id)),

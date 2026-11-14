@@ -125,7 +125,7 @@ async function storyList(main, alive, opts) {
         el('h1', { text: 'Video kể chuyện từ ảnh' }),
         el('p', { text: 'Viết hoặc dán kịch bản, mỗi cảnh một ảnh: ảnh tự có, ảnh trong thư viện, hoặc Gemini vẽ giữ đúng nhân vật qua mọi cảnh. Lời dẫn và phụ đề tự khớp, máy quay chuyển động nhẹ, có nhạc nền.' })),
       el('div', { class: 'actions' }, newBtn)),
-    opts.image_ai ? null : el('div', { class: 'ed-note sy-note' }, icon('info'), el('span', { text: 'Chưa có key tạo ảnh nào. Vẫn làm được: dùng ảnh tự có, hoặc ở từng cảnh bấm Chép lời nhắn, dán sang ChatGPT hay Copilot trên web để vẽ miễn phí, rồi bấm Dán ảnh. Muốn iContent tự vẽ: Cài đặt, mục Tạo ảnh AI (Gemini, OpenAI, Meta Muse, hoặc Cloudflare có hạn mức miễn phí).' })),
+    opts.image_ai ? null : el('div', { class: 'ed-note sy-note' }, icon('info'), el('span', { text: 'Chưa có key tạo ảnh nào. Vẫn làm được: dùng ảnh tự có, hoặc ở từng cảnh bấm Chép lời nhắn, dán sang ChatGPT hay Copilot trên web để vẽ miễn phí, rồi bấm Dán ảnh. Muốn Studio566 tự vẽ: Cài đặt, mục Tạo ảnh AI (Gemini, OpenAI, Meta Muse, hoặc Cloudflare có hạn mức miễn phí).' })),
     items.length ? grid : emptyState('Chưa có câu chuyện nào', 'Bấm Câu chuyện mới, viết một ý tưởng cho AI hoặc dán kịch bản của mình.', null),
   ].filter(Boolean));
   return null;

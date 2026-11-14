@@ -5,12 +5,11 @@ import { openMyVoices } from './myvoices.js';
 import { maybeWhatsNew, onboarded, openOnboarding } from './onboard.js';
 
 const TASKS = [
-  { icon: 'globe', title: 'Dịch và lồng tiếng video', desc: 'Dán link Douyin, Bilibili... ra video tiếng Việt có phụ đề, giọng đọc khớp từng câu.', tag: 'Dán link là xong', href: '#/new' },
   { icon: 'spark', title: 'Truyện AI từ ý tưởng', desc: 'Một câu ý tưởng thành video kể chuyện: AI viết, vẽ, đọc, dựng, làm thumbnail.', tag: 'AI viết và vẽ', flow: 'ai_story' },
   { icon: 'image', title: 'Video từ ảnh của tôi', desc: 'Ảnh và lời dẫn của bạn thành video có máy quay chuyển động, phụ đề, nhạc.', tag: 'Miễn phí', flow: 'my_images' },
   { icon: 'film', title: 'Kể chuyện từng cảnh', desc: 'Tự tay sắp từng cảnh, nhân vật giữ đúng mặt, chuyển cảnh, mở đầu, kết thúc.', tag: 'Chỉnh chi tiết', href: '#/story' },
-  { icon: 'mic', title: 'Đọc văn bản', desc: 'Dán chữ ra file MP3 và phụ đề SRT. Có cả giọng của chính bạn.', tag: 'Miễn phí, trên máy', href: '#/voice' },
-  { icon: 'square', title: 'Thumbnail', desc: 'Ảnh bìa cho video vừa làm: mẫu sẵn, chữ lớn, mũi tên, AI gợi ý chữ.', tag: 'Kéo thả', href: '#/thumb' },
+  { icon: 'mic', title: 'Đọc thành giọng nói', desc: 'Dán chữ ra file MP3 và phụ đề SRT. Có cả giọng của chính bạn.', tag: 'Miễn phí, trên máy', href: '#/voice' },
+  { icon: 'square', title: 'Ảnh bìa', desc: 'Ảnh bìa cho video vừa làm: mẫu sẵn, chữ lớn, mũi tên, AI gợi ý chữ.', tag: 'Kéo thả', href: '#/thumb' },
   { icon: 'scissors', title: 'Dựng tự do như CapCut', desc: 'Cắt ghép, thêm chữ, chuyển cảnh, nhạc trên trục thời gian, ngay trên máy.', tag: 'Trình dựng', href: '#/editor' },
   { icon: 'compass', title: 'Tìm video thịnh hành', desc: 'Video đang lên ở Trung Quốc, xem trước, chọn rồi dịch một lần nhiều video.', tag: 'Ý tưởng nội dung', href: '#/discover' },
 ];
@@ -40,6 +39,27 @@ export async function viewHome(main, alive) {
       el('span', { class: 'hm-tag', text: t.tag }));
     return card;
   }));
+
+  // ---------- ô dán link to: việc chính của app
+  const linkInp = el('input', {
+    type: 'text', class: 'hm-link', spellcheck: 'false', 'aria-label': 'Link video',
+    placeholder: 'Dán link Douyin, Bilibili, Xiaohongshu, Weibo vào đây…',
+    onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } },
+  });
+  function go() {
+    const v = linkInp.value.trim();
+    if (v) sessionStorage.setItem('s566.prefill', v);
+    location.hash = '#/new';
+  }
+  const quick = el('section', { class: 'hm-quick' },
+    el('div', { class: 'hm-quick-t' }, el('h2', { text: 'Dịch và lồng tiếng video Trung Quốc' }),
+      el('span', { class: 'dim', text: 'Ra video tiếng Việt có phụ đề, giọng đọc khớp từng câu, sub gốc được xóa sạch.' })),
+    el('div', { class: 'hm-quick-row' },
+      el('label', { class: 'hm-link-box' }, icon('paste'), linkInp),
+      el('button', { class: 'btn btn-primary btn-lg hm-go', onclick: () => go() }, 'Bắt đầu', icon('arrow'))),
+    el('div', { class: 'hm-quick-alt dim small' }, 'hoặc ',
+      el('a', { href: '#/new', class: 'hm-quick-file' }, icon('upload'), 'chọn file video trên máy'),
+      ' · dán nhiều link cùng lúc ở trang ', el('a', { href: '#/new', text: 'Dịch video' })));
 
   // ---------- đang chạy
   const runBox = el('section', { class: 'hm-run' });
@@ -86,7 +106,7 @@ export async function viewHome(main, alive) {
     const s = status || {};
     const out = [];
     const tr = s.translator || {};
-    out.push(s.ffmpeg ? ['ok', 'Xử lý video', 'FFmpeg đã có'] : ['bad', 'Xử lý video', 'Thiếu FFmpeg: chạy lại trình cài iContent', '#/settings']);
+    out.push(s.ffmpeg ? ['ok', 'Xử lý video', 'FFmpeg đã có'] : ['bad', 'Xử lý video', 'Thiếu FFmpeg: chạy lại trình cài Studio566', '#/settings']);
     out.push(s.nvenc ? ['ok', 'Card đồ họa', `${home.gpu || 'NVIDIA'}: dựng video nhanh bằng NVENC${s.cuda ? ', nhận giọng bằng CUDA' : ''}`]
       : ['warn', 'Card đồ họa', 'Không có NVENC: vẫn dựng được bằng CPU, chậm hơn']);
     const dl = s.downloads || [];
@@ -140,11 +160,12 @@ export async function viewHome(main, alive) {
   main.append(
     renewBanner(S.license) || '',
     el('div', { class: 'hm-hero' },
-      el('div', { class: 'eyebrow', text: 'iContent Studio' }),
-      el('h1', { text: `${greeting()}, hôm nay làm gì?` }),
       el('div', { class: 'hm-hero-row' },
-        el('p', { class: 'dim', text: 'Chọn một việc bên dưới. Mọi thứ chạy ngay trên máy của bạn, video không tải lên đâu cả.' }),
-        el('button', { class: 'btn btn-sm btn-ghost', onclick: () => openOnboarding() }, icon('book'), 'Hướng dẫn 3 bước'))),
+        el('h1', { text: `${greeting()}, hôm nay làm video gì?` }),
+        el('button', { class: 'btn btn-sm btn-ghost', onclick: () => openOnboarding() }, icon('book'), 'Hướng dẫn 3 bước')),
+      el('p', { class: 'dim', text: 'Dán link là bắt đầu. Mọi thứ chạy ngay trên máy của bạn, video không tải lên đâu cả.' })),
+    quick,
+    el('h3', { class: 'ed-head hm-sec', text: 'Làm video theo cách khác' }),
     tasks,
     el('div', { class: 'hm-cols' },
       el('div', { class: 'hm-main' }, runBox, el('div', { class: 'hm-recent-h' }, el('h3', { class: 'ed-head', text: 'Gần đây' }), chips), grid),

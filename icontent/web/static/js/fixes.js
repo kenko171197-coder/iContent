@@ -22,7 +22,7 @@ export function anonymize(t) {
     .replace(/(api[_-]?key|token|sessdata|s_v_web_id|authorization)(["'=: ]+)[^\s"'&]+/gi, '$1$2…');
 }
 
-/** Mở trang trên trình duyệt mặc định của khách (có tiện ích và cookie của họ), không phải cửa sổ iContent. */
+/** Mở trang trên trình duyệt mặc định của khách (có tiện ích và cookie của họ), không phải cửa sổ Studio566. */
 export async function openExternal(url) {
   try { await api('POST', '/api/fixes/open', { url }); } catch (e) { toast(e.message, 'error'); }
 }
@@ -42,7 +42,7 @@ export async function copyReport(ctx = {}) {
   const it = ctx.item || {};
   const h = ctx.help || it.help;
   const lines = [
-    `iContent ${(S.status && S.status.version) || ''} · ${new Date().toLocaleString('vi-VN')}`,
+    `Studio566 ${(S.status && S.status.version) || ''} · ${new Date().toLocaleString('vi-VN')}`,
     h ? `Lỗi: ${h.title}` : '',
     it.src || ctx.src ? `Link: ${it.src || ctx.src}` : '',
     it.stage ? `Bước: ${STAGE_LABEL[it.stage] || it.stage}` : '',
@@ -93,7 +93,7 @@ export async function runAction(a, ctx = {}) {
     }
     case 'redownload': {
       const name = { tts: 'bộ giọng đọc VieNeu (khoảng 1 GB)', asr: 'mô hình nhận dạng giọng nói', speakers: 'mô hình nhận diện người nói' }[a.model] || 'mô hình';
-      const ok = await confirmDialog('Tải lại mô hình?', `iContent xóa bản ${name} đang hỏng trên máy rồi tải lại trong hàng đợi. Cần mạng ổn định. Tải xong bấm Thử lại.`, { okText: 'Tải lại' });
+      const ok = await confirmDialog('Tải lại mô hình?', `Studio566 xóa bản ${name} đang hỏng trên máy rồi tải lại trong hàng đợi. Cần mạng ổn định. Tải xong bấm Thử lại.`, { okText: 'Tải lại' });
       if (!ok) return undefined;
       await api('POST', '/api/fixes/redownload', { model: a.model || 'tts' });
       toast('Đã thêm việc tải lại vào hàng đợi (xem ở trang Tạo video)', 'success', { timeout: 7000 });
@@ -215,7 +215,7 @@ export function cookieWizard(site = 'douyin', opts = {}) {
     } catch (e) { setStatus('bad', e.message); return; }
     await afterSave(r);
   }
-  // khách bấm Export trong tiện ích: file vào thư mục Tải về, iContent tự nạp (không phải kéo thả). Chỉ file mới từ lúc mở hộp này.
+  // khách bấm Export trong tiện ích: file vào thư mục Tải về, Studio566 tự nạp (không phải kéo thả). Chỉ file mới từ lúc mở hộp này.
   const opened = Date.now() / 1000;
   let since = opened;      // chỉ nhận file sửa sau mốc này: file đã nạp rồi không nạp lại
   let watching = true;
@@ -249,7 +249,7 @@ export function cookieWizard(site = 'douyin', opts = {}) {
       // vừa xuất mà vẫn bị từ chối: không nói "cookie cũ" (khách vừa làm xong), chỉ cách xuất lại cho đúng
       const upd = el('button', { class: 'btn btn-sm', onclick: () => busy(upd, () => runAction({ id: 'update_ytdlp' })) }, icon('download'), 'Cập nhật bộ tải video');
       setStatus('bad', el('b', { text: 'Cookie vừa xuất vẫn chưa dùng được. ' }),
-        `Thường do bấm Export khi trang ${name} chưa tải xong hoặc còn ô xác minh. Trên trang ${name}: lướt thêm 1–2 video (có ô kéo thì kéo cho xong), rồi bấm Export lại, iContent vẫn đang chờ file. Làm lại vẫn lỗi thì bấm `,
+        `Thường do bấm Export khi trang ${name} chưa tải xong hoặc còn ô xác minh. Trên trang ${name}: lướt thêm 1–2 video (có ô kéo thì kéo cho xong), rồi bấm Export lại, Studio566 vẫn đang chờ file. Làm lại vẫn lỗi thì bấm `,
         el('b', { text: 'Cập nhật bộ tải video' }), ' rồi Export lại.', el('div', { class: 'cw-btns', style: { marginTop: '8px' } }, upd));
       watching = true; warned = '';
     } else {
@@ -285,16 +285,16 @@ export function cookieWizard(site = 'douyin', opts = {}) {
       el('div', { class: 'cw-btns' }, linkBtn(`Mở ${host}`, SITE_HOME[site], 'globe')),
       el('div', { class: 'dim small', text: 'Không cần đăng nhập: hiện hộp đăng nhập thì bấm dấu X. Có ô kéo xác minh thì kéo cho xong.' })),
     step(3, 'Bấm biểu tượng tiện ích trên thanh công cụ, chọn Get cookies.txt LOCALLY, rồi bấm Export',
-      el('div', { class: 'dim small', text: `Biểu tượng hình mảnh ghép cạnh thanh địa chỉ. Trình duyệt lưu file ${SITE_FILE[site] || 'cookies.txt'} vào thư mục Tải về, iContent tự nhận ngay, không phải làm gì thêm.` })),
+      el('div', { class: 'dim small', text: `Biểu tượng hình mảnh ghép cạnh thanh địa chỉ. Trình duyệt lưu file ${SITE_FILE[site] || 'cookies.txt'} vào thư mục Tải về, Studio566 tự nhận ngay, không phải làm gì thêm.` })),
     step(4, 'Không thấy tự nhận? Kéo file đó thả vào ô bên dưới', zone, paste));
   // làm mới (đã cài tiện ích từ lần trước): mở sẵn trang, chỉ còn lướt video và bấm Export
   const renewSteps = () => el('div', {},
     el('ol', { class: 'cw-steps' },
-      step(1, `iContent vừa mở ${host} trên trình duyệt. Chờ trang hiện video rồi lướt qua 1–2 video`,
+      step(1, `Studio566 vừa mở ${host} trên trình duyệt. Chờ trang hiện video rồi lướt qua 1–2 video`,
         el('div', { class: 'cw-btns' }, linkBtn(`Mở lại ${host}`, SITE_HOME[site], 'globe')),
         el('div', { class: 'dim small', text: 'Có ô kéo xác minh thì kéo cho xong; hiện hộp đăng nhập thì bấm dấu X. Tiện ích nằm ở trình duyệt khác thì mở trang trên trình duyệt đó.' })),
       step(2, 'Bấm biểu tượng tiện ích Get cookies.txt LOCALLY rồi bấm Export',
-        el('div', { class: 'dim small', text: 'iContent tự nhận file trong thư mục Tải về' + (opts.url ? ' và tự thử lại video.' : '.') }))),
+        el('div', { class: 'dim small', text: 'Studio566 tự nhận file trong thư mục Tải về' + (opts.url ? ' và tự thử lại video.' : '.') }))),
     el('details', { class: 'cw-more' }, el('summary', { text: 'Chưa có tiện ích, hoặc không tự nhận được? Xem đủ các bước' }), fullSteps()));
 
   m = openModal([
@@ -306,7 +306,7 @@ export function cookieWizard(site = 'douyin', opts = {}) {
           el('b', { text: 'Không cần đăng nhập, không lộ mật khẩu.' }), ' Làm một lần, dùng được nhiều ngày.'),
       opts.renew ? renewSteps() : fullSteps(),
       status,
-      el('p', { class: 'dim small cw-privacy' }, icon('shield'), `Cookie chỉ lưu trên máy này (thư mục cookies của iContent), chỉ giữ cookie của ${name}, không gửi đi đâu.`)),
+      el('p', { class: 'dim small cw-privacy' }, icon('shield'), `Cookie chỉ lưu trên máy này (thư mục cookies của Studio566), chỉ giữ cookie của ${name}, không gửi đi đâu.`)),
     foot,
   ], { cls: 'cw-modal' });
   paintFoot();
@@ -342,7 +342,7 @@ export async function checkMachine() {
     el('span', { class: 'sp-ic' }, icon(MARK[c.state] || 'info')),
     el('div', {}, el('b', { text: c.title }), el('div', { class: 'dim small', text: c.detail }),
       c.help && c.state !== 'ok' ? el('div', { class: 'small sp-help', text: c.help }) : null,
-      c.fix ? el('div', { class: 'small sp-help' }, `Cách sửa: mở công cụ Sửa lỗi iContent (menu Start), bấm ${c.fix.label}.`) : null)));
+      c.fix ? el('div', { class: 'small sp-help' }, `Cách sửa: mở công cụ Sửa lỗi Studio566 (menu Start), bấm ${c.fix.label}.`) : null)));
   const bad = (r.checks || []).filter((c) => c.state === 'bad').length;
   let m;
   m = openModal([
@@ -364,7 +364,7 @@ export function toolsPanel() {
   return el('div', { class: 'ck-list' },
     row('Kiểm tra máy', 'Xem thư viện, ffmpeg, ổ đĩa, mạng, cookie... có vấn đề gì không', { icon: 'scan', run: checkMachine }),
     row('Tạo gói báo lỗi', 'Gói nhật ký và kết quả kiểm tra ra màn hình nền để gửi người hỗ trợ (đã bỏ key, cookie, tên máy)', { icon: 'package', run: () => supportPack() }),
-    row('Mở công cụ Sửa lỗi', 'Cửa sổ riêng, có cả trong menu Start: dùng được khi iContent không mở được', { icon: 'wand', run: () => api('POST', '/api/support/tool') }),
+    row('Mở công cụ Sửa lỗi', 'Cửa sổ riêng, có cả trong menu Start: dùng được khi Studio566 không mở được', { icon: 'wand', run: () => api('POST', '/api/support/tool') }),
     row('Cập nhật bộ tải video', 'Khi Douyin, Bilibili... đổi trang và link đúng mà vẫn không tải được', { id: 'update_ytdlp', icon: 'refresh' }),
     row('Sửa file mô hình', 'Khi giọng đọc báo lỗi ONNXRuntime, External data path', { id: 'repair_models', icon: 'wand' }),
     row('Tải lại bộ giọng đọc', 'Khi file giọng VieNeu bị hỏng do tải dở (khoảng 1 GB)', { id: 'redownload', model: 'tts', icon: 'download' }));

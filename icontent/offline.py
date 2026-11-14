@@ -3,7 +3,7 @@
 Không cần API key, không cần mạng khi dịch, câu thoại không rời khỏi máy. Model 1,1 GB, cần khoảng 1,3 GB VRAM
 (không có card đồ họa thì chạy bằng CPU, chậm hơn).
 
-Từ 0.4.0 chạy bằng bộ chạy llama.cpp do iContent tự tải (localai.py, gói "translate"): không phải cài Ollama.
+Từ 0.4.0 chạy bằng bộ chạy llama.cpp do Studio566 tự tải (localai.py, gói "translate"): không phải cài Ollama.
 Máy đã cài Ollama và tải model này từ bản cũ vẫn dùng được (và gói mới dùng lại đúng file đó, không tải lại).
 
 Ghi chú đã kiểm chứng (trên Ollama 0.40):
@@ -73,7 +73,7 @@ def is_running() -> bool:
 
 
 def start(wait: float = 30.0, model: str | None = None) -> bool:
-    """Bật dịch vụ Ollama nếu đang tắt (chạy ẩn, không mở cửa sổ). Bộ chạy của iContent tự bật khi dịch câu đầu tiên."""
+    """Bật dịch vụ Ollama nếu đang tắt (chạy ẩn, không mở cửa sổ). Bộ chạy của Studio566 tự bật khi dịch câu đầu tiên."""
     if builtin(model):
         return True
     if is_running():
@@ -112,7 +112,7 @@ def has_model(model: str | None = None) -> bool:
 
 
 def builtin(model: str | None = None) -> bool:
-    """Dùng bộ chạy của iContent: model mặc định và gói Dịch offline đã tải. Tên model Ollama khác thì đi qua Ollama."""
+    """Dùng bộ chạy của Studio566: model mặc định và gói Dịch offline đã tải. Tên model Ollama khác thì đi qua Ollama."""
     from . import localai
     return (not model or model == MODEL) and localai.pack_ready("translate")
 

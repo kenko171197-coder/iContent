@@ -98,7 +98,7 @@ export async function viewDiscover(main, alive) {
   main.append(
     el('div', { class: 'page-head' },
       el('div', { class: 'page-head-text' }, el('div', { class: 'eyebrow', text: 'Khám phá' }), el('h1', { text: 'Bên Trung Quốc đang xem gì?' }),
-        el('p', { text: 'Chọn video đang lên hoặc đề tài hot, bấm một nút là iContent tải về, dịch, lồng tiếng và xóa sub.' })),
+        el('p', { text: 'Chọn video đang lên hoặc đề tài hot, bấm một nút là Studio566 tải về, dịch, lồng tiếng và xóa sub.' })),
       el('div', { class: 'actions' }, el('div', { class: 'search-box dc-search' }, icon('search'), searchInp), refreshBtn)),
     el('div', { class: 'dc-toolbar' }, tabs, el('span', { class: 'grow' }), el('span', { class: 'dim small', text: 'Làm theo công thức' }), recipeSel),
     note, body, selBar,

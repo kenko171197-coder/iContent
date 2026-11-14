@@ -1,8 +1,8 @@
-"""iContent CLI.
+"""Studio566 CLI.
 
-  python -m icontent ui                                       mở iContent Studio (web, http://127.0.0.1:8765)
+  python -m icontent ui                                       mở Studio566 (web, http://127.0.0.1:8765)
   python -m icontent ui --app                                 mở như phần mềm riêng, đóng cửa sổ là tự tắt
-  python -m icontent shortcut                                 tạo biểu tượng iContent Studio trên màn hình nền
+  python -m icontent shortcut                                 tạo biểu tượng Studio566 trên màn hình nền
   python -m icontent run <link|file|thư-mục-job> [...]      chạy toàn bộ pipeline
   python -m icontent run -f links.txt                         nhiều link (mỗi dòng 1 link)
   python -m icontent download <link> [...]                    chỉ tải
@@ -101,7 +101,7 @@ def cmd_doctor(_a) -> int:
         ok &= bool(good) or name.startswith("(tùy chọn)")
         print(f"  {'OK ' if good else '-- '} {name:34s} {info}")
 
-    print("iContent doctor")
+    print("Studio566 doctor")
     try:
         from .util import find_ffmpeg
         ff, _ = find_ffmpeg()
@@ -222,7 +222,7 @@ def cmd_ui(a) -> int:
             appwin.open_window(url)
             return 0
         if appwin.port_taken(a.host, a.port):
-            raise RuntimeError(f"Cổng {a.port} đang bị một chương trình khác dùng nên iContent chưa mở được. Hãy đóng chương trình đó rồi mở lại.")
+            raise RuntimeError(f"Cổng {a.port} đang bị một chương trình khác dùng nên Studio566 chưa mở được. Hãy đóng chương trình đó rồi mở lại.")
         appwin.open_window(appwin.splash_url(url))      # mở ngay, không bắt người dùng nhìn màn hình trống chờ nạp thư viện
         # máy chủ chạy ở tiến trình con: chết bất thường thì tiến trình này chạy lại, cửa sổ tự kết nối lại (appwin.supervise)
         cmd = [sys.executable, "-m", "icontent", "ui", "--app", "--child", "--host", a.host, "--port", str(a.port)]
@@ -231,7 +231,7 @@ def cmd_ui(a) -> int:
         return appwin.supervise(cmd)
     from .about import cli_line
     from .web.server import create_app
-    log("ui", f"iContent Studio: {url}   (Ctrl+C để thoát)")
+    log("ui", f"Studio566: {url}   (Ctrl+C để thoát)")
     log("ui", cli_line())
     app = create_app(a.config)
     appwin.clear_start_error()
@@ -320,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--lang", default="vi")
     v.set_defaults(fn=cmd_voices)
 
-    u = sub.add_parser("ui", help="mở iContent Studio (giao diện web)")
+    u = sub.add_parser("ui", help="mở Studio566 (giao diện web)")
     u.add_argument("-c", "--config", default=_default_config())
     u.add_argument("--host", default="127.0.0.1")
     u.add_argument("--port", type=int, default=8765)
@@ -329,7 +329,7 @@ def main(argv: list[str] | None = None) -> int:
     u.add_argument("--child", action="store_true", help=argparse.SUPPRESS)      # máy chủ do tiến trình giám sát (--app) chạy
     u.set_defaults(fn=cmd_ui)
 
-    sc = sub.add_parser("shortcut", help="tạo biểu tượng iContent Studio trên màn hình nền")
+    sc = sub.add_parser("shortcut", help="tạo biểu tượng Studio566 trên màn hình nền")
     sc.set_defaults(fn=cmd_shortcut)
 
     dr = sub.add_parser("doctor", help="kiểm tra môi trường")
@@ -339,8 +339,8 @@ def main(argv: list[str] | None = None) -> int:
     rl.add_argument("--no-exe", action="store_true", help="chỉ làm file zip, không làm file cài .exe (không cần Inno Setup)")
     rl.add_argument("--no-python", action="store_true", help="không kèm Python vào gói (máy người dùng tự có hoặc tự cài qua winget)")
     rl.add_argument("--out", help="thư mục ghi file zip (mặc định: dist)")
-    rl.add_argument("--pubkey", help="khoá công khai iContent của bot cấp key (mặc định: icontent/license_pubkey.txt)")
-    rl.add_argument("--bot", default="", help="tên bot Telegram cấp key (mặc định Kichhoatkey_bot)")
+    rl.add_argument("--pubkey", help="khoá công khai Studio566 của bot cấp key (mặc định: icontent/license_pubkey.txt)")
+    rl.add_argument("--bot", default="", help="tên bot Telegram cấp key (chỉ dùng khi tự bật lại khoá bản quyền)")
     rl.add_argument("--free", action="store_true", default=True, help="bản không khoá bản quyền (mặc định trong bản fork)")
     rl.set_defaults(fn=cmd_release)
 

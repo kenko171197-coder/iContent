@@ -217,7 +217,7 @@ def evaluate(info: dict, m: dict, ctx: dict, faces: dict | None = None, hanzi: d
     if not a:
         add("audio", "bad" if ctx.get("dub") else "warn", "Video không có tiếng")
     if not info.get("faststart"):
-        add("faststart", "warn", "File chưa tối ưu để phát ngay khi tải", "Xuất lại bằng iContent sẽ tự sửa")
+        add("faststart", "warn", "File chưa tối ưu để phát ngay khi tải", "Xuất lại bằng Studio566 sẽ tự sửa")
     exp = ctx.get("expected")
     if exp:
         diff = abs(total - float(exp))

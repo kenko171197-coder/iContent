@@ -1,7 +1,7 @@
 """Đóng gói bản phát hành gửi cho người dùng, hai dạng cùng một nội dung:
 
-  python -m icontent release            -> dist/iContent-Setup-<phiên bản>.exe  bấm đúp là cài (Inno Setup, installer/iContent.iss)
-                                           dist/iContent-<phiên bản>.zip        giải nén rồi bấm đúp "Cai dat iContent.cmd"
+  python -m icontent release            -> dist/Studio566-Setup-<phiên bản>.exe  bấm đúp là cài (Inno Setup, installer/Studio566.iss)
+                                           dist/Studio566-<phiên bản>.zip        giải nén rồi bấm đúp "Cai dat Studio566.cmd"
                                            (+ .sha256 cho mỗi file)
 
 Chỉ gồm mã nguồn, giao diện, Trình dựng đã build, các file cài đặt và bản Python của môi trường đóng gói (thư mục runtime\\python,
@@ -30,7 +30,7 @@ from pathlib import Path
 from . import __version__
 from .util import ROOT
 
-TOP_FILES = ["Cai dat iContent.cmd", "iContent Studio.cmd", "icontent.cmd", "setup.ps1", "requirements.txt", "config.example.yaml", "README.md"]
+TOP_FILES = ["Cai dat Studio566.cmd", "Studio566.cmd", "icontent.cmd", "setup.ps1", "requirements.txt", "config.example.yaml", "README.md"]
 PACKAGE = "icontent"
 SKIP_DIRS = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
 SKIP_SUFFIX = {".pyc", ".pyo", ".log", ".bak", ".part", ".copying"}
@@ -38,40 +38,40 @@ SKIP_NAMES = {"Thumbs.db", ".DS_Store", "desktop.ini", "_build_info.py"}      # 
 # những thứ chỉ có trên máy đóng gói: nằm đâu trong gói cũng không được có
 PRIVATE_NAMES = {"keys.json", "paid.json", "config.yaml", "presets.json", "trends_saved.json", "cookies.txt", "index.json", ".freecut-workspace.json",
                  "license.json", ".install_id"}
-PUBKEY_FILE = "license_pubkey.txt"      # khoá CÔNG KHAI iContent của bot cấp key (công khai, được commit)
-# chỉ dò mẫu key trong mã của chính iContent: thư viện đóng gói sẵn của Trình dựng có chuỗi ngẫu nhiên dài, dò mẫu dễ báo nhầm
+PUBKEY_FILE = "license_pubkey.txt"      # khoá CÔNG KHAI Studio566 của bot cấp key (công khai, được commit)
+# chỉ dò mẫu key trong mã của chính Studio566: thư viện đóng gói sẵn của Trình dựng có chuỗi ngẫu nhiên dài, dò mẫu dễ báo nhầm
 KEY_PATTERNS = [re.compile(p) for p in (rb"AIza[0-9A-Za-z_\-]{35}", rb"sk-ant-[A-Za-z0-9_\-]{20,}", rb"sk-[A-Za-z0-9]{40,}", rb"hf_[A-Za-z0-9]{30,}")]
 OWN_TEXT = {".py", ".js", ".css", ".html", ".json", ".yaml", ".yml", ".txt", ".md", ".ps1", ".cmd", ".tsv"}
 CRLF = "\r\n"
 RUNTIME = "runtime/python"      # chỗ đặt Python kèm theo trong gói; setup.ps1 tìm ở đây trước tiên
-# không cần để chạy iContent hay tạo .venv: tài liệu, bộ test của Python, IDLE, file để biên dịch thư viện C, thư viện đã cài trên máy đóng gói
+# không cần để chạy Studio566 hay tạo .venv: tài liệu, bộ test của Python, IDLE, file để biên dịch thư viện C, thư viện đã cài trên máy đóng gói
 RUNTIME_SKIP = {"Doc", "include", "libs", "Scripts", "Tools", "NEWS.txt", "Lib/site-packages", "Lib/test", "Lib/idlelib", "Lib/turtledemo"}
 OK_PYTHON = ("3.11", "3.12", "3.13")      # khớp $okVersions trong setup.ps1
-INSTALLER = "installer/iContent.iss"
+INSTALLER = "installer/Studio566.iss"
 STORED = (".wasm", ".onnx", ".png", ".jpg", ".webp", ".woff2", ".mp3", ".gz", ".br", ".whl")      # đã nén sẵn: nén thêm chỉ tốn thời gian
 
 
 def guide_text(version: str, bot: str = "") -> str:
     from .about import cli_line
     lines = [
-        f"iContent Studio {version}: phần mềm miễn phí làm video tiếng Việt",
+        f"Studio566 {version}: phần mềm miễn phí làm video tiếng Việt",
         "",
         "CÀI ĐẶT LẦN ĐẦU",
-        f"Cách 1 (dễ nhất): bấm đúp file iContent-Setup-{version}.exe, bấm Tiếp cho tới khi xong.",
+        f"Cách 1 (dễ nhất): bấm đúp file Studio566-Setup-{version}.exe, bấm Tiếp cho tới khi xong.",
         "   Windows hiện \"Windows đã bảo vệ máy tính của bạn\" thì bấm \"Thông tin bổ sung\" rồi \"Vẫn chạy\".",
         "Cách 2 (bản zip):",
-        "1. Giải nén file zip ra một thư mục, ví dụ D:\\iContent. Đừng chạy thẳng trong cửa sổ xem file zip.",
+        "1. Giải nén file zip ra một thư mục, ví dụ D:\\Studio566. Đừng chạy thẳng trong cửa sổ xem file zip.",
         "   Nên để ở ổ có nhiều chỗ trống (cần khoảng 8 GB), tránh thư mục OneDrive và Program Files.",
-        "2. Bấm đúp file \"Cai dat iContent.cmd\".",
+        "2. Bấm đúp file \"Cai dat Studio566.cmd\".",
         "Cả hai cách đều cần mạng Internet, lần đầu tải thêm khoảng 3 GB, mất 5 đến 15 phút. Máy không cần cài sẵn Python.",
-        "Cài xong có biểu tượng iContent Studio trên màn hình nền. Lần mở đầu có hướng dẫn từng bước.",
+        "Cài xong có biểu tượng Studio566 trên màn hình nền. Lần mở đầu có hướng dẫn từng bước.",
         "",
     ]
     if bot:
         lines += [
             "KÍCH HOẠT (miễn phí)",
-            "Lần mở đầu, iContent hiện màn Kích hoạt có MÃ MÁY (32 ký tự).",
-            f"1. Bấm \"Nhận key qua Telegram\": mở bot @{bot} kèm sẵn mã máy (hoặc tự gửi mã máy cho bot, chọn iContent).",
+            "Lần mở đầu, Studio566 hiện màn Kích hoạt có MÃ MÁY (32 ký tự).",
+            f"1. Bấm \"Nhận key qua Telegram\": mở bot @{bot} kèm sẵn mã máy (hoặc tự gửi mã máy cho bot, chọn Studio566).",
             "2. Trong bot bấm \"Yêu cầu kích hoạt\". Được duyệt, bot gửi key.",
             "3. Chép nguyên key, dán vào ô trên màn Kích hoạt, bấm Kích hoạt.",
             "Mỗi key dùng cho một máy. Cài lại, cập nhật bản mới trên cùng máy không phải xin key lại. Gia hạn: Cài đặt > Bản quyền.",
@@ -79,19 +79,19 @@ def guide_text(version: str, bot: str = "") -> str:
         ]
     lines += [
         "CẬP NHẬT BẢN MỚI",
-        "Bản .exe: chạy file cài bản mới, nó tự cài đè đúng thư mục cũ (iContent đang mở thì tự tắt trước).",
-        "Bản zip: giải nén bản mới đè lên đúng thư mục cũ (chọn Thay thế tất cả), rồi bấm đúp \"Cai dat iContent.cmd\" một lần nữa.",
+        "Bản .exe: chạy file cài bản mới, nó tự cài đè đúng thư mục cũ (Studio566 đang mở thì tự tắt trước).",
+        "Bản zip: giải nén bản mới đè lên đúng thư mục cũ (chọn Thay thế tất cả), rồi bấm đúp \"Cai dat Studio566.cmd\" một lần nữa.",
         "Video, cấu hình, key, giọng đã thu đều được giữ nguyên.",
         "",
         "GỠ CÀI ĐẶT",
-        "Cài bằng .exe: Cài đặt Windows > Ứng dụng > iContent Studio > Gỡ cài đặt. Trình gỡ hỏi có giữ video, cấu hình không.",
+        "Cài bằng .exe: Cài đặt Windows > Ứng dụng > Studio566 > Gỡ cài đặt. Trình gỡ hỏi có giữ video, cấu hình không.",
         "",
         "MÁY CẦN CÓ",
         "Windows 10 hoặc 11 bản 64-bit, RAM từ 8 GB, ổ đĩa trống từ 8 GB.",
         "Card NVIDIA (GTX 1650 trở lên) giúp dựng video nhanh hơn nhiều; không có vẫn chạy được, chậm hơn.",
         "",
         "GẶP LỖI",
-        "Chụp màn hình cửa sổ cài đặt gửi cho tác giả. Đã mở được iContent thì xem Trang chủ, mục Máy đã sẵn sàng chưa.",
+        "Chụp màn hình cửa sổ cài đặt gửi cho người hỗ trợ. Đã mở được Studio566 thì xem Trang chủ, mục Máy đã sẵn sàng chưa.",
         "",
         cli_line(),
     ]
@@ -105,7 +105,7 @@ def frozen_requirements(python: str | None = None) -> str:
         raise RuntimeError("pip freeze lỗi: " + r.stderr[-300:])
     keep = [ln.strip() for ln in r.stdout.splitlines()
             if ln.strip() and not ln.startswith(("-e", "#")) and " @ " not in ln and "==" in ln]
-    head = f"# Phiên bản thư viện đã chạy qua bộ test của iContent {__version__}. setup.ps1 cài theo đúng các bản này.\n"
+    head = f"# Phiên bản thư viện đã chạy qua bộ test của Studio566 {__version__}. setup.ps1 cài theo đúng các bản này.\n"
     return head + "\n".join(sorted(keep, key=str.lower)) + "\n"
 
 
@@ -237,7 +237,7 @@ def stage(files: list[tuple[Path, str]], extra: dict[str, str], dest: Path) -> N
         out.write_bytes(text.encode("utf-8-sig" if name.endswith(".txt") and not name.startswith("constraints") else "utf-8"))
 
 
-def _zip(src: Path, zpath: Path, base: str = "iContent/") -> None:
+def _zip(src: Path, zpath: Path, base: str = "Studio566/") -> None:
     tmp = zpath.with_name(zpath.name + ".part")
     with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
         for dirpath, dirnames, filenames in os.walk(src):
@@ -249,7 +249,7 @@ def _zip(src: Path, zpath: Path, base: str = "iContent/") -> None:
 
 
 def _installer(iscc: str, iss: Path, src: Path, out_dir: Path, name: str) -> Path:
-    """Biên dịch installer/iContent.iss trên thư mục đã dàn sẵn. Mất vài phút: nén LZMA2 vài trăm MB."""
+    """Biên dịch installer/Studio566.iss trên thư mục đã dàn sẵn. Mất vài phút: nén LZMA2 vài trăm MB."""
     r = subprocess.run([iscc, "/Q", f"/DAppVersion={__version__}", f"/DStageDir={src}", f"/DOutputDir={out_dir}", f"/DOutputBase={name}", str(iss)],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     exe = out_dir / f"{name}.exe"
@@ -260,16 +260,16 @@ def _installer(iscc: str, iss: Path, src: Path, out_dir: Path, name: str) -> Pat
 
 def build(out_dir: Path | None = None, root: Path = ROOT, python: str | None = None, pubkey: str | None = None,
           free: bool = True, bot: str = "", runtime: str | Path | None = None, exe: bool = False, iscc: str | None = None) -> dict:
-    """free=True (mặc định trong bản fork): bản phát hành KHÔNG khoá bản quyền. free=False: bản khoá, cần khoá công khai iContent của bot (tham số hoặc icontent/license_pubkey.txt).
+    """free=True (mặc định trong bản fork): bản phát hành KHÔNG khoá bản quyền. free=False: bản khoá, cần khoá công khai Studio566 của bot (tham số hoặc icontent/license_pubkey.txt).
     runtime: thư mục Python kèm vào gói (lệnh release truyền sys.base_prefix). exe: tạo thêm bộ cài .exe bằng Inno Setup."""
     from .license import DEFAULT_BOT
     out_dir = Path(out_dir or root / "dist")
     pub = "" if free else resolve_pubkey(pubkey, root)
     if not free and not pub:
-        raise RuntimeError("Chưa có khoá công khai iContent của bot cấp key. Trên VPS chạy: python -m ikey.keygen icontent --enable, "
+        raise RuntimeError("Chưa có khoá công khai Studio566 của bot cấp key. "
                            f"chép dòng khoá công khai vào icontent/{PUBKEY_FILE} (hoặc --pubkey), rồi đóng gói lại. Muốn bản không khoá: --free")
     bot = (bot or DEFAULT_BOT).lstrip("@")
-    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{3,31}", bot):
+    if not free and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{3,31}", bot):
         raise RuntimeError(f"Tên bot Telegram không hợp lệ: {bot}")
     files = collect(root)
     if runtime:
@@ -305,12 +305,12 @@ def build(out_dir: Path | None = None, root: Path = ROOT, python: str | None = N
     shutil.rmtree(work, ignore_errors=True)
     try:
         stage(files, extra, src)
-        zpath = out_dir / f"iContent-{__version__}.zip"
+        zpath = out_dir / f"Studio566-{__version__}.zip"
         _zip(src, zpath)
         result = {"path": str(zpath), "size": zpath.stat().st_size, "files": len(files) + len(extra), "sha256": _sha256(zpath),
                   "warnings": warnings, "free": not pub, "bot": bot, "python": bool(runtime)}
         if exe:
-            setup = _installer(iscc, iss, src, out_dir, f"iContent-Setup-{__version__}")
+            setup = _installer(iscc, iss, src, out_dir, f"Studio566-Setup-{__version__}")
             result.update(exe=str(setup), exe_size=setup.stat().st_size, exe_sha256=_sha256(setup))
     finally:
         shutil.rmtree(work, ignore_errors=True)

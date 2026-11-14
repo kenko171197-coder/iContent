@@ -5,12 +5,14 @@ import {
 import { cookiePanel, toolsPanel } from './fixes.js';
 import { aiPacks } from './localai.js';
 import { licensePanel } from './license.js';
+import { mcpPanel } from './mcp.js';
 import { OptionsForm } from './options.js';
 
 const PROVIDERS = [
   { id: 'claude', name: 'Claude', sub: 'Dịch tự nhiên nhất, hiểu ngữ cảnh', key: 'ANTHROPIC_API_KEY', get: 'console.anthropic.com', cfg: { provider: 'claude', model: 'claude-opus-5-5', base_url: '', api_key_env: '' } },
   { id: 'gemini', name: 'Gemini', sub: 'Google, có gói miễn phí', key: 'GEMINI_API_KEY', get: 'aistudio.google.com', cfg: { provider: 'openai', model: 'gemini-auto', base_url: 'https://generativelanguage.googleapis.com/v1beta/openai/', api_key_env: 'GEMINI_API_KEY' } },
   { id: 'deepseek', name: 'DeepSeek', sub: 'Rẻ, giỏi tiếng Trung', key: 'DEEPSEEK_API_KEY', get: 'platform.deepseek.com', cfg: { provider: 'openai', model: 'deepseek-chat', base_url: 'https://api.deepseek.com', api_key_env: 'DEEPSEEK_API_KEY' } },
+  { id: 'mcp', name: 'AI qua MCP', sub: 'Claude, ChatGPT, Grok: không cần key', key: '', get: '', cfg: { provider: 'mcp', model: '', base_url: '', api_key_env: '' } },
   { id: 'offline', name: 'Dịch offline', sub: 'Ngay trên máy, không cần key', key: '', get: '', cfg: { provider: 'offline', model: '', base_url: '', api_key_env: '' } },
   { id: 'ollama', name: 'Ollama', sub: 'Tự chọn model AI chạy trên máy', key: '', get: 'ollama.com', cfg: { provider: 'openai', model: 'qwen2.5', base_url: 'http://localhost:11434/v1', api_key_env: '' } },
   { id: 'google', name: 'Google dịch', sub: 'Miễn phí, kém tự nhiên, dễ bị chặn', key: '', get: '', cfg: { provider: 'google', model: '', base_url: '', api_key_env: '' } },
@@ -19,6 +21,7 @@ const PROVIDERS = [
 function providerOf(t) {
   if (!t) return 'claude';
   if (t.provider === 'claude') return 'claude';
+  if (t.provider === 'mcp') return 'mcp';
   if (t.provider === 'google') return 'google';
   if (t.provider === 'offline') return 'offline';
   const u = t.base_url || '';
@@ -102,9 +105,11 @@ export async function viewSettings(main, alive) {
         el('p', { class: 'dim small' }, 'Lấy key tại ', el('a', { href: 'https://' + p.get, target: '_blank', rel: 'noreferrer', text: p.get }),
           '. Key chỉ lưu trên máy này (keys.json) và chỉ gửi tới chính nhà cung cấp đó.',
           st.source === 'env' ? ' Hiện đang đọc từ biến môi trường.' : ''));
+    } else if (p.id === 'mcp') {
+      kids.push(mcpPanel());
     } else if (p.id === 'offline') {
       kids.push(aiPacks({ only: 'translate', onReady: () => loadStatus() }),
-        el('p', { class: 'dim small', text: 'Khi chưa có key, hoặc AI đã chọn lỗi giữa chừng (quá tải, hết hạn mức), iContent tự dịch tiếp bằng cách này thay vì Google.' }));
+        el('p', { class: 'dim small', text: 'Khi chưa có key, hoặc AI đã chọn lỗi giữa chừng (quá tải, hết hạn mức), Studio566 tự dịch tiếp bằng cách này thay vì Google.' }));
     } else if (p.id === 'ollama') {
       kids.push(el('div', { class: 'key-row' }, testBtn), el('p', { class: 'dim small' }, 'Cài từ ', el('a', { href: 'https://ollama.com', target: '_blank', rel: 'noreferrer', text: 'ollama.com' }), ', rồi chạy: ollama pull qwen2.5. Câu thoại không rời khỏi máy của bạn.'));
     } else {
@@ -142,7 +147,7 @@ export async function viewSettings(main, alive) {
   }, icon('save'), 'Lưu cài đặt');
   const resetBtn = el('button', {
     class: 'btn btn-ghost', onclick: async () => {
-      const ok = await confirmDialog('Khôi phục mặc định?', 'Mọi cài đặt trên form sẽ về giá trị mặc định của iContent (chưa lưu cho tới khi bấm Lưu cài đặt).', { okText: 'Khôi phục' });
+      const ok = await confirmDialog('Khôi phục mặc định?', 'Mọi cài đặt trên form sẽ về giá trị mặc định của Studio566 (chưa lưu cho tới khi bấm Lưu cài đặt).', { okText: 'Khôi phục' });
       if (ok) { form.reset(); updDirty(); paintProviders(); }
     },
   }, icon('undo'), 'Về mặc định');
@@ -238,11 +243,11 @@ export async function viewSettings(main, alive) {
         billing ? el('p', { class: 'small prov-warn-msg' }, v.status_msg, el('a', { href: 'https://aistudio.google.com/usage?tab=billing', target: '_blank', rel: 'noreferrer', text: ' Mở trang Billing' })) : '',
         el('p', { class: 'dim small', text: `Biến ảnh cảnh thành clip ${v.min}–${v.max} giây, giữ đúng nhân vật. Giá khoảng ${String(v.price['360p']).replace('.', ',')} USD/giây (360p), ${String(v.price['720p']).replace('.', ',')} (720p), ${String(v.price['1080p']).replace('.', ',')} (1080p). ${v.note}. Dùng chung key Gemini ở mục Kết nối AI dịch hoặc Tạo ảnh AI.` }));
     });
-    vidBox.replaceChildren(...stock, ...ai, el('p', { class: 'dim small img-prov-note', text: 'iContent chỉ lấy video từ kho có giấy phép rõ ràng và lưu nguồn từng clip cạnh video xuất ra (file .nguon.txt). Không lấy video YouTube, Douyin, TikTok làm nguồn: "video free" trên đó không phải miễn phí bản quyền. Meta Muse chưa có API làm video chính thức nên chưa cắm được.' }));
+    vidBox.replaceChildren(...stock, ...ai, el('p', { class: 'dim small img-prov-note', text: 'Studio566 chỉ lấy video từ kho có giấy phép rõ ràng và lưu nguồn từng clip cạnh video xuất ra (file .nguon.txt). Không lấy video YouTube, Douyin, TikTok làm nguồn: "video free" trên đó không phải miễn phí bản quyền. Meta Muse chưa có API làm video chính thức nên chưa cắm được.' }));
   }
   paintVideoSources();
 
-  // ------------------------------------------------ chi phí: iContent ưu tiên miễn phí, việc tính tiền chỉ chạy khi người dùng bật
+  // ------------------------------------------------ chi phí: Studio566 ưu tiên miễn phí, việc tính tiền chỉ chạy khi người dùng bật
   const paidBox = el('div', { class: 'paid-box' });
   async function paintPaid() {
     let o = {};
@@ -251,7 +256,7 @@ export async function viewSettings(main, alive) {
     const sw = el('input', {
       type: 'checkbox', checked: p.allowed, onchange: () => busy(null, async () => {
         await api('PUT', '/api/paid', { allowed: sw.checked });
-        toast(sw.checked ? 'Đã bật tính năng trả phí. Mỗi lần tốn tiền iContent vẫn báo giá và hỏi trước.' : 'Đã tắt tính năng trả phí: iContent chỉ dùng cách miễn phí.', 'success', { timeout: 5000 });
+        toast(sw.checked ? 'Đã bật tính năng trả phí. Mỗi lần tốn tiền Studio566 vẫn báo giá và hỏi trước.' : 'Đã tắt tính năng trả phí: Studio566 chỉ dùng cách miễn phí.', 'success', { timeout: 5000 });
         paintPaid(); paintImageProviders(); paintVideoSources();
       }),
     });
@@ -259,12 +264,12 @@ export async function viewSettings(main, alive) {
       el('div', { class: 'opt-inline' }, el('div', { class: 'opt-label', text: 'Cho phép tính năng trả phí' }), el('label', { class: 'switch' }, sw, el('span', { class: 'switch-track' }, el('span', { class: 'switch-thumb' })))),
       el('p', { class: 'dim small', text: p.allowed
         ? 'Đang bật: được vẽ ảnh bằng Gemini, OpenAI, Meta Muse và AI làm clip (Gemini Omni). Tự chọn vẫn dùng cách miễn phí trước; mỗi lần tốn tiền đều báo giá và hỏi lại.'
-        : 'Đang tắt: iContent chỉ dùng cách miễn phí. Vẽ trên máy hoặc Cloudflare, video nền từ kho miễn phí, AI viết bằng Gemini gói miễn phí hoặc AI trên máy, giọng đọc trên máy. Nút trả phí bị khóa, không lo bấm nhầm mất tiền.' }));
+        : 'Đang tắt: Studio566 chỉ dùng cách miễn phí. Vẽ trên máy hoặc Cloudflare, video nền từ kho miễn phí, AI viết bằng Gemini gói miễn phí hoặc AI trên máy, giọng đọc trên máy. Nút trả phí bị khóa, không lo bấm nhầm mất tiền.' }));
   }
   paintPaid();
 
   main.append(
-    el('div', { class: 'page-head' }, el('div', { class: 'page-head-text' }, el('div', { class: 'eyebrow', text: 'Cài đặt' }), el('h1', { text: 'Thiết lập iContent' }),
+    el('div', { class: 'page-head' }, el('div', { class: 'page-head-text' }, el('div', { class: 'eyebrow', text: 'Cài đặt' }), el('h1', { text: 'Thiết lập Studio566' }),
       el('p', { text: 'Áp dụng cho mọi video mới. Từng video vẫn có thể chỉnh riêng trong Studio.' }))),
     el('section', { class: 'panel ai-panel' },
       el('div', { class: 'panel-head' }, icon('key'), el('h3', { text: 'Kết nối AI dịch' }), status && status.translator && status.translator.chosen_ready ? el('span', { class: 'pill ok', text: 'Đã kết nối' }) : status && status.translator && status.translator.ready ? el('span', { class: 'pill ok', text: 'Đang dùng dịch offline' }) : el('span', { class: 'pill warn', text: 'Chưa kết nối' })),
@@ -289,7 +294,7 @@ export async function viewSettings(main, alive) {
         el('div', { class: 'panel' }, el('div', { class: 'panel-head' }, icon('sliders'), el('h3', { text: 'Khác' })),
           el('div', { class: 'opt-inline' }, el('div', { class: 'opt-label', text: 'Chuông báo khi video xong' }), el('label', { class: 'switch' }, chime, el('span', { class: 'switch-track' }, el('span', { class: 'switch-thumb' })))),
           el('p', { class: 'dim small', style: { marginTop: '12px' } }, 'File cấu hình: ', el('span', { class: 'mono', text: cfg.path || S.cfgPath || 'config.yaml' })),
-          el('a', { class: 'btn btn-sm', href: '#/about' }, icon('coffee'), 'Giới thiệu & mời cà phê')))));
+          el('a', { class: 'btn btn-sm', href: '#/about' }, icon('info'), 'Giới thiệu')))));
   paintProviders();
   ready = true;
   updDirty();

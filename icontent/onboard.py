@@ -21,7 +21,7 @@ def should_switch(tcfg, ready: bool) -> bool:
     p = tcfg.get("provider")
     if is_gemini(tcfg):
         return True      # để chuẩn hóa tên model: bản cũ ghi gemini-2.5-flash, Google đã thôi cho key mới dùng
-    if p in ("claude", "openai") and ready:
+    if p in ("claude", "openai", "mcp") and ready:
         return False
     return True
 

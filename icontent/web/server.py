@@ -1,4 +1,4 @@
-"""iContent Studio — web UI chạy local (FastAPI).
+"""Studio566 — web UI chạy local (FastAPI).
 
   python -m icontent ui            -> http://127.0.0.1:8765
 
@@ -81,7 +81,7 @@ def is_local_origin(origin: str) -> bool:
 
 
 class _NoCacheStatic(StaticFiles):
-    """Trình duyệt luôn hỏi lại file giao diện -> cập nhật iContent là thấy ngay, không cần xóa cache."""
+    """Trình duyệt luôn hỏi lại file giao diện -> cập nhật Studio566 là thấy ngay, không cần xóa cache."""
 
     async def get_response(self, path, scope):
         r = await super().get_response(path, scope)
@@ -272,12 +272,18 @@ def create_app(config_path: str | None = None) -> FastAPI:
     load_keys()
     st = Studio(config_path)
     boot_id = uuid.uuid4().hex[:10]
-    app = FastAPI(title="iContent Studio", version=__version__)
+    app = FastAPI(title="Studio566", version=__version__)
     app.state.studio = st
+    from .. import autoupdate
+    autoupdate.maybe_update_ytdlp()
+
+    @app.get("/api/update")
+    def get_update():
+        return autoupdate.check_app_update()
 
     @app.middleware("http")
     async def same_origin_only(request: Request, call_next):
-        """Trang web lạ đang mở trong trình duyệt không được ra lệnh cho iContent chạy trên máy (xóa video, ghi file...)."""
+        """Trang web lạ đang mở trong trình duyệt không được ra lệnh cho Studio566 chạy trên máy (xóa video, ghi file...)."""
         if getattr(app.state, "check_host", False):
             # trang lạ trỏ tên miền của nó về 127.0.0.1 thì Origin vẫn trùng Host: phải kiểm tra chính Host
             host = (request.headers.get("host") or "").rsplit(":", 1)[0].strip("[]")
@@ -399,7 +405,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         bak = p.with_suffix(".yaml.bak")
         if p.exists() and not bak.exists():
             shutil.copy2(p, bak)          # giữ bản gốc (có chú thích) lần đầu ghi đè
-        p.write_text("# Ghi bởi iContent Studio. Bản trước: config.yaml.bak\n"
+        p.write_text("# Ghi bởi Studio566. Bản trước: config.yaml.bak\n"
                      + yaml.safe_dump(user, allow_unicode=True, sort_keys=False), encoding="utf-8")
         return {"ok": True}
 
@@ -449,13 +455,44 @@ def create_app(config_path: str | None = None) -> FastAPI:
         cfg = with_overrides(st.cfg(), {"translate": {k: body[k] for k in ("provider", "model", "base_url", "api_key_env")
                                                       if k in body}})
         if not translator_ready(cfg.translate):
-            raise HTTPException(400, "Chưa có API key cho nhà cung cấp này")
+            raise HTTPException(400, "Chưa cài cổng MCP" if cfg.translate.provider == "mcp" else "Chưa có API key cho nhà cung cấp này")
         try:
             return {"ok": True, "sample": test_translator(cfg.translate)}
         except Exception as e:
             raise HTTPException(502, friendly_translate_error(e, cfg.translate.provider))
 
-    # ------------------------------------------------------------------ bản quyền (key từ bot @Kichhoatkey_bot)
+    # ------------------------------------------------------------------ AI qua MCP (cổng trên Cloudflare Workers)
+    @app.get("/api/mcp")
+    def mcp_get():
+        from .. import mcpcloud
+        c = mcpcloud.load_conf()
+        out = {"configured": mcpcloud.configured(), "ai_url": mcpcloud.ai_url(c), "url": c.get("url", ""),
+               "deployed_at": c.get("deployed_at", 0), "has_token": bool(c.get("cf_token"))}
+        if out["configured"]:
+            try:
+                out["status"] = mcpcloud.status()
+            except Exception as e:      # noqa: BLE001
+                out["error"] = str(e)[:200]
+        return out
+
+    @app.post("/api/mcp/deploy")
+    def mcp_deploy(body: dict = Body(default={})):
+        """Cài hoặc cập nhật cổng lên Cloudflare. rotate: đổi mật khẩu cho AI (địa chỉ MCP mới, phải dán lại vào các app AI)."""
+        from .. import mcpcloud
+        try:
+            c = mcpcloud.deploy(str(body.get("token") or ""), rotate_mcp=bool(body.get("rotate")))
+            st_ = mcpcloud.status(wait_ready=45)
+        except mcpcloud.McpError as e:
+            raise HTTPException(400, f"Chưa cài được cổng MCP: {e}")
+        return {"ok": True, "ai_url": mcpcloud.ai_url(c), "url": c["url"], "status": st_}
+
+    @app.delete("/api/mcp")
+    def mcp_forget():
+        from .. import mcpcloud
+        mcpcloud.forget()
+        return {"ok": True}
+
+    # ------------------------------------------------------------------ bản quyền (đã tắt, API giữ cho giao diện cũ)
     @app.get("/api/license")
     def license_get():
         return license_mod.public_state()
@@ -480,7 +517,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         bak = p.with_suffix(".yaml.bak")
         if p.exists() and not bak.exists():
             shutil.copy2(p, bak)
-        p.write_text("# Ghi bởi iContent Studio. Bản trước: config.yaml.bak\n"
+        p.write_text("# Ghi bởi Studio566. Bản trước: config.yaml.bak\n"
                      + yaml.safe_dump(user, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
     @app.post("/api/onboard/gemini")
@@ -1443,7 +1480,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
 
     @app.post("/api/editor/heartbeat")
     def editor_heartbeat(body: dict = Body(default={})):
-        """Cửa sổ trình dựng còn mở. Gọi /api/ là đủ để iContent không tự tắt (xem middleware), job chỉ để chặn mở trùng."""
+        """Cửa sổ trình dựng còn mở. Gọi /api/ là đủ để Studio566 không tự tắt (xem middleware), job chỉ để chặn mở trùng."""
         jid = str(body.get("job") or "")
         if jid:
             if body.get("closing"):
@@ -1503,13 +1540,13 @@ def create_app(config_path: str | None = None) -> FastAPI:
             raise HTTPException(400, "Chỉ nhận video MP4, WebM, MOV hoặc MKV")
         p = st.job_dir(job) if job and not story else None
         if p is not None and not (p / "meta.json").exists():
-            raise HTTPException(404, "Không thấy video gốc của dự án này trong iContent")
+            raise HTTPException(404, "Không thấy video gốc của dự án này trong Studio566")
         sstore = story_store() if story else None
         if sstore is not None:
             try:
                 s0 = sstore.get(story)
             except KeyError:
-                raise HTTPException(404, "Không thấy câu chuyện của dự án này trong iContent") from None
+                raise HTTPException(404, "Không thấy câu chuyện của dự án này trong Studio566") from None
             name = f"kechuyen_{safe_name(s0.get('title') or story, 60).strip(' .')}_{story[1:6]}_dung{ext}"
         out_dir = Path(st.cfg().output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)

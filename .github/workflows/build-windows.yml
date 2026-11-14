@@ -1,5 +1,5 @@
-# Dựng file cài Windows (.exe) cho iContent Studio trên máy Windows của GitHub, tự cài thử, rồi đưa lên mục Release.
-# Chạy mỗi khi có code mới đẩy lên nhánh main (và khi mở pull request để thử), hoặc bấm tay: tab Actions → "Dựng bản Windows (.exe)" → Run workflow.
+# Kiểm thử, dựng file cài Windows (.exe) cho Studio566 trên máy Windows của GitHub, cài thử đầy đủ, rồi đưa lên mục Release.
+# Chạy mỗi khi có code mới đẩy lên nhánh main (và khi mở pull request để thử), hoặc bấm tay: tab Actions → Run workflow.
 name: Dựng bản Windows (.exe)
 
 on:
@@ -10,21 +10,47 @@ on:
   workflow_dispatch:
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Kiểm thử cổng MCP (Cloudflare Worker)
+        run: node cloudflare/test-worker.mjs
+      - name: Kiểm thử Python
+        run: |
+          pip install --quiet numpy pytest pyyaml
+          python -m pytest -q tests
+      - name: Kiểm tra cú pháp JavaScript
+        run: |
+          mkdir -p /tmp/jscheck
+          for f in icontent/web/static/js/*.js; do
+            cp "$f" "/tmp/jscheck/$(basename "$f" .js).mjs"
+          done
+          for f in /tmp/jscheck/*.mjs; do node --check "$f" || exit 1; done
+          if grep -rn "coffee.js" icontent/web/static/js; then echo "Còn chỗ dùng coffee.js đã xóa"; exit 1; fi
+
   windows:
+    needs: tests
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     permissions:
       contents: write # đưa file cài lên mục Release
     steps:
       - uses: actions/checkout@v5
 
-      - name: Lấy số phiên bản
+      - name: Lấy số phiên bản, ghi mã bản dựng
         id: ver
         shell: pwsh
         run: |
           $v = (Select-String -Path icontent/__init__.py -Pattern '__version__\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
           Write-Host "Phiên bản: $v"
           "version=$v" >> $env:GITHUB_OUTPUT
+          # app so mã này với ghi chú Release để biết có bản mới (icontent/autoupdate.py)
+          [IO.File]::WriteAllText("$PWD\icontent\_build_commit.txt", $env:GITHUB_SHA)
 
       - name: Kiểm tra code Python (Python đi kèm trong runtime)
         shell: pwsh
@@ -50,32 +76,86 @@ jobs:
         run: |
           $v = "${{ steps.ver.outputs.version }}"
           New-Item -ItemType Directory -Force dist | Out-Null
-          & $env:ISCC /Q "/DAppVersion=$v" "/DStageDir=$PWD" "/DOutputDir=$PWD\dist" "/DOutputBase=iContent-Setup-$v" installer\iContent.iss
+          & $env:ISCC /Q "/DAppVersion=$v" "/DStageDir=$PWD" "/DOutputDir=$PWD\dist" "/DOutputBase=Studio566-Setup-$v" installer\Studio566.iss
           if ($LASTEXITCODE) { throw "Inno Setup báo lỗi" }
-          $f = Get-Item "dist\iContent-Setup-$v.exe"
+          $f = Get-Item "dist\Studio566-Setup-$v.exe"
           Write-Host ("Đã tạo {0} ({1:N1} MB)" -f $f.Name, ($f.Length / 1MB))
           "SETUP_EXE=$($f.FullName)" >> $env:GITHUB_ENV
 
-      - name: Cài thử (im lặng) và kiểm tra không còn khóa bản quyền
+      - name: Cài thử file .exe (im lặng)
         shell: pwsh
         run: |
-          $dir = "$env:RUNNER_TEMP\iContent-thu"
+          $dir = "$env:RUNNER_TEMP\Studio566-thu"
           $p = Start-Process -FilePath $env:SETUP_EXE -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/DIR=$dir" -PassThru -Wait
           if ($p.ExitCode) { throw "Cài thử lỗi, mã $($p.ExitCode)" }
-          foreach ($f in "iContent Studio.cmd","Cai dat iContent.cmd","setup.ps1","runtime\python\python.exe","icontent\web\static\index.html") {
+          foreach ($f in "Studio566.cmd","Cai dat Studio566.cmd","setup.ps1","runtime\python\python.exe","icontent\web\static\index.html","icontent\web\static\icon.ico","icontent\_build_commit.txt") {
             if (-not (Test-Path (Join-Path $dir $f))) { throw "Thiếu file sau khi cài: $f" }
           }
+          if (Test-Path (Join-Path $dir "icontent\web\static\donate-qr.png")) { throw "Còn file mã chuyển khoản cũ" }
+          "APP_DIR=$dir" >> $env:GITHUB_ENV
+
+      - name: Chạy bước cài thư viện như bộ cài (tải Python, thư viện, ffmpeg)
+        shell: pwsh
+        timeout-minutes: 35
+        run: |
+          $dir = $env:APP_DIR
+          $status = Join-Path $dir "setup-status.txt"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $dir "setup.ps1") -NoLaunch -NoShortcut -StatusFile $status
+          $code = $LASTEXITCODE
+          if (Test-Path (Join-Path $dir "setup-log.txt")) { Get-Content (Join-Path $dir "setup-log.txt") -Tail 40 }
+          $first = (Get-Content $status -Encoding UTF8 | Select-Object -First 1)
+          Write-Host "Trạng thái cuối: $first (mã $code)"
+          if ($code -ne 0 -or $first -ne "DONE") { throw "Bước cài thư viện chưa xong" }
+
+      - name: Mở thử máy chủ Studio566 và gọi API
+        shell: pwsh
+        timeout-minutes: 10
+        run: |
+          $dir = $env:APP_DIR
+          $py = Join-Path $dir ".venv\Scripts\python.exe"
+          $env:PYTHONUTF8 = "1"; $env:PYTHONIOENCODING = "utf-8"; $env:STUDIO566_NO_AUTOUPDATE = "1"
           Push-Location $dir
-          $env:PYTHONUTF8 = "1"; $env:PYTHONIOENCODING = "utf-8"
-          & "runtime\python\python.exe" -c "import sys; sys.path.insert(0, '.'); from icontent import license as l; s = l.public_state(); print(s); sys.exit(1 if l.locked() else 0)"
+          & $py -c "import sys; sys.path.insert(0, '.'); from icontent import license as l; sys.exit(1 if l.locked() else 0)"
           if ($LASTEXITCODE) { throw "App vẫn còn khóa bản quyền" }
+          $srv = Start-Process -FilePath $py -ArgumentList "-m","uvicorn","icontent.web.server:create_app","--factory","--host","127.0.0.1","--port","8799" -WorkingDirectory $dir -PassThru -WindowStyle Hidden -RedirectStandardOutput "$env:RUNNER_TEMP\srv.out" -RedirectStandardError "$env:RUNNER_TEMP\srv.err"
+          $ok = $false
+          for ($i = 0; $i -lt 60; $i++) {
+            Start-Sleep 2
+            try {
+              $about = Invoke-RestMethod "http://127.0.0.1:8799/api/about" -TimeoutSec 5
+              $page = Invoke-WebRequest "http://127.0.0.1:8799/" -UseBasicParsing -TimeoutSec 5
+              $ok = $true; break
+            } catch {}
+          }
+          if ($ok) {
+            # chụp ảnh giao diện để xem lại (không bắt buộc đạt)
+            try {
+              if ("${{ github.event_name }}" -eq "pull_request") { $env:SHOTS_TO_LOG = "1" }
+              & $py -m pip install --quiet playwright
+              & $py (Join-Path $env:GITHUB_WORKSPACE "tests\ui_screens.py") "http://127.0.0.1:8799" "$env:GITHUB_WORKSPACE\shots"
+            } catch { Write-Host "Chụp ảnh giao diện lỗi: $_" }
+          }
+          Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
           Pop-Location
-          Write-Host ">>> Cài thử ĐẠT, không còn khóa bản quyền"
+          if (-not $ok) { Get-Content "$env:RUNNER_TEMP\srv.err" -Tail 40; throw "Máy chủ không lên" }
+          if ($about.PSObject.Properties.Name -contains "donate") { throw "API vẫn trả thông tin chuyển khoản" }
+          if ($page.Content -notmatch "Studio566") { throw "Trang chính chưa đổi tên Studio566" }
+          if ($page.Content -match "coffee-btn") { throw "Còn nút cà phê" }
+          Write-Host ">>> Máy chủ chạy được, trang chính đúng tên Studio566, không còn thông tin tác giả"
+
+      - name: Lưu ảnh giao diện
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: anh-giao-dien
+          path: shots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Lưu file cài (tải ở trang kết quả chạy)
         uses: actions/upload-artifact@v5
         with:
-          name: iContent-Setup-${{ steps.ver.outputs.version }}
+          name: Studio566-Setup-${{ steps.ver.outputs.version }}
           path: dist/*.exe
           retention-days: 7
 
@@ -86,12 +166,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "ban-moi-main"
-          $notes = "File cài mới nhất của nhánh main. Commit $($env:GITHUB_SHA.Substring(0,7)), dựng lúc $((Get-Date).ToUniversalTime().AddHours(9).ToString('HH:mm dd/MM/yyyy')) (giờ Nhật). Bấm đúp file .exe để cài; lần đầu cần mạng để tải thêm khoảng 3 GB."
+          $v = "${{ steps.ver.outputs.version }}"
+          $notes = "Studio566 $v, bản mới nhất của nhánh main. Dựng lúc $((Get-Date).ToUniversalTime().AddHours(9).ToString('HH:mm dd/MM/yyyy')) (giờ Nhật). Bấm đúp file .exe để cài; lần đầu cần mạng để tải thêm khoảng 3 GB.`n`nbuild: $env:GITHUB_SHA"
           gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --repo $env:GITHUB_REPOSITORY --prerelease --target $env:GITHUB_SHA --title "Bản mới nhất (main)" --notes $notes
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --prerelease --target $env:GITHUB_SHA --title "Studio566 bản mới nhất" --notes $notes
           } else {
-            gh release edit $tag --repo $env:GITHUB_REPOSITORY --notes $notes
+            gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Studio566 bản mới nhất" --notes $notes
             gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' | ForEach-Object { gh release delete-asset $tag $_ --repo $env:GITHUB_REPOSITORY -y }
           }
           gh release upload $tag $env:SETUP_EXE --repo $env:GITHUB_REPOSITORY --clobber

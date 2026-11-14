@@ -202,26 +202,112 @@ def transcribe_words(wav16k: str | Path, acfg) -> list[tuple]:
         condition_on_previous_text=False,   # giảm lặp/ảo giác của Whisper
         initial_prompt=acfg.initial_prompt or None,
     )
-    words = []
     total = len(audio) / 16000.0
+    words = _words_from(segments, total)
+    log("asr", f"Ngôn ngữ: {info.language} ({info.language_probability:.2f}), {len(words)} từ")
+    return [(round(float(a), 3), round(float(b), 3), w, k) for a, b, w, k in words]
+
+
+def _words_from(segments, total: float, offset: float = 0.0, keep=None) -> list[tuple]:
+    """Đoạn của faster-whisper -> [(start, end, word, brk)]. offset: giờ bắt đầu của khúc âm thanh trong video.
+    keep(s): lọc từng đoạn (nghe lại khoảng trống: bỏ đoạn Whisper "nghe" ra trong tiếng nhạc)."""
+    words = []
     for s in segments:
         check_cancel()
-        progress("asr", s.end / total if total else None)
-        if total and s.start >= total - 0.15:
+        if total:
+            progress("asr", min(1.0, (s.end + offset) / total))
+        if keep is not None and not keep(s):
+            continue
+        if total and s.start + offset >= total - 0.15:
             # Whisper hay "nghe" ra câu sau khi tiếng đã hết (感谢观看...), với giờ kết thúc theo khung 30 giây của nó, vượt cả độ dài video
             log("asr", f"Bỏ đoạn sau khi hết tiếng: {s.text.strip()[:40]}")
             continue
-        end = min(s.end, total) if total else s.end
-        ws = [(w.start, min(w.end, end), w.word) for w in (s.words or []) if w.word.strip() and (not total or w.start < total)]
+        end = min(s.end + offset, total) if total else s.end + offset
+        ws = [(w.start + offset, min(w.end + offset, end), w.word) for w in (s.words or [])
+              if w.word.strip() and (not total or w.start + offset < total)]
         if not ws and s.text.strip():      # đoạn không gióng được giờ từng từ (xem _safe_alignment): không bỏ mất câu thoại
-            ws = _spread_words(s.text, s.start, end)
+            ws = _spread_words(s.text, s.start + offset, end)
         for j, (a, b, w) in enumerate(ws):
             # điểm ngắt: 2 = hết đoạn Whisper, 1 = từ sau bắt đầu bằng dấu cách (ranh giới cụm từ)
             brk = 2 if j == len(ws) - 1 else (1 if ws[j + 1][2].startswith(" ") else 0)
             words.append((a, b, w, brk))
-        log("asr", f"{s.start:7.2f}s  {s.text.strip()[:60]}")
-    log("asr", f"Ngôn ngữ: {info.language} ({info.language_probability:.2f}), {len(words)} từ")
-    return [(round(float(a), 3), round(float(b), 3), w, k) for a, b, w, k in words]
+        log("asr", f"{s.start + offset:7.2f}s  {s.text.strip()[:60]}")
+    return words
+
+
+# Câu Whisper hay "nghe" ra trong tiếng nhạc, không phải lời thoại thật
+HALLUCINATIONS = ("感谢观看", "谢谢观看", "字幕", "订阅", "点赞", "关注", "明镜", "请不吝", "Amara", "by ")
+CJK = re.compile(r"[\u3400-\u9fff]")
+
+
+def find_gaps(words: list[tuple], total: float, wav16k: str | Path, min_gap: float = 2.5,
+              quiet_db: float = -42.0) -> list[tuple[float, float]]:
+    """Khoảng dài không có từ nào mà tiếng gốc vẫn có âm thanh (nhạc nền to che lời: bộ tách giọng làm mất thoại).
+    Khoảng im lặng thật (nghỉ giữa các câu, tiếng rất nhỏ) thì bỏ qua để không tốn thời gian nghe lại."""
+    import numpy as np
+    audio, sr = read_wav(wav16k)
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+    if not total:
+        total = len(audio) / float(sr)
+    spans, cur = [], 0.0
+    for w in sorted(words, key=lambda x: x[0]):
+        if w[0] - cur >= min_gap:
+            spans.append((cur, w[0]))
+        cur = max(cur, w[1])
+    if total - cur >= min_gap:
+        spans.append((cur, total))
+    out = []
+    hop = int(0.1 * sr)
+    for a, b in spans:
+        seg = audio[int(a * sr):int(b * sr)].astype("float64")
+        if len(seg) < hop:
+            continue
+        n = len(seg) // hop
+        rms = np.sqrt(np.mean(seg[: n * hop].reshape(n, hop) ** 2, axis=1) + 1e-12)
+        db = 20 * np.log10(rms + 1e-12)
+        if float(np.mean(db > quiet_db)) >= 0.5:      # quá nửa khoảng có tiếng
+            out.append((round(a, 3), round(b, 3)))
+    return out
+
+
+def transcribe_gaps(wav16k: str | Path, gaps: list[tuple[float, float]], acfg, total: float = 0.0) -> list[tuple]:
+    """Nghe lại các khoảng trống trên tiếng gốc (chưa tách nhạc), bộ lọc khoảng lặng nhạy hơn, chỉ giữ đoạn Whisper chắc chắn."""
+    audio, sr = read_wav(wav16k)
+    if sr != 16000:
+        raise ValueError(f"{wav16k}: cần 16kHz, nhận {sr}")
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+    total = total or len(audio) / 16000.0
+    model = _load_model(acfg)
+
+    def keep(s) -> bool:
+        t = s.text.strip()
+        zh = (acfg.language or "zh").startswith("zh")
+        units = len(CJK.findall(t)) if zh else sum(ch.isalnum() for ch in t)
+        if units < 2 or any(h in t for h in HALLUCINATIONS):
+            return False
+        return getattr(s, "no_speech_prob", 0.0) < 0.6 and getattr(s, "avg_logprob", 0.0) > -1.0
+
+    out = []
+    for a, b in gaps:
+        check_cancel()
+        a0, b0 = max(0.0, a - 0.3), min(total, b + 0.3)
+        clip = audio[int(a0 * 16000):int(b0 * 16000)]
+        segments, _ = model.transcribe(
+            clip,
+            language=acfg.language or None,
+            beam_size=int(acfg.beam_size),
+            vad_filter=True,
+            vad_parameters={"threshold": 0.25, "min_silence_duration_ms": 300},
+            word_timestamps=True,
+            condition_on_previous_text=False,
+            initial_prompt=acfg.initial_prompt or None,
+        )
+        got = [w for w in _words_from(segments, total, offset=a0, keep=keep) if w[0] >= a - 0.3 and w[1] <= b + 0.3]
+        log("asr", f"Nghe lại {a:.1f}s đến {b:.1f}s: " + (f"tìm thêm {len(got)} từ" if got else "không có lời"))
+        out += got
+    return out
 
 
 def resegment(words: list[tuple], acfg) -> list[Segment]:

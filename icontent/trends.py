@@ -295,7 +295,7 @@ def fetch_topics(source: str, proxy: str = "") -> list[dict]:
 
 
 def search_links(word: str) -> list[dict]:
-    """Mở trang tìm kiếm của từng nền tảng: duyệt ở đó, chép link video rồi dán vào iContent."""
+    """Mở trang tìm kiếm của từng nền tảng: duyệt ở đó, chép link video rồi dán vào Studio566."""
     q = quote(word)
     return [
         {"id": "bilibili", "name": "Bilibili", "url": f"https://search.bilibili.com/all?keyword={q}"},

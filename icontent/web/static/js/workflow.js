@@ -392,7 +392,7 @@ async function editorPage(main, alive, reg, wid) {
           el('li', { text: 'Nối dây: kéo từ chấm tròn bên phải một khối sang chấm cùng màu bên trái khối khác.' }),
           el('li', { text: 'Bấm vào khối để chỉnh thiết lập. Phím Delete xóa khối hoặc dây đang chọn.' }),
           el('li', { text: 'Kéo nền để di chuyển, lăn chuột để phóng to, thu nhỏ.' }),
-          el('li', { text: 'Khối có dấu $ gọi AI vẽ ảnh trả phí: trước khi chạy iContent hỏi lại kèm số ảnh, giá. Chọn nguồn Vẽ trên máy thì miễn phí, không hỏi.' })),
+          el('li', { text: 'Khối có dấu $ gọi AI vẽ ảnh trả phí: trước khi chạy Studio566 hỏi lại kèm số ảnh, giá. Chọn nguồn Vẽ trên máy thì miễn phí, không hỏi.' })),
         el('div', { class: 'wf-legend' }, Object.entries(KIND_LABEL).map(([k, l]) => el('span', {}, el('i', { class: 'wf-dot', style: { background: KIND_COLOR[k] } }), l))));
       return;
     }

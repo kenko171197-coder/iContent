@@ -35,7 +35,7 @@ EXTENSIONS = {
     "chrome": "https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc",
     "firefox": "https://addons.mozilla.org/firefox/addon/get-cookies-txt-locally/",
 }
-NETSCAPE_HEADER = "# Netscape HTTP Cookie File\n# Tạo bởi iContent. Chỉ chứa cookie của một trang, không chia sẻ file này cho người khác.\n\n"
+NETSCAPE_HEADER = "# Netscape HTTP Cookie File\n# Tạo bởi Studio566. Chỉ chứa cookie của một trang, không chia sẻ file này cho người khác.\n\n"
 
 
 def cookie_path(site: str) -> Path:
@@ -340,15 +340,15 @@ def _rules():
         (r"Chưa tải Giọng đọc nhiều thứ tiếng|Bộ đọc nhiều thứ tiếng (không khởi động|khởi động quá lâu)", _voices_pack),
         (r"Đang tắt tính năng trả phí", lambda c: {
             "code": "paid_off", "title": "Việc này tính tiền, đang bị khóa",
-            "why": "iContent ưu tiên cách miễn phí: các việc gọi AI tính tiền (vẽ ảnh bằng Gemini, OpenAI, Meta Muse; AI làm clip) chỉ chạy khi bạn bật.",
+            "why": "Studio566 ưu tiên cách miễn phí: các việc gọi AI tính tiền (vẽ ảnh bằng Gemini, OpenAI, Meta Muse; AI làm clip) chỉ chạy khi bạn bật.",
             "steps": ["Dùng cách miễn phí: nguồn ảnh Tự chọn hoặc Vẽ trên máy; Video nền thay cho clip AI.",
-                      "Muốn dùng bản trả phí: Cài đặt, mục Chi phí, bật Cho phép tính năng trả phí. Mỗi lần tốn tiền iContent vẫn báo giá và hỏi trước."],
+                      "Muốn dùng bản trả phí: Cài đặt, mục Chi phí, bật Cho phép tính năng trả phí. Mỗi lần tốn tiền Studio566 vẫn báo giá và hỏi trước."],
             "actions": [{"id": "open", "label": "Mở mục Chi phí", "href": "#/settings", "focus": "chi-phi", "primary": True}]}),
         (r"gói miễn phí không tạo video|Google không cho tạo video ở gói này", lambda c: {
             "code": "video_billing", "title": "Key Gemini chưa làm được clip AI",
             "why": "Tạo video của Google (Gemini Omni) không có gói miễn phí. Key đang dùng là gói miễn phí nên Google từ chối, lần này không bị tính tiền.",
             "steps": ["Mở aistudio.google.com, mục Billing, bật thanh toán cho project của key (khoảng 0,07 USD mỗi giây clip ở 720p).",
-                      "Hoặc dùng Video nền miễn phí: bấm Tìm video nền cho mọi cảnh, iContent lấy video quay thật từ kho có giấy phép.",
+                      "Hoặc dùng Video nền miễn phí: bấm Tìm video nền cho mọi cảnh, Studio566 lấy video quay thật từ kho có giấy phép.",
                       "Bật thanh toán xong bấm lại AI làm clip."],
             "actions": [{"id": "open", "label": "Mở trang Billing", "href": "https://aistudio.google.com/usage?tab=billing", "primary": True},
                         {"id": "open", "label": "Cài đặt video nền", "href": "#/settings", "focus": "video-nen"}]}),
@@ -361,36 +361,36 @@ def _rules():
         (r"(?i)douyin.*cookie|fresh cookies", _douyin_cookie),
         (r"Chưa tải được bộ tách nhạc nền|Bộ tách nhạc nền bị hỏng|Không tách được nhạc nền|audio\.separate=on nhưng chưa cài", lambda c: {
             "code": "separate", "title": "Chưa tách được nhạc nền",
-            "why": "Lần đầu tách nhạc nền, iContent cần tải bộ tách (67 MB). Lần này tải hoặc chạy không được, "
-                   "hay gặp khi mất mạng, bị chặn GitHub, hoặc dùng bản iContent cũ (bản cũ cần cài thêm thư viện riêng).",
+            "why": "Lần đầu tách nhạc nền, Studio566 cần tải bộ tách (67 MB). Lần này tải hoặc chạy không được, "
+                   "hay gặp khi mất mạng, bị chặn GitHub, hoặc dùng bản Studio566 cũ (bản cũ cần cài thêm thư viện riêng).",
             "steps": ["Kiểm tra mạng rồi bấm Thử lại: phần đã tải được giữ lại, tải tiếp chứ không tải lại từ đầu.",
                       "Cần làm gấp: mở Tùy chọn → Âm thanh → Tách nhạc nền khỏi giọng gốc, chọn Tự động hoặc Tắt rồi Thử lại. "
                       "Video vẫn lồng tiếng bình thường, tiếng gốc được giữ nhỏ dưới giọng lồng.",
-                      "Đang dùng bản cũ: cài bản iContent mới nhất (cài đè, giữ nguyên video và cài đặt)."],
+                      "Đang dùng bản cũ: cài bản Studio566 mới nhất (cài đè, giữ nguyên video và cài đặt)."],
             "actions": [dict(A_RETRY, primary=True)]}),
         (r"(?i)external data path|escapes model directory", lambda c: {
             "code": "model_symlink", "title": "Bộ giọng đọc cần sửa lại cách lưu file",
             "why": "Windows trên máy này lưu file mô hình dạng lối tắt (symlink), bản ONNX Runtime mới không chịu đọc kiểu đó. "
-                   "Bản iContent này đã tự sửa khi nạp giọng, bấm Sửa ngay để chắc chắn.",
-            "steps": ["Bấm Sửa ngay: iContent đổi các lối tắt thành file thật (vài giây, không phải tải lại).",
+                   "Bản Studio566 này đã tự sửa khi nạp giọng, bấm Sửa ngay để chắc chắn.",
+            "steps": ["Bấm Sửa ngay: Studio566 đổi các lối tắt thành file thật (vài giây, không phải tải lại).",
                       "Xong bấm Thử lại (lỗi ở trang khác thì bấm lại nút vừa báo lỗi)."],
             "actions": [{"id": "repair_models", "label": "Sửa ngay", "primary": True}, A_RETRY]}),
         (r"(?i)INVALID_PROTOBUF|protobuf parsing failed|NO_SUCHFILE|load model from .* failed|"
          r"safetensors_rust|HeaderTooLarge|BadZipFile|file is not a zip|unable to open file.*model", lambda c: {
             "code": "model_broken", "title": f"File mô hình bị hỏng ({MODEL_NAMES[c['model']]})",
             "why": "Lần tải trước bị ngắt giữa chừng (mất mạng, tắt máy) nên file trên ổ không đầy đủ.",
-            "steps": ["Bấm Tải lại mô hình: iContent xóa bản hỏng và tải bản mới trong hàng đợi (có thanh tiến độ).",
+            "steps": ["Bấm Tải lại mô hình: Studio566 xóa bản hỏng và tải bản mới trong hàng đợi (có thanh tiến độ).",
                       "Tải xong bấm Thử lại (lỗi ở trang khác thì bấm lại nút vừa báo lỗi)."],
             "actions": [{"id": "redownload", "label": "Tải lại mô hình", "primary": True, "model": c["model"]}, A_RETRY]}),
         (r"(?i)huggingface\.co|LocalEntryNotFound|couldn't connect to .*hugging|cas-bridge|xethub|hf_xet|không tải được mô hình", lambda c: {
             "code": "model_download", "title": "Không tải được mô hình AI",
-            "why": "Lần đầu dùng, iContent phải tải mô hình từ huggingface.co nhưng kết nối bị chặn hoặc chập chờn.",
+            "why": "Lần đầu dùng, Studio566 phải tải mô hình từ huggingface.co nhưng kết nối bị chặn hoặc chập chờn.",
             "steps": ["Kiểm tra mạng, tắt VPN/1.1.1.1/proxy nếu đang bật (hoặc ngược lại: bật VPN nếu nhà mạng chặn).",
                       "Bấm Tải lại mô hình, chờ thanh tiến độ trong hàng đợi chạy hết rồi làm lại việc vừa lỗi."],
             "actions": [{"id": "redownload", "label": "Tải lại mô hình", "primary": True, "model": c["model"]}, A_RETRY]}),
         (r"(?i)extracted extension \('?html'?\)|unsupported url|is not a valid url|không thấy video trong link", lambda c: {
             "code": "link_not_video", "title": "Link này không phải trang của một video",
-            "why": "iContent mở link nhưng chỉ thấy trang web, không thấy video. Hay gặp khi link bị thêm phần phụ "
+            "why": "Studio566 mở link nhưng chỉ thấy trang web, không thấy video. Hay gặp khi link bị thêm phần phụ "
                    "(ngôn ngữ /vi/, mã theo dõi) hoặc là link trang chủ, kênh, tìm kiếm.",
             "steps": ["Bản này đã tự bỏ phần phụ của link Bilibili: bấm Thử lại trước.",
                       "Vẫn lỗi: mở đúng video, bấm Chia sẻ → Sao chép liên kết rồi dán lại. Link Bilibili đúng có dạng bilibili.com/video/BV…",
@@ -398,7 +398,7 @@ def _rules():
             "actions": [dict(A_RETRY, primary=True), A_YTDLP, A_FILE]}),
         (r"(?i)HTTP Error 5\d\d|máy chủ \S+ báo bận", lambda c: {
             "code": "server_busy", "title": f"Máy chủ {c['site']} đang bận hoặc tạm chặn",
-            "why": f"Lỗi nằm phía {c['site']} (mã 5xx), không phải do máy bạn. iContent đã tự thử lại vài lần. Thường hết sau vài phút.",
+            "why": f"Lỗi nằm phía {c['site']} (mã 5xx), không phải do máy bạn. Studio566 đã tự thử lại vài lần. Thường hết sau vài phút.",
             "steps": ["Đợi 2–5 phút rồi bấm Thử lại.",
                       "Vẫn lỗi: tắt VPN/1.1.1.1 hoặc đổi mạng (Wi-Fi khác, phát 4G từ điện thoại) rồi thử lại.",
                       "Cần gấp: tải video về máy bằng cách khác rồi kéo file vào ô Dán link."],
@@ -419,7 +419,7 @@ def _rules():
          r"connection (reset|refused|aborted)|network is unreachable|newconnectionerror|remotedisconnected|max retries exceeded|"
          r"ssl: |certificate verify failed|WinError 10060|WinError 10054|WinError 11001|không kết nối", lambda c: {
             "code": "network", "title": "Mất kết nối mạng",
-            "why": "iContent không kết nối được tới máy chủ cần dùng.",
+            "why": "Studio566 không kết nối được tới máy chủ cần dùng.",
             "steps": ["Kiểm tra mạng (mở thử một trang web).", "Đang bật VPN/1.1.1.1/proxy thì thử tắt, hoặc đổi mạng khác.",
                       "Có mạng lại thì bấm Thử lại."],
             "actions": [dict(A_RETRY, primary=True)]}),
@@ -431,14 +431,14 @@ def _rules():
             "actions": [dict(A_YTDLP, primary=True), A_RETRY, A_FILE]}),
         (r"(?i)no space left|not enough space|errno 28|WinError 112|disk full|ổ (đĩa )?đầy", lambda c: {
             "code": "disk_full", "title": "Ổ đĩa đã đầy",
-            "why": "Video và file tạm cần chỗ trống, ổ chứa iContent không còn đủ.",
+            "why": "Video và file tạm cần chỗ trống, ổ chứa Studio566 không còn đủ.",
             "steps": ["Mở Thư viện → Dọn dung lượng để xóa file tạm an toàn.", "Xóa bớt video cũ không cần nữa rồi bấm Thử lại."],
             "actions": [{"id": "open", "label": "Mở Thư viện", "href": "#/library", "primary": True}, A_RETRY]}),
         (r"(?i)không tìm thấy ffmpeg|ffmpeg (is )?not (installed|found)", lambda c: {
             "code": "ffmpeg", "title": "Máy chưa có ffmpeg (bộ xử lý video)",
-            "why": "ffmpeg được cài cùng iContent nhưng trên máy này đã bị thiếu hoặc bị xóa.",
-            "steps": ["Chạy lại file cài iContent-Setup, chọn đúng thư mục cũ: bộ cài tự tải ffmpeg, giữ nguyên video và cài đặt.",
-                      "Hoặc mở PowerShell gõ: winget install Gyan.FFmpeg, rồi tắt mở lại iContent."],
+            "why": "ffmpeg được cài cùng Studio566 nhưng trên máy này đã bị thiếu hoặc bị xóa.",
+            "steps": ["Chạy lại file cài Studio566-Setup, chọn đúng thư mục cũ: bộ cài tự tải ffmpeg, giữ nguyên video và cài đặt.",
+                      "Hoặc mở PowerShell gõ: winget install Gyan.FFmpeg, rồi tắt mở lại Studio566."],
             "actions": [A_REPORT]}),
         (r"(?i)cuda out of memory|CUBLAS_STATUS_ALLOC_FAILED|out of memory|cudaErrorMemoryAllocation|bad_alloc|MemoryError", lambda c: {
             "code": "memory", "title": "Hết bộ nhớ (RAM hoặc card đồ họa)",
@@ -448,7 +448,7 @@ def _rules():
             "actions": [dict(A_RETRY, primary=True)]}),
         (r"(?i)WinError 32|being used by another process|permission denied|WinError 5\b|access is denied", lambda c: {
             "code": "file_locked", "title": "File đang bị chương trình khác giữ",
-            "why": "Một chương trình khác (trình xem video, phần mềm dựng, diệt virus, OneDrive) đang mở file iContent cần ghi.",
+            "why": "Một chương trình khác (trình xem video, phần mềm dựng, diệt virus, OneDrive) đang mở file Studio566 cần ghi.",
             "steps": ["Đóng trình xem video hoặc phần mềm đang mở file đó.", "Bấm Thử lại."],
             "actions": [dict(A_RETRY, primary=True)]}),
     ]
@@ -465,13 +465,13 @@ def _translate_failed(c: dict) -> dict:
             "why": "AI dịch (Gemini, Claude...) đang quá tải, hết hạn mức hoặc sai key, và Google dịch miễn phí cũng đang chặn. "
                    "Dịch offline chạy ngay trên máy nên không gặp các lỗi này, không cần key.",
             "steps": ["Bấm Tải Dịch offline (khoảng 1,2 GB, chỉ tải một lần, có thanh tiến độ).",
-                      "Tải xong bấm Thử lại: iContent dịch tiếp đúng các câu còn thiếu, câu đã dịch giữ nguyên.",
+                      "Tải xong bấm Thử lại: Studio566 dịch tiếp đúng các câu còn thiếu, câu đã dịch giữ nguyên.",
                       "Cần gấp: mở video trong Studio và tự điền bản dịch."],
             "actions": [{"id": "ai_pack", "label": "Tải Dịch offline", "pack": "translate", "primary": True}, A_RETRY]}
     return {
         "code": "translate_failed", "title": "Không tự dịch được",
         "why": "Cả AI dịch, dịch offline trên máy và Google dịch đều báo lỗi. Chi tiết của từng cách nằm ở dòng lỗi bên dưới.",
-        "steps": ["Bấm Thử lại: iContent dịch tiếp các câu còn thiếu.",
+        "steps": ["Bấm Thử lại: Studio566 dịch tiếp các câu còn thiếu.",
                   "Vẫn lỗi: mở Cài đặt > Mô-đun AI miễn phí, bấm Dịch thử để xem dịch offline có chạy trên máy này không.",
                   "Cần gấp: mở video trong Studio và tự điền bản dịch."],
         "actions": [dict(A_RETRY, primary=True), A_AI_SETTINGS]}
@@ -509,9 +509,9 @@ def _douyin_cookie(c: dict) -> dict:
             "code": "douyin_cookie_old", "title": "Cookie Douyin đã cũ, cần xuất lại",
             "why": "Douyin đổi cookie định kỳ. Cookie đã nạp không còn dùng được, hoặc được xuất khi trang chưa tải xong "
                    "hay còn đang hiện ô xác minh.",
-            "steps": ["Bấm Làm mới cookie: iContent mở douyin.com trên trình duyệt. Chờ trang hiện video, lướt qua 1–2 video. "
+            "steps": ["Bấm Làm mới cookie: Studio566 mở douyin.com trên trình duyệt. Chờ trang hiện video, lướt qua 1–2 video. "
                       "Có ô kéo xác minh thì kéo cho xong; hiện hộp đăng nhập thì bấm dấu X (không cần đăng nhập).",
-                      "Bấm biểu tượng tiện ích Get cookies.txt LOCALLY rồi bấm Export: iContent tự nhận file và tự thử lại video.",
+                      "Bấm biểu tượng tiện ích Get cookies.txt LOCALLY rồi bấm Export: Studio566 tự nhận file và tự thử lại video.",
                       "Vẫn lỗi với cookie mới: bấm Cập nhật bộ tải video (Douyin vừa đổi cách trang chạy), rồi Thử lại."],
             "actions": [{"id": "cookies", "label": "Làm mới cookie", "primary": True, "site": "douyin", "renew": True}, A_YTDLP, A_RETRY]}
     return {
@@ -519,7 +519,7 @@ def _douyin_cookie(c: dict) -> dict:
         "why": "Douyin chỉ cho tải khi có cookie, là mẩu dữ liệu trình duyệt tự lưu lúc bạn mở douyin.com. "
                "Không cần đăng nhập, làm một lần dùng được nhiều ngày.",
         "steps": ["Bấm Thêm cookie Douyin và làm theo các bước (khoảng 2 phút, chỉ lần đầu phải cài tiện ích).",
-                  "Bấm Export trong tiện ích là iContent tự nhận file, rồi tự thử lại video."],
+                  "Bấm Export trong tiện ích là Studio566 tự nhận file, rồi tự thử lại video."],
         "actions": [{"id": "cookies", "label": "Thêm cookie Douyin", "primary": True, "site": "douyin"}, A_RETRY]}
 
 

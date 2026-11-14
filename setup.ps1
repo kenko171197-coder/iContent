@@ -1,11 +1,25 @@
-﻿# Cài đặt iContent trên Windows. Khách chỉ cần bấm đúp file "Cai dat iContent.cmd".
-# Dùng tay: powershell -ExecutionPolicy Bypass -File setup.ps1 [-NoShortcut] [-NoLaunch]
-param([switch]$NoShortcut, [switch]$NoLaunch)
+﻿# Cài đặt Studio566 trên Windows. Khách chỉ cần bấm đúp file "Cai dat Studio566.cmd".
+# Dùng tay: powershell -ExecutionPolicy Bypass -File setup.ps1 [-NoShortcut] [-NoLaunch] [-StatusFile <file>]
+# -StatusFile: bộ cài .exe chạy ẩn script này và đọc file trạng thái để hiện thanh tiến trình (dòng 1: số bước | DONE | FAIL,
+# dòng 2: tên bước hoặc câu lỗi, dòng 3: đang làm gì). Toàn bộ chữ in ra được ghi vào setup-log.txt cạnh script.
+param([switch]$NoShortcut, [switch]$NoLaunch, [string]$StatusFile = "")
 $ErrorActionPreference = "Stop"
+function Write-Status([string]$a, [string]$b = "", [string]$c = "") {
+    if (-not $StatusFile) { return }
+    try {
+        $tmp = "$StatusFile.tmp"
+        [IO.File]::WriteAllText($tmp, "$a`r`n$b`r`n$c`r`n", (New-Object Text.UTF8Encoding $true))
+        Move-Item -LiteralPath $tmp -Destination $StatusFile -Force
+    } catch {}
+}
+$script:CurStep = "1"; $script:CurText = ""
+if ($StatusFile) { try { Start-Transcript -LiteralPath (Join-Path $PSScriptRoot "setup-log.txt") -Force | Out-Null } catch {} }
 # lỗi nào cũng chỉ in đúng câu tiếng Việt cho người dùng, không kèm số dòng, đoạn mã của PowerShell
 trap {
     Write-Host ""
     Write-Host "LỖI: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Status "FAIL" "$($_.Exception.Message)"
+    if ($StatusFile) { try { Stop-Transcript | Out-Null } catch {} }
     exit 1
 }
 Set-Location -LiteralPath $PSScriptRoot
@@ -13,7 +27,11 @@ try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch {}
 $env:PYTHONIOENCODING = "utf-8"      # đường dẫn có dấu in ra ống dẫn sẽ làm Python báo lỗi nếu còn dùng bảng mã cũ của Windows
 $env:PYTHONUTF8 = "1"
 
-function Step($n, $text) { Write-Host ""; Write-Host "[$n/5] $text" -ForegroundColor Yellow }
+function Step($n, $text) {
+    Write-Host ""; Write-Host "[$n/5] $text" -ForegroundColor Yellow
+    $script:CurStep = "$n"; $script:CurText = $text
+    Write-Status "$n" $text ""
+}
 
 # Lệnh ngoài ghi cảnh báo ra stderr là chuyện thường. Với Stop, PowerShell 5.1 coi đó là lỗi và dừng cả script,
 # nên chỉ xét mã thoát của chính lệnh đó. Out-Host: để log hiện ra màn hình; nếu không, log thành giá trị trả về của hàm,
@@ -21,7 +39,16 @@ function Step($n, $text) { Write-Host ""; Write-Host "[$n/5] $text" -ForegroundC
 function Invoke-Native($exe, [string[]]$arguments) {
     $old = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    try { & $exe @arguments 2>&1 | ForEach-Object { "$_" } | Out-Host; return $LASTEXITCODE } finally { $ErrorActionPreference = $old }
+    try {
+        & $exe @arguments 2>&1 | ForEach-Object {
+            $line = "$_"
+            if ($StatusFile -and $line -match '^\s*(Collecting|Downloading|Installing|Building|Successfully)') {
+                Write-Status $script:CurStep $script:CurText ($line.Trim() -replace '\s+', ' ').Substring(0, [Math]::Min(110, ($line.Trim() -replace '\s+', ' ').Length))
+            }
+            $line
+        } | Out-Host
+        return $LASTEXITCODE
+    } finally { $ErrorActionPreference = $old }
 }
 
 function Get-PythonVersion($exe, [string[]]$prefix) {
@@ -70,11 +97,11 @@ function Get-VenvVersion {
 }
 
 # máy không có winget (Windows 10 chưa cập nhật, máy công ty) hoặc winget lỗi: tải thẳng đúng bản ffmpeg winget cài (Gyan, đặt trên
-# GitHub, nhanh hơn trang gyan.dev nhiều) vào tools\ffmpeg, chỗ iContent tìm đầu tiên
+# GitHub, nhanh hơn trang gyan.dev nhiều) vào tools\ffmpeg, chỗ Studio566 tìm đầu tiên
 function Install-FfmpegDirect {
     $ProgressPreference = "SilentlyContinue"      # thanh tiến độ của PowerShell 5.1 làm tải chậm đi hàng chục lần
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/GyanD/codexffmpeg/releases/latest" -UseBasicParsing -Headers @{ "User-Agent" = "iContent-setup" }
+    $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/GyanD/codexffmpeg/releases/latest" -UseBasicParsing -Headers @{ "User-Agent" = "Studio566-setup" }
     $asset = @($rel.assets | Where-Object { $_.name -like "*-essentials_build.zip" })[0]
     if (-not $asset) { throw "Không tìm thấy bản ffmpeg để tải." }
     $tools = Join-Path $PSScriptRoot "tools"
@@ -96,7 +123,7 @@ function Install-FfmpegDirect {
     }
 }
 
-Write-Host "Cài đặt iContent Studio" -ForegroundColor Green
+Write-Host "Cài đặt Studio566" -ForegroundColor Green
 Write-Host "Cần mạng Internet. Lần đầu mất khoảng 5 đến 15 phút, tải khoảng 3 GB."
 
 Step 1 "Kiểm tra máy và Python"
@@ -108,18 +135,18 @@ if (($env:TEMP -and $here.StartsWith($env:TEMP, [StringComparison]::OrdinalIgnor
 }
 foreach ($pf in @($env:ProgramFiles, ${env:ProgramFiles(x86)})) {
     if ($pf -and $here.StartsWith($pf, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Thư mục Program Files không cho phần mềm tự ghi file. Hãy chép thư mục iContent ra ổ D hoặc thư mục Documents rồi cài lại."
+        throw "Thư mục Program Files không cho phần mềm tự ghi file. Hãy chép thư mục Studio566 ra ổ D hoặc thư mục Documents rồi cài lại."
     }
 }
-if (-not [Environment]::Is64BitOperatingSystem) { throw "iContent cần Windows bản 64-bit." }
+if (-not [Environment]::Is64BitOperatingSystem) { throw "Studio566 cần Windows bản 64-bit." }
 if ($env:OneDrive -and $here.StartsWith($env:OneDrive, [StringComparison]::OrdinalIgnoreCase)) {
-    Write-Host "Lưu ý: thư mục này nằm trong OneDrive, mô hình AI và video (vài GB) sẽ bị đồng bộ lên mạng. Nên chuyển iContent ra ngoài OneDrive." -ForegroundColor Yellow
+    Write-Host "Lưu ý: thư mục này nằm trong OneDrive, mô hình AI và video (vài GB) sẽ bị đồng bộ lên mạng. Nên chuyển Studio566 ra ngoài OneDrive." -ForegroundColor Yellow
 }
 $freeGB = $null
 try { $freeGB = [math]::Round((Get-Item -LiteralPath $here).PSDrive.Free / 1GB, 1) } catch {}
 if ($null -ne $freeGB) {
     $drive = (Get-Item -LiteralPath $here).PSDrive.Name
-    if ($freeGB -lt 4) { throw "Ổ ${drive}: chỉ còn $freeGB GB trống, iContent cần khoảng 8 GB. Hãy dọn bớt, hoặc đặt thư mục iContent ở ổ khác rồi cài lại." }
+    if ($freeGB -lt 4) { throw "Ổ ${drive}: chỉ còn $freeGB GB trống, Studio566 cần khoảng 8 GB. Hãy dọn bớt, hoặc đặt thư mục Studio566 ở ổ khác rồi cài lại." }
     if ($freeGB -lt 8) { Write-Host "Lưu ý: ổ ${drive}: còn $freeGB GB trống. Cài được, nhưng mỗi video cần thêm vài trăm MB." -ForegroundColor Yellow }
 }
 $venvPy = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
@@ -167,7 +194,7 @@ if ($code -ne 0) {
 }
 
 Step 3 "Kiểm tra ffmpeg"
-# hỏi chính iContent: nó biết cả chỗ winget cài vào, nơi PATH chưa cập nhật cho tới khi mở lại cửa sổ
+# hỏi chính Studio566: nó biết cả chỗ winget cài vào, nơi PATH chưa cập nhật cho tới khi mở lại cửa sổ
 $ffCheck = @("-c", "from icontent.util import find_ffmpeg; find_ffmpeg()")
 if ((Invoke-Native $venvPy $ffCheck) -ne 0) {
     if (Get-Command winget -ErrorAction SilentlyContinue) {
@@ -190,11 +217,13 @@ Step 5 "Tạo biểu tượng"
 if ($NoShortcut) {
     Write-Host "Bỏ qua theo yêu cầu."
 } elseif ((Invoke-Native $venvPy @("-m", "icontent", "shortcut")) -ne 0) {
-    Write-Host "Không tạo được biểu tượng màn hình nền. Vẫn mở được bằng file iContent Studio.cmd."
+    Write-Host "Không tạo được biểu tượng màn hình nền. Vẫn mở được bằng file Studio566.cmd."
 }
 
 Write-Host ""
-if ($NoShortcut) { Write-Host "Xong. Mở iContent bằng file iContent Studio.cmd trong thư mục này." -ForegroundColor Green }
-else { Write-Host "Xong. Từ giờ mở bằng biểu tượng iContent Studio trên màn hình nền." -ForegroundColor Green }
+if ($NoShortcut) { Write-Host "Xong. Mở Studio566 bằng file Studio566.cmd trong thư mục này." -ForegroundColor Green }
+else { Write-Host "Xong. Từ giờ mở bằng biểu tượng Studio566 trên màn hình nền." -ForegroundColor Green }
 Write-Host "Lần mở đầu có hướng dẫn 3 bước: kết nối AI miễn phí, tải trước mô hình nhận giọng và giọng đọc (khoảng 2,6 GB), làm video đầu tiên."
-if (-not $NoLaunch) { Start-Process -FilePath (Join-Path $PSScriptRoot "iContent Studio.cmd") -WindowStyle Hidden }
+Write-Status "DONE" "Xong"
+if ($StatusFile) { try { Stop-Transcript | Out-Null } catch {} }
+if (-not $NoLaunch) { Start-Process -FilePath (Join-Path $PSScriptRoot "Studio566.cmd") -WindowStyle Hidden }

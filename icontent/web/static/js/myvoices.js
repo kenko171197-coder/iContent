@@ -10,7 +10,7 @@ const MAX_REC = 40;
 async function upload(blob, name, gender) {
   const q = new URLSearchParams({ name, gender });
   let res;
-  try { res = await fetch(`/api/myvoices?${q}`, { method: 'POST', body: blob }); } catch (_) { throw new Error('Không kết nối được iContent'); }
+  try { res = await fetch(`/api/myvoices?${q}`, { method: 'POST', body: blob }); } catch (_) { throw new Error('Không kết nối được Studio566'); }
   if (!res.ok) {
     let msg = `Lỗi ${res.status}`;
     try { const j = await res.json(); if (j && j.detail) msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail); } catch (_) { /* không phải JSON */ }

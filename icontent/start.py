@@ -1,7 +1,7 @@
-"""Biểu tượng iContent Studio chạy file này (bằng Python kèm trong gói, runtime\\python\\pythonw.exe), không chạy thẳng .venv.
+"""Biểu tượng Studio566 chạy file này (bằng Python kèm trong gói, runtime\\python\\pythonw.exe), không chạy thẳng .venv.
 
 Lý do: khi thư viện cài dở, .venv hỏng hay bị phần mềm diệt virus xóa, bấm biểu tượng cũ chỉ ra hộp lỗi của Windows hoặc chẳng
-có gì, khách không biết làm gì tiếp. Nay: mở iContent như cũ; nếu nó không lên được thì mở ngay cửa sổ Sửa lỗi iContent
+có gì, khách không biết làm gì tiếp. Nay: mở Studio566 như cũ; nếu nó không lên được thì mở ngay cửa sổ Sửa lỗi Studio566
 (icontent/support.py) cho biết vì sao, có nút sửa và nút tạo gói báo lỗi. Chỉ dùng thư viện chuẩn của Python.
 """
 from __future__ import annotations
@@ -34,10 +34,10 @@ def main(argv: list[str] | None = None) -> int:
     while time.time() < end:
         code = p.poll()
         if code is not None:
-            # 0: đã mở thêm cửa sổ cho iContent đang chạy, hoặc khách mở rồi đóng ngay; khác 0: không mở được
+            # 0: đã mở thêm cửa sổ cho Studio566 đang chạy, hoặc khách mở rồi đóng ngay; khác 0: không mở được
             return 0 if code == 0 else support.serve(reason=f"ma-{code}")
         if support.app_alive(timeout=1.5):
-            return 0      # đã lên: iContent tự lo phần còn lại (tự chạy lại khi chết bất thường, appwin.supervise)
+            return 0      # đã lên: Studio566 tự lo phần còn lại (tự chạy lại khi chết bất thường, appwin.supervise)
         time.sleep(1.0)
     return 0
 

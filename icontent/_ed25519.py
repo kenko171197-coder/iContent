@@ -1,10 +1,10 @@
 """Ed25519 thuần Python (RFC 8032), không phụ thuộc thư viện ngoài.
 
 Chỉ cần cho phía người dùng là `verify()` (kiểm chữ ký bằng khoá công khai). `sign()`/`publickey()` để công cụ
-cấp key của tác giả dùng khi máy tác giả không cài `cryptography`. Dùng `pow()` tích hợp của Python (chạy ở tầng C)
+cấp key dùng khi máy không cài `cryptography`. Dùng `pow()` tích hợp của Python (chạy ở tầng C)
 cho luỹ thừa modulo nên một lần kiểm chỉ mất vài chục mili giây.
 
-Giống hệt bản của iTube và iKey_bot (cùng tác giả). Tính đúng đắn được đối chiếu với vector chuẩn RFC 8032 trong tests/test_features.py.
+Tính đúng đắn được đối chiếu với vector chuẩn RFC 8032 trong tests/test_features.py.
 """
 from __future__ import annotations
 

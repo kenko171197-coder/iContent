@@ -1,11 +1,11 @@
-"""Sửa lỗi iContent: kiểm tra máy, sửa những lỗi hay gặp sau khi cài, và tạo gói báo lỗi gửi người hỗ trợ.
+"""Sửa lỗi Studio566: kiểm tra máy, sửa những lỗi hay gặp sau khi cài, và tạo gói báo lỗi gửi người hỗ trợ.
 
-Chạy được cả khi iContent không mở được (thư viện cài dở, ffmpeg thiếu, cổng bị chiếm, phần mềm diệt virus xóa file...), nên
+Chạy được cả khi Studio566 không mở được (thư viện cài dở, ffmpeg thiếu, cổng bị chiếm, phần mềm diệt virus xóa file...), nên
 file này CHỈ dùng thư viện chuẩn của Python và được chạy bằng bản Python kèm trong gói (runtime\\python), không cần .venv:
 
-    runtime\\python\\pythonw.exe -m icontent.support        (biểu tượng "Sửa lỗi iContent" trong menu Start)
+    runtime\\python\\pythonw.exe -m icontent.support        (biểu tượng "Sửa lỗi Studio566" trong menu Start)
 
-Giao diện là một trang web nhỏ (máy chủ http.server của Python ở 127.0.0.1:8766) mở trong cửa sổ Edge/Chrome. Trong iContent
+Giao diện là một trang web nhỏ (máy chủ http.server của Python ở 127.0.0.1:8766) mở trong cửa sổ Edge/Chrome. Trong Studio566
 (Cài đặt → Hỗ trợ) các API /api/support/* gọi lại đúng các hàm ở đây.
 """
 from __future__ import annotations
@@ -38,10 +38,10 @@ START_ERROR = WORK / "start-error.txt"      # cli.py ghi lỗi khởi động v�
 NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 NEW_CONSOLE = 0x00000010 if os.name == "nt" else 0
 
-# thư viện iContent cần để mở được; thiếu cái nào thì phần cài thư viện chưa xong (hoặc bị phần mềm diệt virus xóa)
+# thư viện Studio566 cần để mở được; thiếu cái nào thì phần cài thư viện chưa xong (hoặc bị phần mềm diệt virus xóa)
 CORE_MODULES = ["fastapi", "uvicorn", "yaml", "numpy", "yt_dlp", "edge_tts", "faster_whisper", "onnxruntime", "PIL",
                 "sherpa_onnx", "rapidocr"]
-# trang iContent cần tới; trả lời mã gì cũng được (403, 404 vẫn là đi tới nơi), chỉ lỗi mạng mới tính là không vào được
+# trang Studio566 cần tới; trả lời mã gì cũng được (403, 404 vẫn là đi tới nơi), chỉ lỗi mạng mới tính là không vào được
 SITES = [
     ("pypi", "Tải thư viện (pypi.org)", "https://pypi.org/simple/pip/", True),
     ("github", "Tải ffmpeg (github.com)", "https://api.github.com/", True),
@@ -65,7 +65,7 @@ def _item(cid: str, title: str, state: str, detail: str = "", fix: dict | None =
 
 FIX_SETUP = {"id": "setup", "label": "Cài lại thư viện"}
 FIX_VCREDIST = {"id": "vcredist", "label": "Cài bộ chạy Microsoft"}
-FIX_KILL = {"id": "kill", "label": "Tắt iContent bị treo"}
+FIX_KILL = {"id": "kill", "label": "Tắt Studio566 bị treo"}
 
 
 # ============================================================================ các bước kiểm tra
@@ -93,10 +93,10 @@ def check_files() -> dict:
     need = ["icontent/__main__.py", "icontent/web/static/index.html", "icontent/web/server.py", "setup.ps1"]
     miss = [n for n in need if not (ROOT / n).is_file()]
     if miss:
-        return _item("files", "File của iContent", "bad", "Thiếu: " + ", ".join(miss),
+        return _item("files", "File của Studio566", "bad", "Thiếu: " + ", ".join(miss),
                      help="Thường do phần mềm diệt virus xóa nhầm. Mở phần mềm diệt virus, khôi phục file trong mục cách ly "
-                          "(Quarantine) và thêm thư mục iContent vào danh sách loại trừ, rồi chạy lại file cài iContent.")
-    return _item("files", "File của iContent", "ok", str(ROOT))
+                          "(Quarantine) và thêm thư mục Studio566 vào danh sách loại trừ, rồi chạy lại file cài Studio566.")
+    return _item("files", "File của Studio566", "ok", str(ROOT))
 
 
 def check_folder() -> dict:
@@ -116,13 +116,13 @@ def check_folder() -> dict:
     if not writable:
         return _item("folder", "Thư mục cài đặt", "bad", f"Không ghi được file vào {WORK}",
                      help="Windows đang chặn ghi (thường là Bảo vệ khỏi mã độc tống tiền / Controlled folder access, hoặc "
-                          "phần mềm diệt virus). Cài iContent vào ổ D:\\iContent, hoặc cho phép iContent trong Windows Security.")
+                          "phần mềm diệt virus). Cài Studio566 vào ổ D:\\Studio566, hoặc cho phép Studio566 trong Windows Security.")
     if 0 <= free < 2:
         return _item("folder", "Thư mục cài đặt", "bad", f"Ổ đĩa chỉ còn {free:.1f} GB trống",
-                     help="iContent cần vài GB để cài thư viện và làm video. Xóa bớt file hoặc dọn Thư viện trong iContent.")
+                     help="Studio566 cần vài GB để cài thư viện và làm video. Xóa bớt file hoặc dọn Thư viện trong Studio566.")
     if "onedrive" in p:
         return _item("folder", "Thư mục cài đặt", "warn", f"{ROOT} nằm trong OneDrive",
-                     help="OneDrive đồng bộ và có khi tạm cất file đi, làm iContent lỗi bất chợt. Nên cài lại vào D:\\iContent.")
+                     help="OneDrive đồng bộ và có khi tạm cất file đi, làm Studio566 lỗi bất chợt. Nên cài lại vào D:\\Studio566.")
     if 0 <= free < 10:
         return _item("folder", "Thư mục cài đặt", "warn", f"Ổ đĩa còn {free:.1f} GB trống, hơi ít để làm video")
     return _item("folder", "Thư mục cài đặt", "ok", f"{ROOT} · còn {free:.0f} GB trống" if free >= 0 else str(ROOT))
@@ -144,7 +144,7 @@ def check_windows() -> dict:
     name = "Windows 11" if build >= 22000 else f"Windows {platform.release()}"
     detail = f"{name} (bản {build}) · RAM {ram:.0f} GB" if ram else f"{name} (bản {build})"
     if platform.machine().lower() not in ("amd64", "x86_64"):
-        return _item("windows", "Máy tính", "bad", detail + f" · {platform.machine()}", help="iContent cần Windows 64-bit.")
+        return _item("windows", "Máy tính", "bad", detail + f" · {platform.machine()}", help="Studio566 cần Windows 64-bit.")
     if 0 < build < 17763:
         return _item("windows", "Máy tính", "warn", detail, help="Windows quá cũ. Cập nhật Windows 10 bản 1809 trở lên.")
     if 0 < ram < 7.5:
@@ -194,10 +194,10 @@ def check_vcredist() -> dict:
 def check_venv(deep: bool = True) -> dict:
     py = venv_python()
     if not py.is_file():
-        return _item("venv", "Thư viện của iContent", "bad", "Chưa cài thư viện (không có thư mục .venv)", FIX_SETUP,
+        return _item("venv", "Thư viện của Studio566", "bad", "Chưa cài thư viện (không có thư mục .venv)", FIX_SETUP,
                      "Phần cài thư viện chưa chạy xong, thường do mạng chập chờn lúc cài. Bấm Cài lại thư viện và để mạng ổn định.")
     if not deep:
-        return _item("venv", "Thư viện của iContent", "ok", "Đã cài")
+        return _item("venv", "Thư viện của Studio566", "ok", "Đã cài")
     code = ("import importlib,json,traceback\nbad=[]\n"
             f"for m in {CORE_MODULES!r}:\n"
             "    try: importlib.import_module(m)\n"
@@ -209,27 +209,27 @@ def check_venv(deep: bool = True) -> dict:
     try:
         r = _run([str(py), "-X", "utf8", "-c", code], timeout=300, cwd=str(ROOT))
     except subprocess.TimeoutExpired:
-        return _item("venv", "Thư viện của iContent", "warn", "Nạp thư viện quá 5 phút",
-                     help="Máy đang rất chậm, hoặc phần mềm diệt virus đang quét từng file. Thêm thư mục iContent vào danh sách loại trừ.")
+        return _item("venv", "Thư viện của Studio566", "warn", "Nạp thư viện quá 5 phút",
+                     help="Máy đang rất chậm, hoặc phần mềm diệt virus đang quét từng file. Thêm thư mục Studio566 vào danh sách loại trừ.")
     except OSError as e:
-        return _item("venv", "Thư viện của iContent", "bad", f"Không chạy được Python của iContent: {e}", FIX_SETUP,
+        return _item("venv", "Thư viện của Studio566", "bad", f"Không chạy được Python của Studio566: {e}", FIX_SETUP,
                      "File Python trong .venv bị hỏng hoặc bị phần mềm diệt virus chặn. Bấm Cài lại thư viện.")
     m = re.search(r"@@(\[.*\])", r.stdout)
     if not m:
         tail = (r.stderr or r.stdout).strip()[-600:]
-        return _item("venv", "Thư viện của iContent", "bad", f"Python của iContent không chạy (mã {r.returncode}). {tail}", FIX_SETUP,
+        return _item("venv", "Thư viện của Studio566", "bad", f"Python của Studio566 không chạy (mã {r.returncode}). {tail}", FIX_SETUP,
                      "Bấm Cài lại thư viện. Vẫn vậy thì gửi gói báo lỗi.")
     bad = json.loads(m.group(1))
     if not bad:
-        return _item("venv", "Thư viện của iContent", "ok", "Nạp đủ thư viện")
+        return _item("venv", "Thư viện của Studio566", "ok", "Nạp đủ thư viện")
     text = "\n".join(f"{n}: {e}" for n, e in bad)
     if re.search(r"DLL load failed|_ctypes|WinError 126|specified module could not be found", text, re.I):
         fix = FIX_VCREDIST if not vcredist_ok() else FIX_SETUP
-        return _item("venv", "Thư viện của iContent", "bad", text[:900], fix,
+        return _item("venv", "Thư viện của Studio566", "bad", text[:900], fix,
                      "Windows không nạp được thư viện AI: máy thiếu bộ chạy Visual C++, hoặc phần mềm diệt virus đã chặn/xóa "
-                     "một file .dll. Bấm nút sửa; vẫn lỗi thì thêm thư mục iContent vào danh sách loại trừ của phần mềm diệt virus "
+                     "một file .dll. Bấm nút sửa; vẫn lỗi thì thêm thư mục Studio566 vào danh sách loại trừ của phần mềm diệt virus "
                      "rồi bấm Cài lại thư viện.")
-    return _item("venv", "Thư viện của iContent", "bad", text[:900], FIX_SETUP,
+    return _item("venv", "Thư viện của Studio566", "bad", text[:900], FIX_SETUP,
                  "Thư viện cài chưa đủ hoặc bị hỏng. Bấm Cài lại thư viện (chỉ tải phần còn thiếu).")
 
 
@@ -295,9 +295,9 @@ def browser_path() -> str:
 def check_browser() -> dict:
     b = browser_path()
     if not b:
-        return _item("browser", "Cửa sổ iContent (Edge/Chrome)", "warn", "Không thấy Edge hay Chrome",
-                     help="iContent sẽ mở trong trình duyệt mặc định. Nên cài Microsoft Edge hoặc Google Chrome để có cửa sổ riêng.")
-    return _item("browser", "Cửa sổ iContent (Edge/Chrome)", "ok", "Edge" if "msedge" in b.lower() else "Chrome")
+        return _item("browser", "Cửa sổ Studio566 (Edge/Chrome)", "warn", "Không thấy Edge hay Chrome",
+                     help="Studio566 sẽ mở trong trình duyệt mặc định. Nên cài Microsoft Edge hoặc Google Chrome để có cửa sổ riêng.")
+    return _item("browser", "Cửa sổ Studio566 (Edge/Chrome)", "ok", "Edge" if "msedge" in b.lower() else "Chrome")
 
 
 def app_alive(port: int = APP_PORT, timeout: float = 2.0) -> bool:
@@ -351,23 +351,23 @@ def _ours(path: str) -> bool:
 
 def check_port() -> dict:
     if app_alive():
-        return _item("port", "iContent đang chạy", "ok", f"Cổng {APP_PORT} trả lời bình thường")
+        return _item("port", "Studio566 đang chạy", "ok", f"Cổng {APP_PORT} trả lời bình thường")
     pid = port_owner(APP_PORT)
     if not pid:
-        return _item("port", "Cổng của iContent", "ok", f"Cổng {APP_PORT} đang trống (iContent chưa mở)")
+        return _item("port", "Cổng của Studio566", "ok", f"Cổng {APP_PORT} đang trống (Studio566 chưa mở)")
     path = process_path(pid)
     if _ours(path):
-        return _item("port", "Cổng của iContent", "bad", f"Một iContent cũ bị treo đang giữ cổng {APP_PORT}", FIX_KILL,
-                     "Bấm Tắt iContent bị treo rồi mở lại iContent.")
+        return _item("port", "Cổng của Studio566", "bad", f"Một Studio566 cũ bị treo đang giữ cổng {APP_PORT}", FIX_KILL,
+                     "Bấm Tắt Studio566 bị treo rồi mở lại Studio566.")
     if Path(path).name.lower().startswith("python"):
-        return _item("port", "Cổng của iContent", "bad", f"Một chương trình Python khác đang giữ cổng {APP_PORT}: {path}",
-                     help="Có thể là iContent cài ở thư mục khác vẫn đang chạy. Tắt nó (hoặc khởi động lại máy) rồi mở lại iContent.")
-    return _item("port", "Cổng của iContent", "bad", f"Cổng {APP_PORT} đang bị chương trình khác dùng: {Path(path).name or f'PID {pid}'}",
-                 help="Tắt chương trình đó (hoặc khởi động lại máy) rồi mở lại iContent.")
+        return _item("port", "Cổng của Studio566", "bad", f"Một chương trình Python khác đang giữ cổng {APP_PORT}: {path}",
+                     help="Có thể là Studio566 cài ở thư mục khác vẫn đang chạy. Tắt nó (hoặc khởi động lại máy) rồi mở lại Studio566.")
+    return _item("port", "Cổng của Studio566", "bad", f"Cổng {APP_PORT} đang bị chương trình khác dùng: {Path(path).name or f'PID {pid}'}",
+                 help="Tắt chương trình đó (hoặc khởi động lại máy) rồi mở lại Studio566.")
 
 
 def check_start_error() -> dict | None:
-    """Lỗi lúc mở iContent gần nhất (cli.py ghi lại vì chạy bằng pythonw không có dòng lệnh)."""
+    """Lỗi lúc mở Studio566 gần nhất (cli.py ghi lại vì chạy bằng pythonw không có dòng lệnh)."""
     if not START_ERROR.is_file():
         return None
     try:
@@ -378,8 +378,8 @@ def check_start_error() -> dict | None:
     if age > 3 * 86400 or not text:
         return None
     when = "vừa xong" if age < 120 else f"{age / 60:.0f} phút trước" if age < 7200 else f"{age / 3600:.0f} giờ trước"
-    return _item("start", "Lỗi khi mở iContent", "bad", f"{when}: {text[:900]}",
-                 help="Các mục bên dưới cho biết nguyên nhân. Sửa xong bấm Mở iContent.")
+    return _item("start", "Lỗi khi mở Studio566", "bad", f"{when}: {text[:900]}",
+                 help="Các mục bên dưới cho biết nguyên nhân. Sửa xong bấm Mở Studio566.")
 
 
 def check_network() -> list[dict]:
@@ -387,7 +387,7 @@ def check_network() -> list[dict]:
 
     def one(site):
         key, name, url, needed = site
-        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "iContent-support"})
+        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "Studio566-support"})
         t = time.time()
         try:
             with urllib.request.urlopen(req, timeout=12):
@@ -404,7 +404,7 @@ def check_network() -> list[dict]:
     bad = [r for r in res if r[3]]
     if not bad:
         slow = [r[1] for r in res if r[4] > 5]
-        return [_item("net", "Mạng", "warn" if slow else "ok", ("Chậm: " + ", ".join(slow)) if slow else "Vào được các trang iContent cần")]
+        return [_item("net", "Mạng", "warn" if slow else "ok", ("Chậm: " + ", ".join(slow)) if slow else "Vào được các trang Studio566 cần")]
     cert = [r for r in bad if re.search(r"CERTIFICATE|SSL", r[3], re.I)]
     if cert:
         return [_item("net", "Mạng", "bad", "Lỗi chứng chỉ khi vào: " + ", ".join(r[1] for r in cert),
@@ -434,15 +434,15 @@ def check_douyin_cookie() -> dict:
     detail = f"{len(names)} cookie, nạp {days:.0f} ngày trước" if days >= 1 else f"{len(names)} cookie, nạp hôm nay"
     if "s_v_web_id" not in names:
         return _item("douyin", title, "warn", detail + ", thiếu s_v_web_id",
-                     help="File cookie xuất lúc trang Douyin chưa tải xong. Trong iContent: Cài đặt → Cookie tải video → Nạp lại.")
+                     help="File cookie xuất lúc trang Douyin chưa tải xong. Trong Studio566: Cài đặt → Cookie tải video → Nạp lại.")
     if key_exp and key_exp < time.time():
-        return _item("douyin", title, "warn", detail + ", đã hết hạn", help="Nạp lại cookie Douyin trong iContent: Cài đặt → Cookie tải video.")
+        return _item("douyin", title, "warn", detail + ", đã hết hạn", help="Nạp lại cookie Douyin trong Studio566: Cài đặt → Cookie tải video.")
     return _item("douyin", title, "ok", detail)
 
 
 def run_checks(deep: bool = True, network: bool = True, in_app: bool = False) -> list[dict]:
     """Toàn bộ bước kiểm tra, xếp theo thứ tự nên sửa. deep: thử nạp thư viện (5–60 giây).
-    in_app: gọi từ trong iContent đang chạy (bỏ bước cổng: chính nó đang giữ cổng, có khi là cổng khác 8765)."""
+    in_app: gọi từ trong Studio566 đang chạy (bỏ bước cổng: chính nó đang giữ cổng, có khi là cổng khác 8765)."""
     out: list[dict] = []
     s = check_start_error()
     if s:
@@ -458,7 +458,7 @@ def run_checks(deep: bool = True, network: bool = True, in_app: bool = False) ->
 # ============================================================================ sửa
 
 def kill_app() -> int:
-    """Tắt mọi tiến trình Python của iContent (trừ chính công cụ này). Trả về số tiến trình đã tắt."""
+    """Tắt mọi tiến trình Python của Studio566 (trừ chính công cụ này). Trả về số tiến trình đã tắt."""
     if os.name != "nt":
         return 0
     try:
@@ -486,12 +486,12 @@ def run_setup() -> str:
     """Chạy lại setup.ps1 trong một cửa sổ dòng lệnh để khách thấy tiến độ. setup.ps1 chỉ tải phần còn thiếu."""
     ps = ROOT / "setup.ps1"
     if not ps.is_file():
-        raise RuntimeError("Thiếu file setup.ps1. Hãy chạy lại file cài iContent.")
-    kill_app()      # thư viện đang được iContent dùng thì không thay được
+        raise RuntimeError("Thiếu file setup.ps1. Hãy chạy lại file cài Studio566.")
+    kill_app()      # thư viện đang được Studio566 dùng thì không thay được
     # cmd /S /K "...": bỏ đúng cặp nháy ngoài cùng; chcp 65001 để chữ Việt PowerShell in ra không bị lỗi
     # (tiêu đề và câu cuối có dấu hiện đúng: đã thử thật trên cửa sổ dòng lệnh Windows 11)
-    line = (f'cmd /S /K "chcp 65001 >nul & title Cài lại thư viện iContent & powershell -NoProfile -ExecutionPolicy Bypass '
-            f'-File "{ps}" -NoShortcut -NoLaunch & echo. & echo Xong. Đóng cửa sổ này rồi bấm Kiểm tra lại trong cửa sổ Sửa lỗi iContent."')
+    line = (f'cmd /S /K "chcp 65001 >nul & title Cài lại thư viện Studio566 & powershell -NoProfile -ExecutionPolicy Bypass '
+            f'-File "{ps}" -NoShortcut -NoLaunch & echo. & echo Xong. Đóng cửa sổ này rồi bấm Kiểm tra lại trong cửa sổ Sửa lỗi Studio566."')
     subprocess.Popen(line, cwd=str(ROOT), creationflags=NEW_CONSOLE)
     return "Đang cài lại trong cửa sổ đen vừa mở (5–15 phút). Cứ để máy tự chạy, xong thì bấm Kiểm tra lại."
 
@@ -501,8 +501,8 @@ VCREDIST_URL = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
 
 def install_vcredist() -> str:
     """Tải bộ cài Visual C++ chính thức của Microsoft rồi chạy (Windows hỏi quyền quản trị)."""
-    dest = Path(os.environ.get("TEMP") or WORK) / "iContent-vc_redist.x64.exe"
-    with urllib.request.urlopen(urllib.request.Request(VCREDIST_URL, headers={"User-Agent": "iContent-support"}), timeout=60) as r:
+    dest = Path(os.environ.get("TEMP") or WORK) / "Studio566-vc_redist.x64.exe"
+    with urllib.request.urlopen(urllib.request.Request(VCREDIST_URL, headers={"User-Agent": "Studio566-support"}), timeout=60) as r:
         data = r.read()
     if len(data) < 5_000_000 or data[:2] != b"MZ":
         raise RuntimeError("Tải bộ cài Microsoft không đúng. Thử lại sau, hoặc tải tay tại " + VCREDIST_URL)
@@ -513,18 +513,18 @@ def install_vcredist() -> str:
 
 def open_app() -> str:
     subprocess.Popen([str(runtime_python()), "-m", "icontent.start"], cwd=str(ROOT), creationflags=NO_WINDOW)
-    return "Đang mở iContent…"
+    return "Đang mở Studio566…"
 
 
 def reset_window() -> str:
-    """Xóa hồ sơ cửa sổ iContent (Edge/Chrome ở chế độ ứng dụng): cửa sổ trắng, kẹt cỡ cửa sổ, kẹt trang cũ."""
+    """Xóa hồ sơ cửa sổ Studio566 (Edge/Chrome ở chế độ ứng dụng): cửa sổ trắng, kẹt cỡ cửa sổ, kẹt trang cũ."""
     d = Path(os.environ.get("LOCALAPPDATA") or ROOT) / "iContent" / "window"
     if d.is_dir():
         shutil.rmtree(d, ignore_errors=True)
-    return "Đã làm mới cửa sổ iContent. Bấm Mở iContent."
+    return "Đã làm mới cửa sổ Studio566. Bấm Mở Studio566."
 
 
-FIXES = {"setup": run_setup, "vcredist": install_vcredist, "kill": lambda: f"Đã tắt {kill_app()} tiến trình. Bấm Mở iContent.",
+FIXES = {"setup": run_setup, "vcredist": install_vcredist, "kill": lambda: f"Đã tắt {kill_app()} tiến trình. Bấm Mở Studio566.",
          "open_app": open_app, "reset_window": reset_window}
 
 
@@ -585,7 +585,7 @@ def _tail(p: Path, limit: int) -> str:
 
 
 def setup_logs(n: int = 3) -> list[Path]:
-    """Nhật ký của trình cài iContent (Inno Setup ghi vào %TEMP%\\Setup Log <ngày> #<số>.txt)."""
+    """Nhật ký của trình cài Studio566 (Inno Setup ghi vào %TEMP%\\Setup Log <ngày> #<số>.txt)."""
     tmp = Path(os.environ.get("TEMP") or "")
     if not tmp.is_dir():
         return []
@@ -596,7 +596,7 @@ def setup_logs(n: int = 3) -> list[Path]:
                 head = fh.read(8000).decode("utf-8", errors="replace")
         except OSError:
             continue
-        if "iContent" in head:
+        if "Studio566" in head or "iContent" in head:
             out.append(p)
             if len(out) >= n:
                 break
@@ -634,12 +634,12 @@ def _gpu() -> str:
 
 
 def make_report(checks: list[dict] | None = None, note: str = "", out_dir: Path | None = None) -> Path:
-    """Gói báo lỗi (zip) trên màn hình nền: kết quả kiểm tra, nhật ký iContent và trình cài, cấu hình đã bỏ key, danh sách thư viện.
+    """Gói báo lỗi (zip) trên màn hình nền: kết quả kiểm tra, nhật ký Studio566 và trình cài, cấu hình đã bỏ key, danh sách thư viện.
     Không có: key, cookie, video, tên người dùng, tên máy."""
     checks = checks if checks is not None else run_checks()
     secrets = _secret_values()
     stamp = time.strftime("%Y%m%d-%H%M")
-    lines = [f"iContent {_version()} · {time.strftime('%d/%m/%Y %H:%M')}", f"Thư mục: {ROOT}", f"Python công cụ: {sys.version.split()[0]}", ""]
+    lines = [f"Studio566 {_version()} · {time.strftime('%d/%m/%Y %H:%M')}", f"Thư mục: {ROOT}", f"Python công cụ: {sys.version.split()[0]}", ""]
     if note.strip():
         lines += ["Khách mô tả:", note.strip(), ""]
     mark = {"ok": "OK  ", "warn": "CHÚ Ý", "bad": "LỖI ", "info": "--  "}
@@ -673,7 +673,7 @@ def make_report(checks: list[dict] | None = None, note: str = "", out_dir: Path 
             if d.is_dir():
                 listing += [f"{d.relative_to(ROOT) if d != ROOT else '.'}/{p.name}{'/' if p.is_dir() else ''}" for p in sorted(d.iterdir())]
         z.writestr("thu-muc.txt", redact("\n".join(listing), secrets))
-    out = Path(out_dir or os.environ.get("ICONTENT_REPORT_DIR") or _desktop()) / f"iContent-goi-bao-loi-{stamp}.zip"
+    out = Path(out_dir or os.environ.get("ICONTENT_REPORT_DIR") or _desktop()) / f"Studio566-goi-bao-loi-{stamp}.zip"
     out.write_bytes(buf.getvalue())
     return out
 
@@ -744,7 +744,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):      # noqa: N802
         # trang khác trên mạng không gửi được header tự đặt mà không qua hỏi CORS: chặn được trang lạ bấm hộ nút sửa
-        if not self._host_ok() or self.headers.get("X-iContent") != "1":
+        if not self._host_ok() or self.headers.get("X-Studio566") != "1":
             self._send(403, b"{}")
             return
         _State.last_ping = time.time()
@@ -786,7 +786,7 @@ def open_window(url: str) -> None:
 
 
 def serve(reason: str = "", open_ui: bool = True, idle: float = 90.0, wait_first: float = 600.0) -> int:
-    """Chạy giao diện Sửa lỗi. reason: vì sao được mở tự động (iContent không mở được). Tắt khi trang đóng (không hỏi thăm idle giây)."""
+    """Chạy giao diện Sửa lỗi. reason: vì sao được mở tự động (Studio566 không mở được). Tắt khi trang đóng (không hỏi thăm idle giây)."""
     _State.reason = reason
     srv = None
     for port in (PORT, 0):
@@ -805,7 +805,7 @@ def serve(reason: str = "", open_ui: bool = True, idle: float = 90.0, wait_first
     t0 = time.time()
     if open_ui:
         if reason:
-            time.sleep(3)      # màn hình chờ của iContent (nếu còn mở) tự chuyển sang trang này; không thấy ai vào thì mở cửa sổ mới
+            time.sleep(3)      # màn hình chờ của Studio566 (nếu còn mở) tự chuyển sang trang này; không thấy ai vào thì mở cửa sổ mới
         if not _State.visited:
             open_window(url)
     while True:
@@ -829,9 +829,9 @@ def _support_alive() -> bool:
 
 PAGE = r"""<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sửa lỗi · iContent</title><link rel="icon" href="/static/icon.png">
+<title>Sửa lỗi · Studio566</title><link rel="icon" href="/static/icon.png">
 <style>
-:root{--bg:#0b0a09;--card:#161411;--line:rgba(255,244,228,.09);--txt:#f5f1ea;--dim:#a39b8f;--acc:#ffb432;--ok:#5fcf8a;--warn:#ffb432;--bad:#ff6b5e}
+:root{--bg:#0f1115;--card:#171a21;--line:rgba(225,232,245,.09);--txt:#f3f4f6;--dim:#a7aebb;--acc:#ff6b4a;--ok:#5fcf8a;--warn:#ffc24b;--bad:#ff6b5e}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 "Segoe UI",system-ui,sans-serif}
 main{max-width:860px;margin:0 auto;padding:28px 24px 40px}
 header{display:flex;gap:14px;align-items:center;margin-bottom:6px}header img{width:44px;height:44px;flex:none}
@@ -843,7 +843,7 @@ h1{font-size:20px;margin:0}.dim{color:var(--dim)}.small{font-size:12.5px}
 .row{display:grid;grid-template-columns:22px 1fr auto;gap:12px;padding:13px 16px;border-top:1px solid var(--line);align-items:start}
 .row:first-child{border-top:0}.row b{font-weight:600}.det{color:var(--dim);font-size:13px;white-space:pre-wrap;word-break:break-word}
 .help{margin-top:6px;font-size:13px;color:#e8dcc8}
-.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0b0a09}
+.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0f1115}
 .ok .dot{background:var(--ok)}.warn .dot{background:var(--warn)}.bad .dot{background:var(--bad)}.info .dot{background:#5b554d}.wait .dot{background:#3a352f;animation:p 1s infinite alternate}
 @keyframes p{to{opacity:.4}}
 button{font:inherit;border-radius:8px;border:1px solid var(--line);background:#24201b;color:var(--txt);padding:7px 14px;cursor:pointer;white-space:nowrap}
@@ -856,18 +856,18 @@ textarea{width:100%;min-height:64px;background:#0f0d0b;color:var(--txt);border:1
 code{background:#0f0d0b;padding:1px 5px;border-radius:5px}
 @media (max-width:600px){.row{grid-template-columns:22px 1fr}.row button{grid-column:2}}
 </style></head><body><main>
-<header><img src="/static/icon.png" alt=""><div><h1>Sửa lỗi iContent</h1><div class="dim small" id="ver"></div></div></header>
-<p class="lead">Công cụ này kiểm tra máy, sửa các lỗi hay gặp sau khi cài, và tạo gói báo lỗi để gửi người hỗ trợ. Chạy được cả khi iContent không mở được.</p>
+<header><img src="/static/icon.png" alt=""><div><h1>Sửa lỗi Studio566</h1><div class="dim small" id="ver"></div></div></header>
+<p class="lead">Công cụ này kiểm tra máy, sửa các lỗi hay gặp sau khi cài, và tạo gói báo lỗi để gửi người hỗ trợ. Chạy được cả khi Studio566 không mở được.</p>
 <div id="banner"></div>
 <div class="list" id="list"></div>
 <div class="bar">
   <button class="pri" id="again">Kiểm tra lại</button>
-  <button id="open">Mở iContent</button>
-  <button id="reset" title="Khi cửa sổ iContent trắng trơn, kẹt trang cũ, hoặc mở ra rồi tắt ngay">Làm mới cửa sổ iContent</button>
+  <button id="open">Mở Studio566</button>
+  <button id="reset" title="Khi cửa sổ Studio566 trắng trơn, kẹt trang cũ, hoặc mở ra rồi tắt ngay">Làm mới cửa sổ Studio566</button>
 </div>
 <div class="card">
   <b>Vẫn chưa được? Gửi gói báo lỗi</b>
-  <p class="dim small" style="margin:4px 0 10px">Gói gồm kết quả kiểm tra và nhật ký của iContent. Đã tự bỏ key, cookie, email, tên người dùng và tên máy; không có video của bạn.
+  <p class="dim small" style="margin:4px 0 10px">Gói gồm kết quả kiểm tra và nhật ký của Studio566. Đã tự bỏ key, cookie, email, tên người dùng và tên máy; không có video của bạn.
   Gửi file này cho người hỗ trợ qua Zalo hoặc Telegram.</p>
   <textarea id="note" placeholder="Mô tả ngắn (không bắt buộc): bấm vào đâu thì lỗi, thấy thông báo gì..."></textarea>
   <div class="bar" style="margin-bottom:0"><button class="pri" id="report">Tạo gói báo lỗi</button></div>
@@ -877,7 +877,7 @@ code{background:#0f0d0b;padding:1px 5px;border-radius:5px}
 <script>
 const $ = (id) => document.getElementById(id);
 const post = async (url, body) => {
-  const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-iContent': '1'}, body: JSON.stringify(body || {})});
+  const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Studio566': '1'}, body: JSON.stringify(body || {})});
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || ('Lỗi ' + r.status));
   return j;
@@ -901,7 +901,7 @@ async function check() {
     const r = await post('/api/checks', {deep: true});
     const bad = paint(r.checks);
     if (!bad && !info.reason) $('banner').innerHTML = '';
-    if (!bad && info.reason) $('banner').innerHTML = '<div class="banner" style="border-color:rgba(95,207,138,.35);background:rgba(95,207,138,.08)">Không thấy lỗi nào bây giờ. Bấm <b>Mở iContent</b> để thử lại; vẫn không mở được thì tạo gói báo lỗi bên dưới.</div>';
+    if (!bad && info.reason) $('banner').innerHTML = '<div class="banner" style="border-color:rgba(95,207,138,.35);background:rgba(95,207,138,.08)">Không thấy lỗi nào bây giờ. Bấm <b>Mở Studio566</b> để thử lại; vẫn không mở được thì tạo gói báo lỗi bên dưới.</div>';
   } catch (e) { $('list').innerHTML = `<div class="row bad"><div class="dot">✕</div><div><b>Không kiểm tra được</b><div class="det">${esc(e.message)}</div></div><div></div></div>`; }
   $('again').disabled = false;
 }
@@ -931,18 +931,18 @@ $('report').onclick = async () => {
 let info = {};
 (async () => {
   try { info = await (await fetch('/api/info')).json(); } catch (_) { info = {}; }
-  $('ver').textContent = `iContent ${info.version || ''} · ${info.root || ''}`;
-  if (info.reason) $('banner').innerHTML = '<div class="banner"><b>iContent chưa mở được.</b> Đang kiểm tra xem vì sao. Mục nào có nút thì bấm để sửa, xong bấm <b>Mở iContent</b>.</div>';
+  $('ver').textContent = `Studio566 ${info.version || ''} · ${info.root || ''}`;
+  if (info.reason) $('banner').innerHTML = '<div class="banner"><b>Studio566 chưa mở được.</b> Đang kiểm tra xem vì sao. Mục nào có nút thì bấm để sửa, xong bấm <b>Mở Studio566</b>.</div>';
   check();
 })();
 setInterval(() => fetch('/api/ping').catch(() => {}), 10000);
-addEventListener('pagehide', () => fetch('/api/bye', {method: 'POST', headers: {'X-iContent': '1'}, keepalive: true}).catch(() => {}));
+addEventListener('pagehide', () => fetch('/api/bye', {method: 'POST', headers: {'X-Studio566': '1'}, keepalive: true}).catch(() => {}));
 </script></body></html>"""
 
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
-    p = argparse.ArgumentParser(prog="icontent.support", description="Sửa lỗi iContent")
+    p = argparse.ArgumentParser(prog="icontent.support", description="Sửa lỗi Studio566")
     p.add_argument("--reason", default="")
     p.add_argument("--report", action="store_true", help="chỉ tạo gói báo lỗi rồi thoát")
     p.add_argument("--check", action="store_true", help="in kết quả kiểm tra rồi thoát")

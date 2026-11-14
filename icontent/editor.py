@@ -1,13 +1,13 @@
 """Trình dựng tự do: FreeCut (giấy phép MIT) đã build sẵn trong web/editor, xem third_party/freecut/.
 
-FreeCut dùng đường dẫn tuyệt đối khắp nơi và có service worker chiếm cả origin, nên không ở chung origin với giao diện iContent
+FreeCut dùng đường dẫn tuyệt đối khắp nơi và có service worker chiếm cả origin, nên không ở chung origin với giao diện Studio566
 mà ở editor.localhost, trên cùng máy chủ và cùng cổng. Chromium luôn trỏ *.localhost về máy này và coi là secure context, nên
 trình dựng có đủ WebGPU, WebCodecs, File System Access, và /api/ gọi thẳng được, không cần CORS.
 
 Đường đi của một video:
-  Studio bấm mở -> cửa sổ trình dựng tự hỏi /api/editor/jobs/<id> -> iContent dựng editor_base.mp4 (giữ xóa sub, cắt, đổi khung,
+  Studio bấm mở -> cửa sổ trình dựng tự hỏi /api/editor/jobs/<id> -> Studio566 dựng editor_base.mp4 (giữ xóa sub, cắt, đổi khung,
   lồng tiếng, không ghi phụ đề vào hình) -> trình dựng tạo dự án: video một track, phụ đề (final.srt) một track sửa được
-  -> dựng xong bấm Gửi về iContent -> file nằm trong thư mục output, ghi vào edited.json của video.
+  -> dựng xong bấm Gửi về Studio566 -> file nằm trong thư mục output, ghi vào edited.json của video.
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def is_editor_host(host_header: str | None) -> bool:
 
 
 def window_url(host_header: str | None, job: str = "", fresh: bool = False, story: str = "") -> str:
-    """Giữ nguyên cổng iContent đang chạy. story: mở một câu chuyện của Kể chuyện thay cho một video."""
+    """Giữ nguyên cổng Studio566 đang chạy. story: mở một câu chuyện của Kể chuyện thay cho một video."""
     tail = (host_header or "").rsplit(":", 1)
     port = tail[1] if len(tail) == 2 and tail[1].isdigit() else "8765"
     if story:

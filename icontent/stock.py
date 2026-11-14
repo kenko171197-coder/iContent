@@ -26,7 +26,7 @@ from pathlib import Path
 
 from .util import ROOT
 
-UA = "iContent/0.6 (https://github.com/dienmoc86/icontent)"      # Wikimedia yêu cầu tên ứng dụng rõ ràng
+UA = "Studio566/0.6 (https://github.com/kenko171197-coder/iContent)"      # Wikimedia yêu cầu tên ứng dụng rõ ràng
 CACHE_DIR = ROOT / "assets" / ".stock_cache"
 CACHE_TTL = 24 * 3600      # Pixabay yêu cầu lưu kết quả tìm 24 giờ, không gọi lặp lại
 MAX_BYTES = 400 * 1024 * 1024

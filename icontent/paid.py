@@ -1,4 +1,4 @@
-"""Công tắc "Cho phép tính năng trả phí" (Cài đặt). iContent ưu tiên cách miễn phí; việc tốn tiền chỉ chạy khi người dùng bật.
+"""Công tắc "Cho phép tính năng trả phí" (Cài đặt). Studio566 ưu tiên cách miễn phí; việc tốn tiền chỉ chạy khi người dùng bật.
 
 Trả phí ở đây là gọi API tính tiền theo lượt: vẽ ảnh bằng Gemini, OpenAI, Meta Muse; làm clip bằng Gemini Omni.
 Miễn phí: vẽ trên máy, Cloudflare (hạn mức hằng ngày), video nền từ kho, viết kịch bản bằng Gemini gói miễn phí hoặc AI trên máy.
@@ -43,7 +43,7 @@ def status() -> dict:
     return {"allowed": allowed(), "chosen": isinstance(v, bool)}
 
 
-OFF_MSG = ("Đang tắt tính năng trả phí nên iContent không gọi {what}. Dùng cách miễn phí ({free}), hoặc vào Cài đặt, mục Chi phí, "
+OFF_MSG = ("Đang tắt tính năng trả phí nên Studio566 không gọi {what}. Dùng cách miễn phí ({free}), hoặc vào Cài đặt, mục Chi phí, "
            "bật Cho phép tính năng trả phí.")
 
 

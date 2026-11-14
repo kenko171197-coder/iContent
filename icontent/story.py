@@ -178,7 +178,7 @@ def _duration(v) -> float | None:
 
 
 def _music_path(v) -> str:
-    """Chỉ nhận nhạc nằm trong thư mục nhạc đã tải lên qua iContent: đường dẫn bất kỳ trên máy thì không đưa cho ffmpeg đọc."""
+    """Chỉ nhận nhạc nằm trong thư mục nhạc đã tải lên qua Studio566: đường dẫn bất kỳ trên máy thì không đưa cho ffmpeg đọc."""
     path = _clean_text(v, 500)
     if not path:
         return ""
@@ -333,8 +333,10 @@ def _writer(cfg):
     import os
 
     from .keys import translator_ready
-    from .translate import ClaudeTranslator, OpenAICompatTranslator
+    from .translate import ClaudeTranslator, McpTranslator, OpenAICompatTranslator
     t = cfg.translate
+    if t.provider == "mcp" and translator_ready(t):
+        return McpTranslator(t)
     if t.provider in ("claude", "openai") and translator_ready(t):
         return ClaudeTranslator(t) if t.provider == "claude" else OpenAICompatTranslator(t)
     if os.environ.get("GEMINI_API_KEY"):
@@ -346,7 +348,7 @@ def _writer(cfg):
     if writer_ready():      # không key nào: viết ngay trên máy, miễn phí
         return LocalWriter()
     raise RuntimeError("Cần AI để viết kịch bản: dán key Gemini (gói miễn phí viết được) ở Cài đặt, mục Kết nối AI, hoặc tải Dịch offline và "
-                       "Vẽ ảnh offline (Mô-đun AI miễn phí) để AI viết ngay trên máy. Hoặc tự dán kịch bản, iContent sẽ chia cảnh không cần AI.")
+                       "Vẽ ảnh offline (Mô-đun AI miễn phí) để AI viết ngay trên máy. Hoặc tự dán kịch bản, Studio566 sẽ chia cảnh không cần AI.")
 
 
 def writer_ready(cfg) -> bool:
@@ -386,7 +388,7 @@ def write_script(cfg, topic: str = "", script: str = "", seconds: int = 60, styl
     system = WRITER_SYSTEM.format(lang=lname, diacritics=" with full diacritics" if lang == "vi" else "")
     script = script.strip()
     if len(script) > 12000:
-        raise ValueError(f"Kịch bản dài {len(script):,} ký tự, AI chỉ chia được tối đa 12.000 ký tự một lần. Bỏ chọn nhờ AI để iContent tự chia "
+        raise ValueError(f"Kịch bản dài {len(script):,} ký tự, AI chỉ chia được tối đa 12.000 ký tự một lần. Bỏ chọn nhờ AI để Studio566 tự chia "
                          "cảnh, hoặc chia kịch bản thành nhiều câu chuyện.".replace(",", "."))
     _writer(cfg)      # chưa có AI nào thì báo ngay
     n = max(3, min(60, round(len(script) / 170))) if script else max(3, min(40, round(seconds / 9)))

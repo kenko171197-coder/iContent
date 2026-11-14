@@ -1,4 +1,4 @@
-/* Giữ kết nối với máy chủ iContent chạy trên máy.
+/* Giữ kết nối với máy chủ Studio566 chạy trên máy.
    - Hỏi thăm từ luồng nền (keepalive.js) để máy chủ biết cửa sổ còn mở, kể cả khi thu nhỏ lâu.
    - Đóng/tải lại trang thì báo máy chủ (pagehide): đóng thật thì máy chủ tắt sớm, không phải đoán.
    - Mất kết nối: băng báo ở trên cùng, tự nối lại mỗi 2 giây. Máy chủ vừa chạy lại (appwin.supervise) thì báo, không tải lại trang. */
@@ -20,10 +20,10 @@ function paint() {
   bar.hidden = !down;
   if (!down) return;
   const long = Date.now() - since > 12000;
-  title.textContent = long ? 'iContent đã dừng, đang chờ chạy lại…' : 'Mất kết nối với iContent, đang kết nối lại…';
+  title.textContent = long ? 'Studio566 đã dừng, đang chờ chạy lại…' : 'Mất kết nối với Studio566, đang kết nối lại…';
   sub.textContent = long
-    ? 'Thường iContent tự chạy lại sau vài giây và cửa sổ này tự nối lại. Quá 1 phút vẫn vậy: đóng cửa sổ này rồi mở iContent Studio bằng biểu tượng trên màn hình nền; vẫn không được thì mở Sửa lỗi iContent trong menu Start.'
-    : 'Cửa sổ sẽ tự nối lại khi iContent trả lời.';
+    ? 'Thường Studio566 tự chạy lại sau vài giây và cửa sổ này tự nối lại. Quá 1 phút vẫn vậy: đóng cửa sổ này rồi mở Studio566 bằng biểu tượng trên màn hình nền; vẫn không được thì mở Sửa lỗi Studio566 trong menu Start.'
+    : 'Cửa sổ sẽ tự nối lại khi Studio566 trả lời.';
 }
 
 function lost() {
@@ -41,8 +41,8 @@ function back(b) {
   clearTimeout(timer);
   paint();
   // Không tải lại trang: thiết kế thumbnail, chữ đang gõ... chưa lưu sẽ mất (đã gặp khi thử thật). Trang đang báo lỗi thì vẽ lại.
-  if (restarted) toast('iContent vừa khởi động lại. Việc đang chạy dở (nếu có) cần bấm chạy lại.', 'info', { timeout: 9000 });
-  else toast('Đã kết nối lại iContent', 'success');
+  if (restarted) toast('Studio566 vừa khởi động lại. Việc đang chạy dở (nếu có) cần bấm chạy lại.', 'info', { timeout: 9000 });
+  else toast('Đã kết nối lại Studio566', 'success');
   if (onBack) onBack();
 }
 

@@ -1,4 +1,4 @@
-/* Trang Sửa ảnh: nhúng miniPaint (MIT, static/vendor/minipaint) và nối với iContent.
+/* Trang Sửa ảnh: nhúng miniPaint (MIT, static/vendor/minipaint) và nối với Studio566.
  * Nhận ảnh: tệp trên máy, khung hình trong video (đã xóa sub gốc), ảnh bìa, thư viện ảnh.
  * Trả ảnh: lưu làm ảnh bìa của video, lưu vào thư viện ảnh (làm logo, sticker), tải về máy.
  * Lưu kèm bản nhiều lớp để lần sau mở lại vẫn sửa được từng lớp.

@@ -1,7 +1,7 @@
 """Mô-đun AI miễn phí chạy ngay trên máy: dịch offline và vẽ ảnh offline. Không cần key, không cần mạng khi chạy.
 
-Người dùng bấm Tải trong Cài đặt là xong: iContent tự tải bộ chạy (llama.cpp, stable-diffusion.cpp, bản Vulkan: chạy trên card NVIDIA,
-AMD, Intel; máy không có card thì tự chạy bằng CPU) và mô hình về thư mục ai/ cạnh iContent. Không cần cài Ollama hay Python gì thêm.
+Người dùng bấm Tải trong Cài đặt là xong: Studio566 tự tải bộ chạy (llama.cpp, stable-diffusion.cpp, bản Vulkan: chạy trên card NVIDIA,
+AMD, Intel; máy không có card thì tự chạy bằng CPU) và mô hình về thư mục ai/ cạnh Studio566. Không cần cài Ollama hay Python gì thêm.
 
   translate  Hy-MT2 1.8B (Tencent, Apache-2.0), 1,1 GB: dịch từng câu, xem offline.py.
   image      FLUX.2 klein 4B (Black Forest Labs, Apache-2.0) + Qwen3 4B đọc lời nhắn + VAE, khoảng 5,3 GB. Nhận ảnh mẫu nhân vật.
@@ -10,7 +10,7 @@ AMD, Intel; máy không có card thì tự chạy bằng CPU) và mô hình về
 Mọi file ghim đúng phiên bản (bản phát hành GitHub, commit Hugging Face) và kiểm SHA-256 sau khi tải: file đổi hay hỏng thì không dùng.
 Tải tiếp được khi rớt mạng (file .part). Mô hình dịch đã tải bằng Ollama ở bản cũ được dùng lại, không tải lại.
 
-Bộ chạy là tiến trình con gắn vào Job Object của Windows: iContent tắt (kể cả bị tắt ngang) thì chúng tắt theo, không giữ card đồ họa.
+Bộ chạy là tiến trình con gắn vào Job Object của Windows: Studio566 tắt (kể cả bị tắt ngang) thì chúng tắt theo, không giữ card đồ họa.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ from .util import ROOT, log
 AI_DIR = Path(os.environ.get("ICONTENT_AI_DIR") or ROOT / "ai")
 HF = (os.environ.get("HF_ENDPOINT") or "https://huggingface.co").rstrip("/")
 GH = "https://github.com"
-UA = "iContent-Studio"
+UA = "Studio566-Studio"
 NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 
 FILES: dict[str, dict] = {
@@ -95,7 +95,7 @@ PACKS: dict[str, dict] = {
     "translate": {
         "name": "Dịch offline", "files": ["llama", "hymt"], "icon": "globe",
         "desc": "Dịch lời thoại tiếng Trung ngay trên máy: không cần key, không cần mạng, câu thoại không gửi đi đâu. "
-                "Gemini quá tải hay Google chặn thì iContent tự dịch tiếp bằng cách này.",
+                "Gemini quá tải hay Google chặn thì Studio566 tự dịch tiếp bằng cách này.",
         "limits": "Dịch từng câu nên chưa bằng AI lớn: chưa có xưng hô theo ngữ cảnh, tên món và tiếng lóng có thể sai, "
                   "không gợi ý tiêu đề. Nên đọc lại bản dịch trong Studio trước khi đăng.",
     },
@@ -277,7 +277,7 @@ def fetch(url: str, part: Path, size: int, sha256: str, cancel: threading.Event,
             if e.code == 416:      # đã đủ byte
                 break
             if e.code in (401, 403, 404, 410):
-                raise DownloadError(f"Máy chủ báo lỗi {e.code} khi tải {url.rsplit('/', 1)[-1]}. Cập nhật iContent lên bản mới rồi thử lại.") from e
+                raise DownloadError(f"Máy chủ báo lỗi {e.code} khi tải {url.rsplit('/', 1)[-1]}. Cập nhật Studio566 lên bản mới rồi thử lại.") from e
             fails += 1
             if fails > retries:
                 raise DownloadError(f"Máy chủ tải đang lỗi ({e.code}). Thử lại sau ít phút: phần đã tải được giữ lại.") from e
@@ -373,7 +373,7 @@ def _download_pack(t: Task) -> None:
         return
     free = free_bytes()
     if free and free < total * 1.05 + 500e6:
-        raise DownloadError(f"Ổ đĩa chứa iContent chỉ còn trống {gb(free)}, gói này cần {gb(total)}. Dọn bớt (Thư viện > Dọn file tạm) rồi thử lại.")
+        raise DownloadError(f"Ổ đĩa chứa Studio566 chỉ còn trống {gb(free)}, gói này cần {gb(total)}. Dọn bớt (Thư viện > Dọn file tạm) rồi thử lại.")
     t.set(total_mb=round(total / 1e6))
     base = 0
     speed_ref = [time.time(), 0, 0.0]      # mốc thời gian, số byte ở mốc, tốc độ đã làm mượt
@@ -466,7 +466,7 @@ def remove(pid: str) -> int:
                     freed += x.stat().st_size
                     x.unlink()
             except OSError as e:
-                raise RuntimeError(f"Không xóa được {x.name}: file đang được dùng. Tắt iContent, mở lại rồi xóa.") from e
+                raise RuntimeError(f"Không xóa được {x.name}: file đang được dùng. Tắt Studio566, mở lại rồi xóa.") from e
     with _tasks_lock:
         TASKS.pop(pid, None)
     return freed
@@ -484,13 +484,13 @@ def status() -> dict:
     return {"packs": out, "free_mb": round(free_bytes() / 1e6), "dir": str(AI_DIR), "devices": devices(quick=True)}
 
 
-# ------------------------------------------------------------------ tiến trình con: chết theo iContent
+# ------------------------------------------------------------------ tiến trình con: chết theo Studio566
 
 _JOB = None
 
 
 def _job():
-    """Job Object 'tắt hết khi đóng': iContent bị tắt ngang thì Windows tự tắt bộ chạy, không để nó giữ card đồ họa."""
+    """Job Object 'tắt hết khi đóng': Studio566 bị tắt ngang thì Windows tự tắt bộ chạy, không để nó giữ card đồ họa."""
     global _JOB
     if os.name != "nt":
         return None

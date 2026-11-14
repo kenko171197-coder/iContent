@@ -63,6 +63,25 @@ def _refine(groups: list[tuple[int | None, list[tuple]]], events: list[dict], re
         groups[gi], groups[gi + 1] = (ea, ws[:best_k]), (eb, ws[best_k:])
 
 
+CJK = re.compile(r"[\u3400-\u9fff]")
+
+
+def _ocr_only(words: list[tuple], events: list[dict], used: set[int], min_dur: float = 0.5) -> list[Segment]:
+    """Phụ đề in sẵn hiện trên màn hình mà Whisper không nghe ra chữ nào (nhạc nền to che lời):
+    lấy chính chữ phụ đề làm câu thoại để vẫn dịch và lồng tiếng được, thay vì bỏ trống cả đoạn."""
+    out = []
+    for i, e in enumerate(events):
+        if i in used or e["end"] - e["start"] < min_dur:
+            continue
+        text = " ".join(str(e.get("text") or "").split()).strip(" ，,、")
+        if len(CJK.findall(text)) < 2:
+            continue
+        if any(e["start"] - 0.1 <= (w[0] + w[1]) / 2 <= e["end"] + 0.1 for w in words):
+            continue
+        out.append(Segment(id=0, start=round(e["start"], 3), end=round(e["end"], 3), text=text, ocr=text))
+    return out
+
+
 def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
     """words: (start, end, text, brk); events: [{start, end, text}] (đã sắp theo thời gian)."""
     if not events:
@@ -94,6 +113,7 @@ def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
                 out.append(s)
             continue
         out.append(Segment(id=0, start=round(ws[0][0], 3), end=round(ws[-1][1], 3), text=text, ocr=screen))
+    out += _ocr_only(words, events, {ev for ev, _ in groups if ev is not None})
     out.sort(key=lambda s: s.start)
     for i, s in enumerate(out, 1):
         s.id = i
