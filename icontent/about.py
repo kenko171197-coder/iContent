@@ -3,6 +3,11 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "1.0.0", "date": "11/2026", "items": [
+        "Dịch video chia 3 bước rõ ràng: chọn video, chọn kiểu, bắt đầu. Tùy chọn chi tiết gập vào Tùy chỉnh nâng cao.",
+        "Studio có chế độ Đơn giản (mặc định): video bên trái, danh sách câu bên phải, chữ to dễ sửa. Chuyển sang Chuyên nghiệp để có đủ timeline.",
+        "Thẻ video đang làm báo ngay điều cần biết: đang chờ AI qua MCP (kèm nút chép câu nhắn), đoạn nghi thiếu lời do nhạc to, câu chưa đọc được, câu đọc chậm hơn hình.",
+    ]},
     {"version": "0.9.1", "date": "11/2026", "items": [
         "AI qua MCP dùng cổng chung của Studio566: chỉ cần bấm Kết nối, không cần tài khoản hay API token Cloudflare.",
         "Mỗi máy một kênh riêng có mật khẩu riêng; đổi địa chỉ hoặc ngắt kết nối bất cứ lúc nào.",
