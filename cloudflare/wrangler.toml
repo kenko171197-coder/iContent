@@ -1,0 +1,21 @@
+# Cổng MCP trung tâm của Studio566. GitHub Actions tự dựng lên Cloudflare của chủ app (workflow "Dựng bản Windows",
+# bước deploy-mcp) khi repo có secret CLOUDFLARE_API_TOKEN và CLOUDFLARE_ACCOUNT_ID.
+# Dựng tay: npx wrangler@4 deploy (trong thư mục này).
+name = "studio566-mcp"
+main = "studio566-mcp.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+# Gắn tên miền riêng sau này: bỏ dấu # hai dòng dưới, thay bằng tên miền của bạn (tên miền phải nằm trên Cloudflare)
+# routes = [{ pattern = "mcp.tenmiencuaban.com", custom_domain = true }]
+
+[[durable_objects.bindings]]
+name = "QUEUE"
+class_name = "Queue"
+
+[[durable_objects.bindings]]
+name = "REG"
+class_name = "Registry"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Queue", "Registry"]

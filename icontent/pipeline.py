@@ -127,7 +127,7 @@ def _ensure_translator(cfg):
     tc = cfg.translate
     if translator_ready(tc):
         return cfg
-    why = ("Chưa bật được dịch offline" if tc.provider == "offline" else "Chưa cài cổng AI qua MCP" if tc.provider == "mcp"
+    why = ("Chưa bật được dịch offline" if tc.provider == "offline" else "Chưa kết nối AI qua MCP" if tc.provider == "mcp"
            else f"Chưa có API key cho {tc.provider}")
     if tc.provider in ("claude", "openai") and os.environ.get("GEMINI_API_KEY"):
         # đã có key Gemini (gói miễn phí cũng dịch được): hiểu ngữ cảnh, xưng hô, gợi ý tiêu đề, hơn hẳn dịch offline

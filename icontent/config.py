@@ -46,7 +46,8 @@ DEFAULTS: dict[str, Any] = {
         "glossary": {},               # {"小米": "Xiaomi", ...}
         "shorten_retry": True,        # câu nào đọc không kịp -> nhờ LLM rút gọn rồi đọc lại
         "analyze": True,              # đọc cả video trước khi dịch: tóm tắt, xưng hô, tên riêng, tiêu đề/hashtag
-        "mcp_wait": 300,              # provider mcp: chờ AI nhận việc chừng này giây rồi tự chuyển sang cách dịch dự phòng
+        "mcp_wait": 300,
+        "mcp_server": "",             # địa chỉ cổng MCP trung tâm (trống = địa chỉ gắn sẵn trong bản cài)              # provider mcp: chờ AI nhận việc chừng này giây rồi tự chuyển sang cách dịch dự phòng
     },
     "tts": {
         "enabled": True,

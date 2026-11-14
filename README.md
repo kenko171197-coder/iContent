@@ -165,16 +165,22 @@ Mọi thứ đã làm ở một chỗ: video dịch, câu chuyện, quy trình, 
 Dùng Claude, ChatGPT hoặc Grok bạn đang trả phí làm "bộ não" cho các việc chữ: dịch, rút gọn câu, phân tích video, viết kịch bản.
 Vẽ ảnh và tạo video AI vẫn cần key hoặc Vẽ ảnh offline (AI chat chỉ trả về chữ).
 
-1. **Cài cổng (một lần):** Cài đặt → Kết nối AI dịch → **AI qua MCP**. Tạo tài khoản Cloudflare miễn phí, tạo API token theo mẫu
-   *Edit Cloudflare Workers*, dán vào và bấm **Cài cổng MCP**. Studio566 tự dựng cổng ở `studio566-mcp.<tên>.workers.dev`
-   (mã cổng: `cloudflare/studio566-mcp.js`).
-2. **Nối AI (một lần):** bấm **Chép địa chỉ**, dán vào Claude (Connectors → Add custom connector), ChatGPT (Developer mode →
-   Create) hoặc Grok (grok.com/connectors → Custom).
-3. **Mỗi lần làm video:** mở AI đó và nhắn *"làm việc đang chờ"*. AI dùng 3 công cụ `viec_dang_cho`, `lay_viec`, `tra_ket_qua`.
+**Người dùng:**
+1. Cài đặt → Kết nối AI dịch → **AI qua MCP** → bấm **Kết nối**. Máy nhận một kênh riêng trên cổng chung của Studio566.
+2. Bấm **Chép địa chỉ**, dán vào Claude (Connectors → Add custom connector), ChatGPT (Developer mode → Create) hoặc
+   Grok (grok.com/connectors → Custom). Làm một lần.
+3. Mỗi lần làm video: mở AI đó và nhắn *"làm việc đang chờ"*. AI dùng 3 công cụ `viec_dang_cho`, `lay_viec`, `tra_ket_qua`.
    Quá 5 phút (chỉnh ở Cài đặt) chưa AI nào nhận việc thì Studio566 tự dịch bằng dịch offline hoặc Google.
 
-Địa chỉ MCP có sẵn mật khẩu bên trong, đừng chia sẻ; lỡ lộ thì bấm **Đổi địa chỉ**. Lời thoại gửi lên cổng nằm trong tài khoản
-Cloudflare của bạn và tự xóa sau khi xong (tối đa 2 giờ).
+Địa chỉ MCP có mật khẩu bên trong, đừng chia sẻ; lỡ lộ thì bấm **Đổi địa chỉ**. Lời thoại chỉ được giữ tạm trên cổng để AI của
+chính người dùng lấy, nhận kết quả xong là xóa (việc bỏ dở tự xóa sau tối đa 2 giờ).
+
+**Chủ app (dựng cổng chung, làm một lần):** cổng là `cloudflare/studio566-mcp.js`, chạy trên Cloudflare Workers gói miễn phí.
+1. Tạo tài khoản Cloudflare, mở **Workers & Pages** một lần để Cloudflare cấp tên miền `<tên>.workers.dev`.
+2. Tạo API token theo mẫu **Edit Cloudflare Workers**; chép **Account ID** (trang chủ tài khoản Cloudflare, cột bên phải).
+3. GitHub → repo → Settings → Secrets and variables → Actions → thêm 2 secret `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`.
+4. Từ đó mỗi lần cập nhật nhánh `main`, GitHub tự dựng cổng và gắn địa chỉ cổng vào bản cài. Gắn tên miền riêng sau này:
+   sửa `cloudflare/wrangler.toml` (dòng `routes`) và đặt biến repo `MCP_SERVER_URL`.
 
 ## Bản quyền
 
