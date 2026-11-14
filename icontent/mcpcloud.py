@@ -1,42 +1,48 @@
-"""AI qua MCP: cổng MCP của Studio566 đặt trên Cloudflare Workers (tài khoản của người dùng, gói miễn phí).
+"""AI qua MCP: kết nối tới cổng MCP trung tâm của Studio566 (Cloudflare Workers của chủ app, mã: cloudflare/studio566-mcp.js).
 
-Studio566 gửi việc chữ lên cổng rồi chờ kết quả; Claude, ChatGPT, Grok nối vào địa chỉ MCP để lấy việc và trả kết quả.
-Máy người dùng chỉ gọi ra ngoài (HTTPS), không mở cổng nào. Mã cổng: cloudflare/studio566-mcp.js.
+Mỗi máy tự đăng ký một KÊNH riêng (không cần tài khoản): nhận mã kênh, mật khẩu cho app và mật khẩu cho AI.
+Studio566 gửi việc chữ vào kênh rồi chờ kết quả; Claude, ChatGPT, Grok của người dùng nối vào link MCP của kênh để
+lấy việc và trả kết quả. Máy người dùng chỉ gọi ra ngoài (HTTPS), không mở cổng nào.
 
-Cài đặt (một lần): người dùng tạo API token Cloudflare theo mẫu "Edit Cloudflare Workers", dán vào Studio566 →
-deploy() tải Worker lên, bật địa chỉ <tên>.<tài khoản>.workers.dev, tạo hai mật khẩu (cho AI, cho app) và lưu lại.
+Địa chỉ cổng: biến môi trường STUDIO566_MCP_SERVER > translate.mcp_server trong cấu hình > icontent/_mcp_server.txt
+(GitHub Actions ghi lúc đóng gói bản cài).
 """
 from __future__ import annotations
 
 import json
 import os
-import secrets
 import time
 import urllib.error
 import urllib.request
-import uuid
 from pathlib import Path
 
 from .util import ROOT, check_cancel, log
 
-API = "https://api.cloudflare.com/client/v4"
-SCRIPT = "studio566-mcp"
-WORKER_FILE = ROOT / "cloudflare" / "studio566-mcp.js"
-COMPAT_DATE = "2025-09-01"
 UA = "Studio566-mcp"
+POLL_WAIT = 20          # giây: mỗi lượt hỏi kết quả, cổng giữ kết nối chờ AI trả tới chừng này (ít lượt gọi)
 
 
 class McpError(RuntimeError):
     pass
 
 
-# ------------------------------------------------------------------ cấu hình lưu trên máy
+# ------------------------------------------------------------------ địa chỉ cổng, kênh lưu trên máy
+
+def server_url(cfg_url: str = "") -> str:
+    u = os.environ.get("STUDIO566_MCP_SERVER") or cfg_url
+    if not u:
+        try:
+            u = Path(__file__).with_name("_mcp_server.txt").read_text(encoding="utf-8").strip()
+        except OSError:
+            u = ""
+    return u.rstrip("/")
+
 
 def _conf_file() -> Path:
     base = os.environ.get("LOCALAPPDATA") or str(ROOT)
     d = Path(base) / "Studio566"
     d.mkdir(parents=True, exist_ok=True)
-    return d / "mcp-cloud.json"
+    return d / "mcp-channel.json"
 
 
 def load_conf() -> dict:
@@ -52,25 +58,22 @@ def save_conf(c: dict) -> None:
 
 def configured() -> bool:
     c = load_conf()
-    return bool(c.get("url") and c.get("app_secret") and c.get("mcp_secret"))
+    return bool(c.get("server") and c.get("id") and c.get("app_secret") and c.get("mcp_secret"))
 
 
 def ai_url(c: dict | None = None) -> str:
     c = c or load_conf()
-    return f"{c['url'].rstrip('/')}/mcp/{c['mcp_secret']}" if c.get("url") else ""
+    return f"{c['server']}/mcp/{c['id']}/{c['mcp_secret']}" if c.get("id") else ""
 
 
 # ------------------------------------------------------------------ gọi HTTP
 
-def _http(method: str, url: str, body=None, headers: dict | None = None, timeout: float = 30.0):
-    h = {"User-Agent": UA, **(headers or {})}
+def _http(method: str, url: str, body=None, timeout: float = 30.0):
+    h = {"User-Agent": UA}
     data = None
     if body is not None:
-        if isinstance(body, (bytes, bytearray)):
-            data = bytes(body)
-        else:
-            data = json.dumps(body).encode("utf-8")
-            h.setdefault("Content-Type", "application/json")
+        data = json.dumps(body).encode("utf-8")
+        h["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=data, method=method, headers=h)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -83,124 +86,73 @@ def _http(method: str, url: str, body=None, headers: dict | None = None, timeout
         except ValueError:
             return e.code, {"error": raw.decode("utf-8", "replace")[:300]}
     except (urllib.error.URLError, TimeoutError, OSError) as e:
-        raise McpError(f"Không kết nối được: {getattr(e, 'reason', e)}") from e
+        raise McpError(f"Không kết nối được cổng MCP: {getattr(e, 'reason', e)}") from e
 
 
-def _cf(method: str, path: str, token: str, body=None, headers: dict | None = None) -> dict:
-    code, data = _http(method, API + path, body, {"Authorization": f"Bearer {token}", **(headers or {})}, timeout=60)
-    if not isinstance(data, dict) or not data.get("success", code < 300):
-        errs = data.get("errors") if isinstance(data, dict) else None
-        msg = "; ".join(f"{e.get('code')}: {e.get('message')}" for e in (errs or []) if isinstance(e, dict)) or f"HTTP {code}"
-        raise McpError(msg)
-    return data
+def _err(code: int, data) -> str:
+    return (data.get("error") if isinstance(data, dict) else "") or f"HTTP {code}"
 
 
-def _multipart(fields: list[tuple[str, str, str, bytes]]) -> tuple[bytes, str]:
-    """[(tên, tên file, content-type, dữ liệu)] -> (body, content-type)."""
-    b = "----studio566" + uuid.uuid4().hex
-    out = bytearray()
-    for name, filename, ctype, data in fields:
-        out += f"--{b}\r\nContent-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\nContent-Type: {ctype}\r\n\r\n".encode()
-        out += data + b"\r\n"
-    out += f"--{b}--\r\n".encode()
-    return bytes(out), f"multipart/form-data; boundary={b}"
+# ------------------------------------------------------------------ kết nối / ngắt / đổi link
 
-
-# ------------------------------------------------------------------ cài cổng lên Cloudflare
-
-def _upload(token: str, account: str, c: dict, migrate: bool) -> None:
-    meta = {
-        "main_module": "worker.js",
-        "compatibility_date": COMPAT_DATE,
-        "bindings": [
-            {"type": "durable_object_namespace", "name": "QUEUE", "class_name": "Queue"},
-            {"type": "secret_text", "name": "MCP_SECRET", "text": c["mcp_secret"]},
-            {"type": "secret_text", "name": "APP_SECRET", "text": c["app_secret"]},
-        ],
-    }
-    if migrate:
-        meta["migrations"] = {"new_tag": "v1", "new_sqlite_classes": ["Queue"]}
-    body, ctype = _multipart([
-        ("metadata", "blob", "application/json", json.dumps(meta).encode()),
-        ("worker.js", "worker.js", "application/javascript+module", WORKER_FILE.read_bytes()),
-    ])
-    _cf("PUT", f"/accounts/{account}/workers/scripts/{SCRIPT}", token, body, {"Content-Type": ctype})
-
-
-def deploy(token: str, rotate_mcp: bool = False) -> dict:
-    """Tải cổng lên Cloudflare (cài mới hoặc cập nhật). Trả về cấu hình đã lưu."""
-    token = (token or "").strip()
-    c = load_conf()
-    if not token:
-        token = c.get("cf_token", "")
-    if not token:
-        raise McpError("Chưa có API token Cloudflare")
-    log("mcp", "Kiểm tra tài khoản Cloudflare ...")
-    accounts = _cf("GET", "/accounts?per_page=5", token).get("result") or []
-    if not accounts:
-        raise McpError("Token không thấy tài khoản Cloudflare nào: tạo token theo mẫu \"Edit Cloudflare Workers\"")
-    account = accounts[0]["id"]
-    c.setdefault("app_secret", secrets.token_urlsafe(24))
-    if rotate_mcp or not c.get("mcp_secret"):
-        c["mcp_secret"] = secrets.token_urlsafe(24)
-    log("mcp", "Tải cổng MCP lên Cloudflare ...")
-    try:
-        _upload(token, account, c, migrate=not c.get("migrated"))
-    except McpError as e:
-        if "migration" not in str(e).lower():
-            raise
-        _upload(token, account, c, migrate=False)      # đã tạo hàng chờ ở lần cài trước
-    c["migrated"] = True
-    # tên miền mặc định <tài khoản>.workers.dev: tài khoản mới chưa có thì tạo
-    try:
-        sub = (_cf("GET", f"/accounts/{account}/workers/subdomain", token).get("result") or {}).get("subdomain")
-    except McpError:
-        sub = None
-    if not sub:
-        want = "s566-" + secrets.token_hex(3)
-        sub = (_cf("PUT", f"/accounts/{account}/workers/subdomain", token, {"subdomain": want}).get("result") or {}).get("subdomain") or want
-    _cf("POST", f"/accounts/{account}/workers/scripts/{SCRIPT}/subdomain", token, {"enabled": True, "previews_enabled": False})
-    c.update({"url": f"https://{SCRIPT}.{sub}.workers.dev", "account": account, "cf_token": token, "deployed_at": int(time.time())})
+def connect(cfg_url: str = "") -> dict:
+    """Đăng ký kênh mới trên cổng trung tâm (đã có kênh thì giữ nguyên)."""
+    if configured():
+        return load_conf()
+    srv = server_url(cfg_url)
+    if not srv:
+        raise McpError("Bản Studio566 này chưa có địa chỉ cổng MCP")
+    code, data = _http("POST", f"{srv}/api/register", {})
+    if code != 200 or not data.get("id"):
+        raise McpError(_err(code, data))
+    c = {"server": srv, "id": data["id"], "app_secret": data["app_secret"], "mcp_secret": data["mcp_secret"],
+         "connected_at": int(time.time())}
     save_conf(c)
-    log("mcp", f"Đã cài cổng MCP: {c['url']}")
+    log("mcp", "Đã kết nối cổng AI qua MCP")
     return c
 
 
-def forget() -> None:
+def _app(method: str, path: str, body=None, timeout: float = 20.0) -> dict:
+    c = load_conf()
+    if not c.get("id"):
+        raise McpError("Chưa kết nối AI qua MCP: vào Cài đặt > Kết nối AI dịch > AI qua MCP")
+    code, data = _http(method, f"{c['server']}/api/{c['id']}/{c['app_secret']}/{path}", body, timeout=timeout)
+    if code == 404 and path in ("status", ""):
+        raise McpError("Kênh không còn trên cổng MCP: bấm Ngắt kết nối rồi Kết nối lại")
+    if code >= 300:
+        raise McpError(f"Cổng MCP báo lỗi: {_err(code, data)}")
+    return data
+
+
+def rotate() -> dict:
+    c = load_conf()
+    c["mcp_secret"] = _app("POST", "rotate")["mcp_secret"]
+    save_conf(c)
+    return c
+
+
+def disconnect() -> None:
+    try:
+        _app("DELETE", "", timeout=10)
+    except McpError:
+        pass
     try:
         _conf_file().unlink()
     except OSError:
         pass
 
 
-# ------------------------------------------------------------------ dùng cổng
-
-def _app(method: str, path: str, body=None, timeout: float = 20.0) -> dict:
-    c = load_conf()
-    if not c.get("url"):
-        raise McpError("Chưa cài cổng MCP: vào Cài đặt > Kết nối AI dịch > AI qua MCP")
-    code, data = _http(method, f"{c['url'].rstrip('/')}/api/{c['app_secret']}/{path}", body, timeout=timeout)
-    if code >= 300:
-        raise McpError(f"Cổng MCP trả lỗi HTTP {code}: {str(data)[:200]}")
-    return data
+def status() -> dict:
+    """{pending, taken, ai_seen, ai_name}."""
+    return _app("GET", "status")
 
 
-def status(wait_ready: float = 0.0) -> dict:
-    """{pending, taken, ai_seen, ai_name}. wait_ready: vừa cài xong thì địa chỉ workers.dev có thể chưa chạy ngay, chờ tối đa chừng này giây."""
-    end = time.time() + wait_ready
-    while True:
-        try:
-            return _app("GET", "status")
-        except McpError:
-            if time.time() >= end:
-                raise
-            time.sleep(3)
-
+# ------------------------------------------------------------------ chạy một việc
 
 def run_job(system: str, user: str, schema: dict | None, title: str, wait: float = 300.0,
-            work_limit: float = 900.0, poll: float = 2.0) -> dict:
-    """Gửi một việc lên cổng, chờ AI làm. Chưa AI nào nhận sau `wait` giây -> hủy việc và báo lỗi để app dùng cách dự phòng.
-    AI đã nhận thì cho thêm tới `work_limit` giây."""
+            work_limit: float = 900.0, poll: float = POLL_WAIT) -> dict:
+    """Gửi một việc vào kênh, chờ AI làm. Chưa AI nào nhận sau `wait` giây -> hủy việc và báo lỗi để app dùng cách dự phòng.
+    AI đã nhận thì cho thêm tới `work_limit` giây. Mỗi lượt hỏi, cổng giữ kết nối tới `poll` giây chờ AI trả."""
     job = _app("POST", "jobs", {"title": title, "system": system, "user": user, "schema": schema})
     jid = job["id"]
     start = time.time()
@@ -209,11 +161,14 @@ def run_job(system: str, user: str, schema: dict | None, title: str, wait: float
     try:
         while True:
             check_cancel()
-            time.sleep(poll)
+            now = time.time()
+            limit = work_limit if taken_once else wait
+            hold = max(0.0, min(poll, limit - (now - start)))
             try:
-                st = _app("GET", f"jobs/{jid}")
+                st = _app("GET", f"jobs/{jid}?wait={int(hold)}", timeout=hold + 15)
             except McpError as e:      # mạng chập chờn: thử lại tới khi hết giờ
                 st = {"status": "error", "error": str(e)}
+                time.sleep(2)
             s = st.get("status")
             now = time.time()
             if s == "done":
@@ -221,22 +176,18 @@ def run_job(system: str, user: str, schema: dict | None, title: str, wait: float
                 return st.get("result") or {}
             if s == "missing":
                 raise McpError("Việc trên cổng MCP bị mất (có thể đã hết hạn)")
-            if s == "taken":
-                if not taken_once:
-                    log("mcp", f"AI{(' ' + st['by']) if st.get('by') else ''} đang làm: {title}")
+            if s == "taken" and not taken_once:
                 taken_once = True
-                if now - start > work_limit:
-                    raise TimeoutError(f"AI nhận việc nhưng quá {int(work_limit / 60)} phút chưa trả kết quả")
-                continue
-            # đang chờ AI nhận
+                log("mcp", f"AI{(' ' + st['by']) if st.get('by') else ''} đang làm: {title}")
             limit = work_limit if taken_once else wait
-            if now - start > limit:
+            if now - start >= limit:
+                if taken_once:
+                    raise TimeoutError(f"AI nhận việc nhưng quá {int(work_limit / 60)} phút chưa trả kết quả")
                 raise TimeoutError(f"Chưa có AI nào vào làm qua MCP sau {wait / 60:g} phút")
-            if now - last_note >= 30:
+            if not taken_once and now - last_note >= 30:
                 last_note = now
-                left = int(limit - (now - start))
                 log("mcp", f"Đang chờ AI qua MCP ({title}): mở Claude, ChatGPT hoặc Grok và nhắn \"làm việc đang chờ\". "
-                           f"Còn {left} giây trước khi tự chuyển sang cách dự phòng")
+                           f"Còn {int(limit - (now - start))} giây trước khi tự chuyển sang cách dự phòng")
     except BaseException:
         try:
             _app("DELETE", f"jobs/{jid}", timeout=8)

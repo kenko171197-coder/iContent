@@ -3,6 +3,11 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "0.9.1", "date": "11/2026", "items": [
+        "AI qua MCP dùng cổng chung của Studio566: chỉ cần bấm Kết nối, không cần tài khoản hay API token Cloudflare.",
+        "Mỗi máy một kênh riêng có mật khẩu riêng; đổi địa chỉ hoặc ngắt kết nối bất cứ lúc nào.",
+        "Nhận kết quả từ AI nhanh hơn và ít lượt gọi hơn (cổng giữ kết nối chờ sẵn).",
+    ]},
     {"version": "0.9.0", "date": "11/2026", "items": [
         "AI qua MCP: dùng Claude, ChatGPT hoặc Grok bạn đang trả phí để dịch, rút gọn câu, phân tích video, viết kịch bản. Không cần API key.",
         "Cổng MCP đặt trên Cloudflare (tài khoản của bạn, gói miễn phí): dán API token là Studio566 tự cài. Máy bạn không mở cổng nào ra Internet.",

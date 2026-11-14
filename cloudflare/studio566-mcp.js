@@ -1,20 +1,25 @@
-// Cổng MCP của Studio566, chạy trên Cloudflare Workers (tài khoản Cloudflare của chính người dùng, gói miễn phí).
+// Cổng MCP trung tâm của Studio566, chạy trên Cloudflare Workers của chủ app. Mọi người dùng Studio566 kết nối qua đây.
 //
-// Studio566 trên máy gửi việc chữ (dịch, rút gọn, phân tích, viết kịch bản...) lên đây; Claude, ChatGPT hay Grok nối vào
-// /mcp/<MCP_SECRET> qua MCP, lấy việc, làm, trả kết quả; Studio566 lấy kết quả về. Máy người dùng không mở cổng nào.
+// Mỗi máy cài Studio566 tự đăng ký một KÊNH riêng (hàng chờ riêng, mật khẩu riêng, không cần tài khoản).
+// Studio566 gửi việc chữ (dịch, rút gọn, phân tích, viết kịch bản...) vào kênh; Claude, ChatGPT hay Grok của người dùng
+// nối vào link MCP của kênh, lấy việc, làm, trả kết quả. Máy người dùng không mở cổng nào.
 //
-//   /mcp/<MCP_SECRET>        MCP (Streamable HTTP, chỉ JSON, không SSE) cho các app AI
-//   /api/<APP_SECRET>/...    REST cho Studio566: jobs (POST), jobs/<id> (GET, DELETE), status (GET)
+//   POST /api/register                      đăng ký kênh mới -> {id, app_secret, mcp_secret}
+//   /api/<kênh>/<mật khẩu app>/...          REST cho Studio566: jobs, jobs/<id>[?wait=giây], status, rotate, DELETE (xóa kênh)
+//   /mcp/<kênh>/<mật khẩu MCP>              MCP (Streamable HTTP, chỉ JSON) cho app AI
 //
-// Hàng chờ nằm trong một Durable Object (lưu SQLite, có trên gói miễn phí). Việc tự xóa sau 2 giờ.
-// Studio566 tự tải file này lên bằng API Cloudflare (icontent/mcpcloud.py): không cần wrangler hay Node.
+// Mỗi kênh là một Durable Object (SQLite, có trên gói miễn phí). Việc tự xóa sau 2 giờ. Dựng bằng wrangler (wrangler.toml).
 
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const KEEP_MS = 2 * 3600 * 1000;          // việc cũ hơn thế thì xóa
 const STALE_TAKEN_MS = 5 * 60 * 1000;     // AI nhận việc mà quá 5 phút chưa trả: trả lại hàng chờ cho lượt khác
 const LONGPOLL_MS = 20 * 1000;            // hàng trống mà app vẫn đang chạy: lay_viec chờ thêm chừng này
 const APP_ACTIVE_MS = 90 * 1000;          // app hỏi kết quả trong khoảng này coi như đang chạy video
-const MAX_BODY = 4 * 1024 * 1024;
+const MAX_BODY = 2 * 1024 * 1024;
+const MAX_PENDING = 100;                  // mỗi kênh tối đa chừng này việc chưa xong
+const MAX_JOBS_DAY = 1500;                // mỗi kênh tối đa chừng này việc mỗi ngày (chống lạm dụng)
+const MAX_REGISTER_DAY = 30;              // mỗi địa chỉ IP tối đa chừng này kênh mới mỗi ngày
+const RESULT_WAIT_MAX = 25 * 1000;        // Studio566 hỏi kết quả kiểu chờ sẵn: tối đa chừng này mỗi lượt
 
 const INSTRUCTIONS = [
   "Cổng vào app Studio566 (dịch và lồng tiếng video). Bạn là bộ não AI của app cho các việc chữ: dịch phụ đề, rút gọn câu, phân tích video, viết kịch bản. App là nơi hiển thị kết quả, chat chỉ là nơi nhận lệnh.",
@@ -124,27 +129,73 @@ function newId() {
   return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 }
 
-// ------------------------------------------------------------------ Worker: chỉ kiểm mật khẩu rồi chuyển vào hàng chờ
+// ------------------------------------------------------------------ Worker: đăng ký kênh, chuyển yêu cầu vào đúng kênh
+
+const HOME = `<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio566 MCP</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 20px;color:#1b1d22}
+h1{font-size:24px}code{background:#f1f2f4;padding:1px 6px;border-radius:5px}</style>
+<h1>Studio566 · cổng AI qua MCP</h1>
+<p>Cổng này cho phép Claude, ChatGPT, Grok của người dùng làm các việc chữ (dịch phụ đề, rút gọn câu, viết kịch bản) cho phần mềm Studio566 trên máy của họ.</p>
+<h2>Quyền riêng tư</h2>
+<ul><li>Mỗi máy có một kênh riêng, có mật khẩu riêng. Không cần tài khoản, không thu thập tên, email.</li>
+<li>Nội dung việc (lời thoại cần dịch) chỉ được giữ tạm để AI của chính người dùng lấy và trả kết quả, rồi xóa ngay khi Studio566 nhận kết quả. Việc bỏ dở tự xóa sau tối đa 2 giờ.</li>
+<li>Không dùng nội dung cho mục đích nào khác. Người dùng có thể xóa kênh bất cứ lúc nào trong Studio566 (Ngắt kết nối).</li></ul></html>`;
+
+async function bodyOf(request) {
+  return request.method === "GET" || request.method === "HEAD" ? undefined : await request.arrayBuffer();
+}
+
+function clientIp(request) {
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "local";
+}
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const parts = url.pathname.split("/").filter(Boolean);
-    if (parts.length === 0) {
-      return new Response("Studio566 MCP: cổng đang chạy.", { headers: { "content-type": "text/plain; charset=utf-8" } });
-    }
+    if (parts.length === 0) return new Response(HOME, { headers: { "content-type": "text/html; charset=utf-8" } });
     const len = Number(request.headers.get("content-length") || 0);
     if (len > MAX_BODY) return json({ error: "Dữ liệu quá lớn" }, 413);
-    const stub = env.QUEUE.get(env.QUEUE.idFromName("main"));
-    if (parts[0] === "mcp" && safeEqual(parts[1] || "", env.MCP_SECRET)) {
-      return stub.fetch(new Request("https://queue/mcp", request));
+    if (parts[0] === "api" && parts[1] === "register" && request.method === "POST") {
+      const day = new Date().toISOString().slice(0, 10);
+      const reg = env.REG.get(env.REG.idFromName("ip:" + clientIp(request) + ":" + day));
+      const r = await reg.fetch(new Request("https://reg/hit", { method: "POST" }));
+      if (r.status !== 200) return json({ error: "Đăng ký quá nhiều kênh hôm nay, thử lại ngày mai" }, 429);
+      const id = newId() + newId();
+      const stub = env.QUEUE.get(env.QUEUE.idFromName("ch:" + id));
+      return stub.fetch(new Request("https://queue/init/" + id, { method: "POST" }));
     }
-    if (parts[0] === "api" && safeEqual(parts[1] || "", env.APP_SECRET)) {
-      return stub.fetch(new Request("https://queue/api/" + parts.slice(2).join("/"), request));
+    if (parts[0] === "api" && /^[0-9a-f]{24}$/.test(parts[1] || "") && parts[2]) {
+      const stub = env.QUEUE.get(env.QUEUE.idFromName("ch:" + parts[1]));
+      const fwd = new URL("https://queue/api/" + parts.slice(3).join("/"));
+      fwd.search = url.search;
+      const h = new Headers(request.headers);
+      h.set("x-s566-key", parts[2]);
+      return stub.fetch(new Request(fwd, { method: request.method, headers: h, body: await bodyOf(request) }));
+    }
+    if (parts[0] === "mcp" && /^[0-9a-f]{24}$/.test(parts[1] || "") && parts[2]) {
+      const stub = env.QUEUE.get(env.QUEUE.idFromName("ch:" + parts[1]));
+      const h = new Headers(request.headers);
+      h.set("x-s566-key", parts[2]);
+      return stub.fetch(new Request("https://queue/mcp", { method: request.method, headers: h, body: await bodyOf(request) }));
     }
     return json({ error: "Không tìm thấy" }, 404);
   },
 };
+
+// ------------------------------------------------------------------ đếm số kênh đăng ký theo IP mỗi ngày
+
+export class Registry {
+  constructor(ctx) { this.storage = ctx.storage; }
+  async fetch() {
+    const n = ((await this.storage.get("n")) || 0) + 1;
+    if (n > MAX_REGISTER_DAY) return json({ ok: false }, 429);
+    await this.storage.put("n", n);
+    if (n === 1 && this.storage.setAlarm) await this.storage.setAlarm(Date.now() + 2 * 24 * 3600 * 1000);
+    return json({ ok: true });
+  }
+  async alarm() { await this.storage.deleteAll(); }
+}
 
 // ------------------------------------------------------------------ hàng chờ
 
@@ -152,7 +203,8 @@ export class Queue {
   constructor(ctx, env) {
     this.ctx = ctx;
     this.storage = ctx.storage;
-    this.waiters = new Set();
+    this.waiters = new Set();          // lay_viec đang chờ việc mới
+    this.doneWaiters = new Map();      // Studio566 đang chờ kết quả: id việc -> các hàm đánh thức
   }
 
   async meta() {
@@ -185,6 +237,21 @@ export class Queue {
     for (const w of [...this.waiters]) w();
   }
 
+  wakeDone(id) {
+    for (const w of [...(this.doneWaiters.get(id) || [])]) w();
+  }
+
+  waitDone(id, ms) {
+    return new Promise((resolve) => {
+      let timer;
+      const set = this.doneWaiters.get(id) || new Set();
+      this.doneWaiters.set(id, set);
+      const w = () => { clearTimeout(timer); set.delete(w); resolve(true); };
+      timer = setTimeout(() => { set.delete(w); resolve(false); }, ms);
+      set.add(w);
+    });
+  }
+
   waitForJob(ms) {
     return new Promise((resolve) => {
       let timer;
@@ -196,16 +263,39 @@ export class Queue {
 
   async fetch(request) {
     const url = new URL(request.url);
-    if (url.pathname === "/mcp") return this.mcp(request);
-    return this.api(request, url.pathname.replace(/^\/api\/?/, ""));
+    if (url.pathname.startsWith("/init/")) {
+      if (await this.storage.get("keys")) return json({ error: "Kênh đã có" }, 409);
+      const keys = { app: newId() + newId() + newId(), mcp: newId() + newId() + newId(), created: Date.now() };
+      await this.storage.put("keys", keys);
+      return json({ id: url.pathname.slice(6), app_secret: keys.app, mcp_secret: keys.mcp });
+    }
+    const keys = await this.storage.get("keys");
+    const given = request.headers.get("x-s566-key") || "";
+    if (url.pathname === "/mcp") {
+      if (!keys || !safeEqual(given, keys.mcp)) return json({ error: "Không tìm thấy" }, 404);
+      return this.mcp(request);
+    }
+    if (!keys || !safeEqual(given, keys.app)) return json({ error: "Không tìm thấy" }, 404);
+    return this.api(request, url.pathname.replace(/^\/api\/?/, ""), url);
   }
 
   // ---------------------------------------------------------------- REST cho Studio566
 
-  async api(request, path) {
+  async api(request, path, url) {
     const now = Date.now();
     await this.touch({ app_seen: now });
     const m = request.method;
+    if (path === "" && m === "DELETE") {          // ngắt kết nối: xóa sạch kênh
+      for (const w of [...this.waiters]) w();
+      await this.storage.deleteAll();
+      return json({ ok: true });
+    }
+    if (path === "rotate" && m === "POST") {      // đổi link MCP (lỡ để lộ)
+      const keys = await this.storage.get("keys");
+      keys.mcp = newId() + newId() + newId();
+      await this.storage.put("keys", keys);
+      return json({ mcp_secret: keys.mcp });
+    }
     if (path === "status" && m === "GET") {
       const all = await this.jobs();
       const meta = await this.meta();
@@ -220,6 +310,13 @@ export class Queue {
       let body;
       try { body = await request.json(); } catch { return json({ error: "JSON không hợp lệ" }, 400); }
       if (typeof body.user !== "string" || typeof body.system !== "string") return json({ error: "Thiếu system/user" }, 400);
+      const all = await this.jobs();
+      if (all.filter((j) => j.status !== "done").length >= MAX_PENDING) return json({ error: "Kênh có quá nhiều việc chưa xong" }, 429);
+      const day = new Date(now).toISOString().slice(0, 10);
+      const meta = await this.meta();
+      const count = meta.day === day ? (meta.count || 0) + 1 : 1;
+      if (count > MAX_JOBS_DAY) return json({ error: "Kênh đã dùng hết lượt hôm nay" }, 429);
+      await this.touch({ day, count });
       const job = {
         id: newId(), status: "pending", created: now, taken_at: 0, done_at: 0,
         title: String(body.title || "Việc chữ").slice(0, 120), system: body.system, user: body.user,
@@ -237,7 +334,12 @@ export class Queue {
       if (m === "GET") {
         if (!job) return json({ status: "missing" });
         await this.jobs();     // trả việc nhận quá hạn về hàng chờ
-        const cur = (await this.storage.get(key)) || job;
+        let cur = (await this.storage.get(key)) || job;
+        const wait = Math.min(RESULT_WAIT_MAX, Math.max(0, Number(url.searchParams.get("wait") || 0) * 1000));
+        if (cur.status !== "done" && wait > 0) {      // chờ sẵn tới khi AI trả kết quả: ít lượt gọi hơn hỏi liên tục
+          await this.waitDone(mm[1], wait);
+          cur = (await this.storage.get(key)) || cur;
+        }
         const out = { status: cur.status, taken_at: cur.taken_at, by: cur.by };
         if (cur.status === "done") { out.result = cur.result; await this.storage.delete(key); }
         return json(out);
@@ -344,6 +446,7 @@ export class Queue {
       job.result = parsed.value;
       job.done_at = Date.now();
       await this.storage.put(key, job);
+      this.wakeDone(id);
       const left = (await this.jobs()).filter((j) => j.status === "pending").length;
       return text(left ? `Đã nhận. Còn ${left} việc đang chờ: gọi lay_viec tiếp.` : await this.idleHint("Đã nhận. Hàng đã trống."));
     }

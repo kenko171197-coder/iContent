@@ -33,8 +33,47 @@ jobs:
           for f in /tmp/jscheck/*.mjs; do node --check "$f" || exit 1; done
           if grep -rn "coffee.js" icontent/web/static/js; then echo "Còn chỗ dùng coffee.js đã xóa"; exit 1; fi
 
-  windows:
+  # Dựng cổng MCP trung tâm lên Cloudflare của chủ app. Cần 2 secret của repo: CLOUDFLARE_API_TOKEN (mẫu "Edit Cloudflare
+  # Workers") và CLOUDFLARE_ACCOUNT_ID. Chưa có secret thì bỏ qua: bản cài vẫn chạy, chỉ chưa có AI qua MCP.
+  # Đã gắn tên miền riêng: đặt biến repo MCP_SERVER_URL (Settings > Variables) để bản cài dùng tên miền đó.
+  deploy-mcp:
     needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      url: ${{ steps.url.outputs.url }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      FIXED_URL: ${{ vars.MCP_SERVER_URL }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Dựng cổng MCP lên Cloudflare
+        id: url
+        working-directory: cloudflare
+        run: |
+          url=""
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            if [ "${{ github.event_name }}" != "pull_request" ]; then
+              npx --yes wrangler@4 deploy 2>&1 | tee deploy.log
+              url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+            else
+              sub=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | python3 -c "import sys,json;print((json.load(sys.stdin).get('result') or {}).get('subdomain',''))" || true)
+              [ -n "$sub" ] && url="https://studio566-mcp.$sub.workers.dev"
+            fi
+          else
+            echo "Chưa có secret CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID: bỏ qua dựng cổng MCP"
+          fi
+          [ -n "$FIXED_URL" ] && url="$FIXED_URL"
+          echo "Địa chỉ cổng MCP: ${url:-(chưa có)}"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          if [ -n "$url" ]; then curl -fsS "$url/" > /dev/null && echo "Cổng trả lời tốt" || echo "Cổng chưa trả lời (workers.dev mới tạo có thể cần vài phút)"; fi
+
+  windows:
+    needs: [tests, deploy-mcp]
     runs-on: windows-latest
     timeout-minutes: 60
     permissions:
@@ -51,6 +90,8 @@ jobs:
           "version=$v" >> $env:GITHUB_OUTPUT
           # app so mã này với ghi chú Release để biết có bản mới (icontent/autoupdate.py)
           [IO.File]::WriteAllText("$PWD\icontent\_build_commit.txt", $env:GITHUB_SHA)
+          # địa chỉ cổng MCP trung tâm cho bản cài này (icontent/mcpcloud.py đọc)
+          [IO.File]::WriteAllText("$PWD\icontent\_mcp_server.txt", "${{ needs.deploy-mcp.outputs.url }}")
 
       - name: Kiểm tra code Python (Python đi kèm trong runtime)
         shell: pwsh

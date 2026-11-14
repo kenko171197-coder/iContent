@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -31,7 +32,7 @@ def _free_port() -> int:
 @pytest.fixture()
 def gate(tmp_path, monkeypatch):
     port = _free_port()
-    proc = subprocess.Popen(["node", str(ROOT / "cloudflare" / "dev-server.mjs"), str(port), "mcp-secret-x", "app-secret-x"],
+    proc = subprocess.Popen(["node", str(ROOT / "cloudflare" / "dev-server.mjs"), str(port)],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for _ in range(50):
         try:
@@ -40,9 +41,10 @@ def gate(tmp_path, monkeypatch):
         except OSError:
             time.sleep(0.1)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setenv("STUDIO566_MCP_SERVER", f"http://127.0.0.1:{port}")
     from icontent import mcpcloud
-    mcpcloud.save_conf({"url": f"http://127.0.0.1:{port}", "app_secret": "app-secret-x", "mcp_secret": "mcp-secret-x"})
-    yield f"http://127.0.0.1:{port}/mcp/mcp-secret-x"
+    c = mcpcloud.connect()
+    yield mcpcloud.ai_url(c)
     proc.terminate()
 
 
@@ -108,34 +110,18 @@ def test_khong_ai_nao_vao_thi_bao_het_gio(gate):
     assert mcpcloud.status()["pending"] == 0      # việc hết giờ đã được dọn khỏi hàng chờ
 
 
-def test_cai_cong_len_cloudflare_dung_trinh_tu(tmp_path, monkeypatch):
-    """Không gọi Cloudflare thật: ghi lại các lệnh API mà deploy() gửi đi."""
-    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+def test_ket_noi_doi_dia_chi_ngat(gate):
     from icontent import mcpcloud
 
-    calls = []
-
-    def fake_cf(method, path, token, body=None, headers=None):
-        calls.append((method, path, body, headers))
-        if path.startswith("/accounts?"):
-            return {"success": True, "result": [{"id": "acc1"}]}
-        if path.endswith("/workers/subdomain") and method == "GET":
-            return {"success": True, "result": {"subdomain": "ban"}}
-        return {"success": True, "result": {}}
-
-    monkeypatch.setattr(mcpcloud, "_cf", fake_cf)
-    c = mcpcloud.deploy("tok")
-    assert c["url"] == "https://studio566-mcp.ban.workers.dev"
-    up = next(x for x in calls if x[0] == "PUT" and x[1].endswith("/scripts/studio566-mcp"))
-    body = up[2].decode("utf-8", "replace")
-    assert '"new_sqlite_classes": ["Queue"]' in body and '"MCP_SECRET"' in body and "export class Queue" in body
-    assert up[3]["Content-Type"].startswith("multipart/form-data; boundary=")
-    assert any(x[1].endswith("/scripts/studio566-mcp/subdomain") and x[2] == {"enabled": True, "previews_enabled": False} for x in calls)
-    assert mcpcloud.configured() and mcpcloud.ai_url().endswith("/mcp/" + c["mcp_secret"])
-    # cập nhật lần sau: không gửi lại phần tạo hàng chờ, giữ nguyên mật khẩu; đổi địa chỉ thì mật khẩu AI mới
-    calls.clear()
-    c2 = mcpcloud.deploy("")
-    up2 = next(x for x in calls if x[0] == "PUT" and x[1].endswith("/scripts/studio566-mcp"))
-    assert b"new_sqlite_classes" not in up2[2] and c2["mcp_secret"] == c["mcp_secret"]
-    c3 = mcpcloud.deploy("", rotate_mcp=True)
-    assert c3["mcp_secret"] != c["mcp_secret"] and c3["app_secret"] == c["app_secret"]
+    assert mcpcloud.configured() and "/mcp/" in gate
+    assert _rpc(gate, "ping")["result"] == {}
+    c2 = mcpcloud.rotate()
+    new = mcpcloud.ai_url(c2)
+    assert new != gate
+    with pytest.raises(urllib.error.HTTPError):
+        _rpc(gate, "ping")             # địa chỉ cũ hết dùng
+    assert _rpc(new, "ping")["result"] == {}
+    mcpcloud.disconnect()
+    assert not mcpcloud.configured()
+    with pytest.raises(urllib.error.HTTPError):
+        _rpc(new, "ping")              # kênh đã bị xóa trên cổng

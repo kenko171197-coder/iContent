@@ -508,13 +508,13 @@ class OfflineTranslator:
 
 
 class McpTranslator:
-    """AI qua MCP: gửi việc lên cổng MCP trên Cloudflare (mcpcloud.py), Claude / ChatGPT / Grok lấy việc, làm, trả kết quả.
+    """AI qua MCP: gửi việc lên cổng MCP trung tâm của Studio566 (mcpcloud.py), Claude / ChatGPT / Grok lấy việc, làm, trả kết quả.
     Không cần API key. Chưa AI nào vào làm sau translate.mcp_wait giây thì báo lỗi để app dùng cách dịch dự phòng."""
 
     def __init__(self, tcfg, context: dict | None = None):
         from . import mcpcloud
         if not mcpcloud.configured():
-            raise RuntimeError("Chưa cài cổng MCP: vào Cài đặt > Kết nối AI dịch > AI qua MCP")
+            raise RuntimeError("Chưa kết nối AI qua MCP: vào Cài đặt > Kết nối AI dịch > AI qua MCP")
         self.mc = mcpcloud
         self.system = build_system_prompt(tcfg, context)
         self.wait = float(tcfg.get("mcp_wait") or 300)

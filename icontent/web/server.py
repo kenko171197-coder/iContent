@@ -455,19 +455,19 @@ def create_app(config_path: str | None = None) -> FastAPI:
         cfg = with_overrides(st.cfg(), {"translate": {k: body[k] for k in ("provider", "model", "base_url", "api_key_env")
                                                       if k in body}})
         if not translator_ready(cfg.translate):
-            raise HTTPException(400, "Chưa cài cổng MCP" if cfg.translate.provider == "mcp" else "Chưa có API key cho nhà cung cấp này")
+            raise HTTPException(400, "Chưa kết nối AI qua MCP" if cfg.translate.provider == "mcp" else "Chưa có API key cho nhà cung cấp này")
         try:
             return {"ok": True, "sample": test_translator(cfg.translate)}
         except Exception as e:
             raise HTTPException(502, friendly_translate_error(e, cfg.translate.provider))
 
-    # ------------------------------------------------------------------ AI qua MCP (cổng trên Cloudflare Workers)
+    # ------------------------------------------------------------------ AI qua MCP (cổng MCP trung tâm của Studio566)
     @app.get("/api/mcp")
     def mcp_get():
         from .. import mcpcloud
         c = mcpcloud.load_conf()
-        out = {"configured": mcpcloud.configured(), "ai_url": mcpcloud.ai_url(c), "url": c.get("url", ""),
-               "deployed_at": c.get("deployed_at", 0), "has_token": bool(c.get("cf_token"))}
+        out = {"server": mcpcloud.server_url(st.cfg().translate.get("mcp_server") or ""), "configured": mcpcloud.configured(),
+               "ai_url": mcpcloud.ai_url(c)}
         if out["configured"]:
             try:
                 out["status"] = mcpcloud.status()
@@ -475,21 +475,28 @@ def create_app(config_path: str | None = None) -> FastAPI:
                 out["error"] = str(e)[:200]
         return out
 
-    @app.post("/api/mcp/deploy")
-    def mcp_deploy(body: dict = Body(default={})):
-        """Cài hoặc cập nhật cổng lên Cloudflare. rotate: đổi mật khẩu cho AI (địa chỉ MCP mới, phải dán lại vào các app AI)."""
+    @app.post("/api/mcp/connect")
+    def mcp_connect():
         from .. import mcpcloud
         try:
-            c = mcpcloud.deploy(str(body.get("token") or ""), rotate_mcp=bool(body.get("rotate")))
-            st_ = mcpcloud.status(wait_ready=45)
+            c = mcpcloud.connect(st.cfg().translate.get("mcp_server") or "")
         except mcpcloud.McpError as e:
-            raise HTTPException(400, f"Chưa cài được cổng MCP: {e}")
-        return {"ok": True, "ai_url": mcpcloud.ai_url(c), "url": c["url"], "status": st_}
+            raise HTTPException(400, f"Chưa kết nối được: {e}")
+        return {"ok": True, "ai_url": mcpcloud.ai_url(c)}
+
+    @app.post("/api/mcp/rotate")
+    def mcp_rotate():
+        from .. import mcpcloud
+        try:
+            c = mcpcloud.rotate()
+        except mcpcloud.McpError as e:
+            raise HTTPException(400, str(e))
+        return {"ok": True, "ai_url": mcpcloud.ai_url(c)}
 
     @app.delete("/api/mcp")
-    def mcp_forget():
+    def mcp_disconnect():
         from .. import mcpcloud
-        mcpcloud.forget()
+        mcpcloud.disconnect()
         return {"ok": True}
 
     # ------------------------------------------------------------------ bản quyền (đã tắt, API giữ cho giao diện cũ)
