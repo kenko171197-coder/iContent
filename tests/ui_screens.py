@@ -1,5 +1,7 @@
 """Chụp ảnh giao diện Studio566 đang chạy (dùng trên GitHub Actions, Windows có sẵn Edge).
 python tests/ui_screens.py http://127.0.0.1:8799 <thư mục ảnh>"""
+import base64
+import os
 import sys
 from pathlib import Path
 
@@ -20,6 +22,9 @@ with sync_playwright() as p:
         pg.reload()
         pg.wait_for_timeout(3500)
         pg.screenshot(path=str(out / f"{route}-{w}.png"))
+        if os.environ.get("SHOTS_TO_LOG"):      # xem ảnh qua nhật ký khi không tải được artifact
+            jpg = pg.screenshot(type="jpeg", quality=72)
+            print(f"SHOT-BEGIN {route}-{w}\n" + base64.b64encode(jpg).decode() + "\nSHOT-END")
         print(route, w, "ok", errs)
         pg.close()
     b.close()

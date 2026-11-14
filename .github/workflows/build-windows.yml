@@ -128,6 +128,7 @@ jobs:
           if ($ok) {
             # chụp ảnh giao diện để xem lại (không bắt buộc đạt)
             try {
+              if ("${{ github.event_name }}" -eq "pull_request") { $env:SHOTS_TO_LOG = "1" }
               & $py -m pip install --quiet playwright
               & $py (Join-Path $env:GITHUB_WORKSPACE "tests\ui_screens.py") "http://127.0.0.1:8799" "$env:GITHUB_WORKSPACE\shots"
             } catch { Write-Host "Chụp ảnh giao diện lỗi: $_" }
