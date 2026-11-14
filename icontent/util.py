@@ -319,7 +319,7 @@ def ffmpeg(args: list[str], cwd: str | Path | None = None, progress_stage: str |
         raise Cancelled("Đã hủy")
     if seen["stalled"]:
         raise RuntimeError(f"Dựng video bị treo: ffmpeg không chạy tiếp trong {int(limit)} giây nên đã dừng lại. "
-                           "Hãy thử lại, nếu vẫn lỗi hãy gửi nhật ký cho tác giả.")
+                           "Hãy thử lại, nếu vẫn lỗi hãy gửi nhật ký cho người hỗ trợ.")
     if proc.returncode != 0:
         raise RuntimeError(f"ffmpeg lỗi ({proc.returncode}):\n{' '.join(cmd)}\n{''.join(err)[-3000:]}")
 

@@ -682,7 +682,7 @@ select.input-xs { padding-right: 22px; background-position: right 5px center; }
 .hi-ico.bad { background: var(--live-soft); color: var(--live); }
 .hi-name { font-size: 13px; }
 
-/* ------------------------------------------------------------------ Cà phê & giới thiệu */
+/* ------------------------------------------------------------------ Giới thiệu */
 .view-about > * { max-width: 920px; margin-left: auto; margin-right: auto; }
 .coffee { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 26px; }
 .coffee-title { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -945,7 +945,7 @@ h1, h2, h3, h4 { letter-spacing: -.012em; }
 
 /* ---- màn hình chờ lúc mở */
 .splash { display: grid; place-items: center; align-content: center; gap: 18px; height: 100%; min-height: 60vh; animation: fade .3s ease both; }
-.splash svg { width: 56px; height: 56px; filter: drop-shadow(0 10px 30px rgba(255, 178, 36, .3)); }
+.splash svg { width: 56px; height: 56px; filter: drop-shadow(0 10px 30px rgba(255, 107, 74, .3)); }
 
 /* ---- nhịp vào trang */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -965,7 +965,7 @@ h1, h2, h3, h4 { letter-spacing: -.012em; }
 
 /* ---- thanh bên */
 .rail { background: linear-gradient(180deg, #141311, #0f0e0d); }
-.logo svg { filter: drop-shadow(0 4px 14px rgba(255, 178, 36, .26)); transition: transform .28s var(--spring); }
+.logo svg { filter: drop-shadow(0 4px 14px rgba(255, 107, 74, .26)); transition: transform .28s var(--spring); }
 .logo:hover svg { transform: scale(1.06) rotate(-2deg); }
 .rail-item { transition: background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease), transform .1s var(--ease); }
 .rail-item svg { stroke-width: 1.65; transition: transform .22s var(--spring); }
@@ -1217,7 +1217,7 @@ h1, h2, h3, h4 { letter-spacing: -.012em; }
 
 
 /* Thanh bên trên màn hình thấp (laptop 1366x768, cửa sổ chưa phóng to): thu gọn các mục; còn thiếu chỗ thì chỉ phần danh sách cuộn,
-   nút Tìm lệnh và Cà phê ở cuối luôn hiện */
+   nút Tìm lệnh ở cuối luôn hiện */
 .rail-nav { min-height: 0; overflow-y: auto; scrollbar-width: none; }
 .rail-nav::-webkit-scrollbar { display: none; }
 .rail-foot { flex: none; }

@@ -4,7 +4,6 @@ import {
   enc, ensureConfig, fmtAgo, fmtDur, getPath, icon, langName, loadStatus, modalHead, openModal, platformBadge, pollSoon, promptDialog, queueListeners, reveal,
   runJob, same, setPath, shortSrc, toast, uploadFile, videoModal,
 } from './core.js';
-import { coffeeLine } from './coffee.js';
 import { HelpPanel } from './fixes.js';
 import { openAiPack } from './localai.js';
 import { OptionsForm } from './options.js';
@@ -66,7 +65,6 @@ export function QueueCard(it0) {
   const logPre = el('pre', { class: 'logbox' });
   const logBox = el('details', { class: 'q-log' }, el('summary', {}, 'Xem nhật ký'), logPre);
   const actions = el('div', { class: 'q-actions' });
-  const thanks = el('div', { class: 'q-thanks', hidden: true }, coffeeLine());
   const root = el('div', { class: 'q-card' }, thumb,
     el('div', { class: 'q-main' },
       el('div', { class: 'q-top' }, el('div', { class: 'q-titles' }, title, sub), el('div', { class: 'q-right' }, time, badge)),
@@ -74,7 +72,7 @@ export function QueueCard(it0) {
       el('div', { class: 'q-status' }, msg, pct),
       helpBox,
       errBox,
-      el('div', { class: 'q-foot' }, logBox, thanks, actions)));
+      el('div', { class: 'q-foot' }, logBox, actions)));
   let lastKey = null, lastThumb = '', lastLog = null, lastHelp = '';
   const card = { root, item: it0, update };
   // nút trong khung Cách khắc phục luôn dùng bản mới nhất của mục (nhật ký để chép gửi tác giả)
@@ -161,7 +159,6 @@ export function QueueCard(it0) {
     errBox.hidden = !(st === 'error' && it.error);
     const hk = st === 'error' && it.help ? JSON.stringify(it.help) : '';
     if (hk !== lastHelp) { lastHelp = hk; helpBox.replaceChildren(hk ? HelpPanel(it.help, helpCtx) : ''); helpBox.hidden = !hk; }
-    thanks.hidden = st !== 'done';
     if (st === 'error' && it.error && errPre.textContent !== it.error) errPre.textContent = it.error;
     const ready = it.job && !(st === 'running' && (!it.stage || it.stage === 'download')) && st !== 'queued';
     if (ready) {

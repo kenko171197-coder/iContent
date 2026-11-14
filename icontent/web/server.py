@@ -274,6 +274,12 @@ def create_app(config_path: str | None = None) -> FastAPI:
     boot_id = uuid.uuid4().hex[:10]
     app = FastAPI(title="Studio566", version=__version__)
     app.state.studio = st
+    from .. import autoupdate
+    autoupdate.maybe_update_ytdlp()
+
+    @app.get("/api/update")
+    def get_update():
+        return autoupdate.check_app_update()
 
     @app.middleware("http")
     async def same_origin_only(request: Request, call_next):
@@ -455,7 +461,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         except Exception as e:
             raise HTTPException(502, friendly_translate_error(e, cfg.translate.provider))
 
-    # ------------------------------------------------------------------ bản quyền (key từ bot @Kichhoatkey_bot)
+    # ------------------------------------------------------------------ bản quyền (đã tắt, API giữ cho giao diện cũ)
     @app.get("/api/license")
     def license_get():
         return license_mod.public_state()

@@ -1,29 +1,17 @@
-"""Thông tin tác giả + mời cà phê. Studio566 miễn phí; ủng hộ là hoàn toàn tự nguyện.
-
-Tài khoản và mã VietQR (web/static/donate-qr.png) lấy nguyên từ iNew của cùng tác giả.
-"""
+"""Thông tin giới thiệu Studio566 và nhật ký thay đổi (hiện một lần sau khi cập nhật)."""
 from __future__ import annotations
-
-DONATE = {
-    "bank": "Vietcombank",
-    "account": "1079328888",
-    "holder": "NGUYEN KHAC DIEN",
-    "qr": "/static/donate-qr.png",
-    "note": "Quét mã bằng ứng dụng ngân hàng bất kỳ · VietQR · Napas 247",
-}
-
-MESSAGE = [
-    "Studio566 được làm ra với tinh thần chia sẻ, mong góp một phần nhỏ giúp những người làm nội dung "
-    "bớt vất vả hơn mỗi ngày.",
-    "Nếu Studio566 đã giúp ích cho công việc của bạn, bạn có thể mời tác giả một ly cà phê. Sự ủng hộ của bạn, "
-    "dù nhiều hay ít, là nguồn động viên quý giá để Studio566 tiếp tục được duy trì và hoàn thiện hơn.",
-    "Xin chân thành cảm ơn bạn đã đồng hành cùng Studio566!",
-]
-
-VOLUNTARY = "Việc ủng hộ hoàn toàn tự nguyện, không ảnh hưởng đến quyền sử dụng phần mềm."
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "0.7.0", "date": "11/2026", "items": [
+        "Tên mới: Studio566, có logo mới.",
+        "Không còn mất lời thoại ở đoạn nhạc nền to: đoạn dài chưa nghe ra lời thì máy tự nghe lại trên tiếng gốc; video có sub Trung in sẵn thì lấy chữ sub làm câu.",
+        "Câu đọc bị lỗi được đọc lại tự động tối đa 2 lần, không còn chỗ có phụ đề mà im tiếng.",
+        "Câu dịch quá dài được rút gọn thêm một lần nữa, giọng đọc ít bị lệch dần so với hình. Nhật ký ghi rõ các mốc còn lệch để sửa tay.",
+        "Câu cụt như \"Con…\", \"Hả?!\" được làm sạch trước khi đọc nên đọc tự nhiên hơn, ít lỗi hơn.",
+        "Bộ cài mới có thanh tiến trình, không còn cửa sổ đen khi tải thư viện.",
+        "Tự báo khi có bản Studio566 mới và tự cập nhật bộ tải video.",
+    ]},
     {"version": "0.6.2", "date": "11/2026", "items": [
         "Tách nhạc nền chạy được ngay, không phải cài thêm gì: chọn Tách nhạc nền: Bật không còn báo lỗi chưa cài audio-separator. Studio566 tự tải bộ tách UVR MDX-Net (67 MB, chỉ lần đầu) và chạy trên máy, giọng gốc được bỏ sạch, nhạc nền giữ nguyên dưới giọng lồng.",
         "Tách nhạc nền Tự động: tách cho video tới 10 phút (mất khoảng 0,6–0,8 lần thời lượng video). Video dài hơn thì bỏ qua cho nhanh, muốn tách thì chọn Bật.",
@@ -70,7 +58,7 @@ CHANGES = [
         "Link Bilibili có /vi/, /en/ hoặc mã theo dõi (?trackid=) giờ tải được bình thường.",
         "Sửa lỗi giọng đọc VieNeu không chạy trên máy bật Developer Mode (báo ONNXRuntimeError, External data path).",
         "Bilibili báo bận (lỗi 503) thì tự chờ rồi lấy link tải mới, thử lại vài lần trước khi báo lỗi.",
-        "Video lỗi ngay bước tải giờ cũng có nút Thử lại; nút Chép thông tin lỗi để gửi tác giả (đã bỏ tên máy).",
+        "Video lỗi ngay bước tải giờ cũng có nút Thử lại; nút Chép thông tin lỗi để gửi người hỗ trợ (đã bỏ tên máy).",
     ]},
     {"version": "0.3.1", "date": "11/2026", "items": [
         "Có file cài đặt .exe: bấm đúp, bấm Tiếp là xong; không phải giải nén, không phải cài Python.",
@@ -79,7 +67,6 @@ CHANGES = [
         "Máy không có winget vẫn tự tải được ffmpeg.",
     ]},
     {"version": "0.3.0", "date": "11/2026", "items": [
-        "Kích hoạt miễn phí qua bot Telegram @Kichhoatkey_bot: bấm Nhận key qua Telegram, dán key là xong. Cập nhật bản mới không phải xin lại key.",
         "Không còn lỗi dừng ở bước nhận giọng với một số video (thư viện nhận giọng không gióng được giờ từng từ ở cuối video).",
         "Bỏ câu \"cảm ơn đã xem\" mà máy tự nghe nhầm sau khi video đã hết tiếng.",
         "Dán nhầm key AI thì báo rõ key không đúng và cách chép lại, thay vì mã lỗi khó hiểu.",
@@ -98,8 +85,8 @@ CHANGES = [
 
 
 def about() -> dict:
-    return {"donate": DONATE, "message": MESSAGE, "voluntary": VOLUNTARY, "changes": CHANGES}
+    return {"changes": CHANGES}
 
 
 def cli_line() -> str:
-    return f"Miễn phí. Thấy hữu ích thì mời tác giả ly cà phê: {DONATE['bank']} {DONATE['account']} ({DONATE['holder']})"
+    return "Studio566: dịch và lồng tiếng video, chạy ngay trên máy của bạn."

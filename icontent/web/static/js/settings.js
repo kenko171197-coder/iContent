@@ -289,7 +289,7 @@ export async function viewSettings(main, alive) {
         el('div', { class: 'panel' }, el('div', { class: 'panel-head' }, icon('sliders'), el('h3', { text: 'Khác' })),
           el('div', { class: 'opt-inline' }, el('div', { class: 'opt-label', text: 'Chuông báo khi video xong' }), el('label', { class: 'switch' }, chime, el('span', { class: 'switch-track' }, el('span', { class: 'switch-thumb' })))),
           el('p', { class: 'dim small', style: { marginTop: '12px' } }, 'File cấu hình: ', el('span', { class: 'mono', text: cfg.path || S.cfgPath || 'config.yaml' })),
-          el('a', { class: 'btn btn-sm', href: '#/about' }, icon('coffee'), 'Giới thiệu & mời cà phê')))));
+          el('a', { class: 'btn btn-sm', href: '#/about' }, icon('info'), 'Giới thiệu')))));
   paintProviders();
   ready = true;
   updDirty();

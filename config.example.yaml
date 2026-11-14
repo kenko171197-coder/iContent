@@ -18,6 +18,7 @@ asr:
   max_chars: 22            # độ dài tối đa 1 câu phụ đề (ký tự Trung)
   max_duration: 6.0
   ocr_align: true          # video có sub Trung in sẵn: ngắt câu theo sub gốc + dùng chữ OCR để sửa lỗi nhận dạng
+  gap_retry: true          # đoạn dài chưa nghe ra lời (nhạc nền to) thì nghe lại trên tiếng gốc
 
 translate:
   provider: claude         # claude | openai | offline (dịch trên máy, xem README) | google | none

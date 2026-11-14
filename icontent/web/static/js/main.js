@@ -5,7 +5,8 @@ import {
 } from './core.js';
 import { showLicenseGate } from './license.js';
 import { startConn } from './conn.js';
-import { openCoffee, viewAbout } from './coffee.js';
+import { viewAbout } from './about.js';
+import { openExternal } from './fixes.js';
 import { viewDiscover } from './discover.js';
 import { viewNew } from './home.js';
 import { viewImageLab } from './imagelab.js';
@@ -121,7 +122,6 @@ async function openPalette() {
     { label: 'Cài đặt', icon: 'sliders', run: go('#/settings') },
     { label: 'Kết nối AI dịch', icon: 'key', run: go('#/settings') },
     { label: 'Bản quyền: gia hạn, nhập key mới', icon: 'shield', run: go('#/settings') },
-    { label: 'Mời tác giả cà phê', icon: 'coffee', run: () => openCoffee() },
     { label: 'Giới thiệu', icon: 'info', run: go('#/about') },
     { label: 'Phím tắt', hint: '?', icon: 'keyboard', run: () => openShortcuts() },
   ];
@@ -162,17 +162,29 @@ document.addEventListener('keydown', (e) => {
   if (m && m.dismissable) { e.preventDefault(); m.close(); }
 });
 
+/** Có bản Studio566 mới trên GitHub: báo một lần mỗi lần mở app, kèm nút tải bản cài. */
+async function checkAppUpdate() {
+  try {
+    const u = await api('GET', '/api/update');
+    if (!u || !u.available) return;
+    toast('Có bản Studio566 mới. Tải bản cài và cài đè lên, video và cài đặt vẫn giữ nguyên.', 'info', {
+      timeout: 20000,
+      actions: [{ label: 'Tải bản mới', primary: true, onClick: () => openExternal(u.download || u.page) }],
+    });
+  } catch (_) { /* không có mạng: bỏ qua */ }
+}
+
 async function boot() {
   // trước mọi thứ, kể cả màn Kích hoạt: máy chủ phải biết cửa sổ còn mở. Nối lại được thì vẽ lại trang đang báo lỗi mất kết nối
   startConn(() => { if ($('#main .empty.error')) route(); pollSoon(); });
   if (!location.hash || location.hash === '#' || location.hash === '#/') history.replaceState(null, '', '#/home');
-  $('#coffee-btn').addEventListener('click', () => openCoffee());
   $('#cmdk-btn').addEventListener('click', () => openPalette());
   // bản phát hành chưa kích hoạt: chỉ hiện màn Kích hoạt, không gọi chức năng nào (máy chủ cũng chặn)
   licenseHooks.add((st) => { S.license = st; showLicenseGate(st); });
   try { S.license = await api('GET', '/api/license'); } catch (_) { S.license = null; }
   if (S.license && S.license.locked) { showLicenseGate(S.license); return; }
   loadStatus().then(() => route());
+  checkAppUpdate();
   loadFonts();
   loadVoices();
   pollQueue();

@@ -2,4 +2,4 @@
 PUBLIC_KEY = ''
 ENFORCE = False
 TELEGRAM = ''
-VERSION = '0.6.2'
+VERSION = '0.7.0'

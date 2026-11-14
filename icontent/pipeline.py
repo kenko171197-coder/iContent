@@ -387,6 +387,24 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
             ffmpeg(["-i", (sep[0] if sep else audio).name, "-ac", "1", "-ar", "16000", "asr.wav"], cwd=job)
             log("asr", "Nhận dạng giọng nói ...")
             words = transcribe_words(job / "asr.wav", cfg.asr)
+            if sep and cfg.asr.get("gap_retry", True):
+                # bộ tách giọng có thể làm mất lời ở đoạn nhạc nền to: nghe lại các khoảng trống dài trên tiếng gốc
+                from .asr import find_gaps, transcribe_gaps
+                ffmpeg(["-i", audio.name, "-ac", "1", "-ar", "16000", "asr_orig.wav"], cwd=job)
+                total = float(meta.get("duration") or 0)
+                gaps = find_gaps(words, total, job / "asr_orig.wav")
+                if gaps:
+                    log("asr", f"{len(gaps)} đoạn dài chưa nghe ra lời mà vẫn có tiếng (thường do nhạc nền to): nghe lại trên tiếng gốc")
+                    try:
+                        extra = transcribe_gaps(job / "asr_orig.wav", gaps, cfg.asr, total)
+                    except Cancelled:
+                        raise
+                    except Exception as e:      # noqa: BLE001 — bước bổ sung: lỗi thì giữ kết quả cũ
+                        log("asr", f"Nghe lại lỗi, bỏ qua: {str(e)[:200]}")
+                        extra = []
+                    if extra:
+                        words = sorted(words + [(round(float(a), 3), round(float(b), 3), w, k) for a, b, w, k in extra],
+                                       key=lambda x: x[0])
             words_path.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
         words = [tuple(w) for w in json.loads(words_path.read_text(encoding="utf-8"))]
         from .asr import resegment

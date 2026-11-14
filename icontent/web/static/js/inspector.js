@@ -3,7 +3,6 @@ import {
   S, api, busy, clamp, clone, confirmDialog, copyBtn, debounce, deepMerge, diff, effEngine, el, enc, fillVoiceSelect, fmtTime, genderOf, getPath, icon, modalHead, openModal,
   previewVoice, put, reveal, setPath, speakerColor, toast, videoModal, voiceHooks, voiceLabel,
 } from './core.js';
-import { coffeeLine } from './coffee.js';
 import { FieldList } from './options.js';
 
 const TABS = [
@@ -715,8 +714,7 @@ export function Inspector({ st, id, meta, getBox, hasFile, player, retranslate, 
           hasFile('final') ? el('a', { class: 'btn btn-ghost', href: `/api/jobs/${enc(id)}/media/final.mp4?t=${player.bust}`, download: '' }, icon('download'), 'Tải về') : null,
           el('button', { class: 'btn btn-ghost', onclick: () => reveal(id) }, icon('folder'), 'Thư mục')),
         outs.length ? el('div', { class: 'outs' }, outs.map((o) => el('div', { class: 'out-row mono', title: o, text: o.split(/[\\/]/).pop() }))) : null,
-        editedBlock(),
-        outs.length ? coffeeLine('Video xong rồi. Thấy hữu ích thì mời tác giả ly cà phê nhé') : null);
+        editedBlock());
     }
     paintCover();
     return {

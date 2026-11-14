@@ -1,11 +1,25 @@
 ﻿# Cài đặt Studio566 trên Windows. Khách chỉ cần bấm đúp file "Cai dat Studio566.cmd".
-# Dùng tay: powershell -ExecutionPolicy Bypass -File setup.ps1 [-NoShortcut] [-NoLaunch]
-param([switch]$NoShortcut, [switch]$NoLaunch)
+# Dùng tay: powershell -ExecutionPolicy Bypass -File setup.ps1 [-NoShortcut] [-NoLaunch] [-StatusFile <file>]
+# -StatusFile: bộ cài .exe chạy ẩn script này và đọc file trạng thái để hiện thanh tiến trình (dòng 1: số bước | DONE | FAIL,
+# dòng 2: tên bước hoặc câu lỗi, dòng 3: đang làm gì). Toàn bộ chữ in ra được ghi vào setup-log.txt cạnh script.
+param([switch]$NoShortcut, [switch]$NoLaunch, [string]$StatusFile = "")
 $ErrorActionPreference = "Stop"
+function Write-Status([string]$a, [string]$b = "", [string]$c = "") {
+    if (-not $StatusFile) { return }
+    try {
+        $tmp = "$StatusFile.tmp"
+        [IO.File]::WriteAllText($tmp, "$a`r`n$b`r`n$c`r`n", (New-Object Text.UTF8Encoding $true))
+        Move-Item -LiteralPath $tmp -Destination $StatusFile -Force
+    } catch {}
+}
+$script:CurStep = "1"; $script:CurText = ""
+if ($StatusFile) { try { Start-Transcript -LiteralPath (Join-Path $PSScriptRoot "setup-log.txt") -Force | Out-Null } catch {} }
 # lỗi nào cũng chỉ in đúng câu tiếng Việt cho người dùng, không kèm số dòng, đoạn mã của PowerShell
 trap {
     Write-Host ""
     Write-Host "LỖI: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Status "FAIL" "$($_.Exception.Message)"
+    if ($StatusFile) { try { Stop-Transcript | Out-Null } catch {} }
     exit 1
 }
 Set-Location -LiteralPath $PSScriptRoot
@@ -13,7 +27,11 @@ try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch {}
 $env:PYTHONIOENCODING = "utf-8"      # đường dẫn có dấu in ra ống dẫn sẽ làm Python báo lỗi nếu còn dùng bảng mã cũ của Windows
 $env:PYTHONUTF8 = "1"
 
-function Step($n, $text) { Write-Host ""; Write-Host "[$n/5] $text" -ForegroundColor Yellow }
+function Step($n, $text) {
+    Write-Host ""; Write-Host "[$n/5] $text" -ForegroundColor Yellow
+    $script:CurStep = "$n"; $script:CurText = $text
+    Write-Status "$n" $text ""
+}
 
 # Lệnh ngoài ghi cảnh báo ra stderr là chuyện thường. Với Stop, PowerShell 5.1 coi đó là lỗi và dừng cả script,
 # nên chỉ xét mã thoát của chính lệnh đó. Out-Host: để log hiện ra màn hình; nếu không, log thành giá trị trả về của hàm,
@@ -21,7 +39,16 @@ function Step($n, $text) { Write-Host ""; Write-Host "[$n/5] $text" -ForegroundC
 function Invoke-Native($exe, [string[]]$arguments) {
     $old = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    try { & $exe @arguments 2>&1 | ForEach-Object { "$_" } | Out-Host; return $LASTEXITCODE } finally { $ErrorActionPreference = $old }
+    try {
+        & $exe @arguments 2>&1 | ForEach-Object {
+            $line = "$_"
+            if ($StatusFile -and $line -match '^\s*(Collecting|Downloading|Installing|Building|Successfully)') {
+                Write-Status $script:CurStep $script:CurText ($line.Trim() -replace '\s+', ' ').Substring(0, [Math]::Min(110, ($line.Trim() -replace '\s+', ' ').Length))
+            }
+            $line
+        } | Out-Host
+        return $LASTEXITCODE
+    } finally { $ErrorActionPreference = $old }
 }
 
 function Get-PythonVersion($exe, [string[]]$prefix) {
@@ -197,4 +224,6 @@ Write-Host ""
 if ($NoShortcut) { Write-Host "Xong. Mở Studio566 bằng file Studio566.cmd trong thư mục này." -ForegroundColor Green }
 else { Write-Host "Xong. Từ giờ mở bằng biểu tượng Studio566 trên màn hình nền." -ForegroundColor Green }
 Write-Host "Lần mở đầu có hướng dẫn 3 bước: kết nối AI miễn phí, tải trước mô hình nhận giọng và giọng đọc (khoảng 2,6 GB), làm video đầu tiên."
+Write-Status "DONE" "Xong"
+if ($StatusFile) { try { Stop-Transcript | Out-Null } catch {} }
 if (-not $NoLaunch) { Start-Process -FilePath (Join-Path $PSScriptRoot "Studio566.cmd") -WindowStyle Hidden }

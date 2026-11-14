@@ -1,4 +1,4 @@
-/* Bản quyền: màn Kích hoạt (khi bản phát hành chưa có key hợp lệ) và mục Bản quyền trong Cài đặt. Key do bot Telegram @Kichhoatkey_bot cấp. */
+/* Bản quyền: màn Kích hoạt (khi bản phát hành chưa có key hợp lệ) và mục Bản quyền trong Cài đặt. Bản này đã tắt khoá bản quyền nên màn này không hiện. */
 import { S, api, busy, copyText, el, icon, toast } from './core.js';
 
 const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('vi-VN') : '');

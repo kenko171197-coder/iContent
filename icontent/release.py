@@ -91,7 +91,7 @@ def guide_text(version: str, bot: str = "") -> str:
         "Card NVIDIA (GTX 1650 trở lên) giúp dựng video nhanh hơn nhiều; không có vẫn chạy được, chậm hơn.",
         "",
         "GẶP LỖI",
-        "Chụp màn hình cửa sổ cài đặt gửi cho tác giả. Đã mở được Studio566 thì xem Trang chủ, mục Máy đã sẵn sàng chưa.",
+        "Chụp màn hình cửa sổ cài đặt gửi cho người hỗ trợ. Đã mở được Studio566 thì xem Trang chủ, mục Máy đã sẵn sàng chưa.",
         "",
         cli_line(),
     ]
@@ -266,10 +266,10 @@ def build(out_dir: Path | None = None, root: Path = ROOT, python: str | None = N
     out_dir = Path(out_dir or root / "dist")
     pub = "" if free else resolve_pubkey(pubkey, root)
     if not free and not pub:
-        raise RuntimeError("Chưa có khoá công khai Studio566 của bot cấp key. Trên VPS chạy: python -m ikey.keygen icontent --enable, "
+        raise RuntimeError("Chưa có khoá công khai Studio566 của bot cấp key. "
                            f"chép dòng khoá công khai vào icontent/{PUBKEY_FILE} (hoặc --pubkey), rồi đóng gói lại. Muốn bản không khoá: --free")
     bot = (bot or DEFAULT_BOT).lstrip("@")
-    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{3,31}", bot):
+    if not free and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{3,31}", bot):
         raise RuntimeError(f"Tên bot Telegram không hợp lệ: {bot}")
     files = collect(root)
     if runtime:

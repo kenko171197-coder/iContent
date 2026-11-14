@@ -31,6 +31,7 @@ DEFAULTS: dict[str, Any] = {
         "max_duration": 6.0,          # giây tối đa / câu
         "pause_split": 0.45,          # ngắt câu khi im lặng >= x giây
         "ocr_align": True,            # video có sub Trung in sẵn: ngắt câu theo sub gốc + dùng chữ OCR khi dịch
+        "gap_retry": True,            # đoạn dài chưa nghe ra lời (nhạc nền to) thì nghe lại trên tiếng gốc
     },
     "translate": {
         "provider": "claude",         # claude | openai | offline (Hy-MT trên máy qua Ollama) | google | none

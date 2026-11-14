@@ -1,7 +1,5 @@
 # Studio566
 
-> Studio566 được phát triển từ [iContent](https://github.com/wthaibinh/iContent1) của wthaibinh (giấy phép MIT, xem `LICENSE`).
-
 Dán link Douyin / Bilibili / Xiaohongshu / Weibo... → tool tự **tải video → nhận dạng tiếng Trung (ghép với sub gốc in trên video) → dịch sang tiếng Việt có ngữ cảnh → lồng tiếng giọng nam/nữ khớp timeline → xóa hẳn sub gốc, burn phụ đề kiểu TikTok → xuất video nhiều khung + ảnh bìa + tiêu đề/caption/hashtag**. Có giao diện web để sửa từng câu, nghe thử và xuất lại.
 
 ```
@@ -13,7 +11,7 @@ link ─► download ─► audio ─► separate ─► hardsub ─► asr ─�
 
 Mỗi bước lưu kết quả vào `workspace/<job>/`, nên chạy lại sẽ bỏ qua bước đã xong và chỉ làm lại phần thay đổi.
 
-**Studio566 miễn phí.** Thấy hữu ích thì [mời tác giả ly cà phê](#mời-tác-giả-cà-phê). Việc ủng hộ hoàn toàn tự nguyện, không ảnh hưởng đến quyền sử dụng.
+**Studio566 miễn phí.** Chỉ dùng với video bạn có quyền sử dụng hoặc đã được phép đăng lại.
 
 ## Điểm nổi bật
 
@@ -116,7 +114,7 @@ Muốn xem nhật ký trên dòng lệnh, hoặc dùng trình duyệt thường:
 | **Sửa ảnh** | Trình sửa ảnh nhiều lớp. Mở từ tệp, từ khung hình video (đã xóa sub), từ ảnh bìa; lưu làm ảnh bìa, vào thư viện ảnh hoặc tải về |
 | **Studio** | Trái: danh sách câu. Giữa: trình phát (Xem trước / Thành phẩm / So sánh). Phải: thuộc tính (Phụ đề, Giọng, Hình ảnh, Âm thanh, Đăng bài, Kiểm tra). Dưới: timeline. Đổi tùy chọn là tự lưu cho video đó; bấm **Cập nhật video** để làm lại đúng phần đã đổi |
 | **Cài đặt** | Kết nối AI dịch, tình trạng máy, tùy chọn mặc định cho video mới |
-| **Giới thiệu** | Thông tin ứng dụng, mời tác giả cà phê |
+| **Giới thiệu** | Thông tin ứng dụng, lưu ý bản quyền, ghi công thư viện |
 
 Trong Studio, tab **Dựng** gom các công cụ dựng. Kéo trên sóng âm ở timeline để chọn đoạn, bấm **Cắt đoạn** hoặc phím `Delete`; phím `I` và `O` đặt điểm đầu, điểm cuối tại kim phát; bấm đúp đoạn đã cắt để khôi phục. Di chuột vào một câu để thấy các nút đọc thử, dịch lại, thu giọng.
 
@@ -164,9 +162,9 @@ Mọi thứ đã làm ở một chỗ: video dịch, câu chuyện, quy trình, 
 
 ## Bản quyền
 
-Bản fork này **đã gỡ khóa kích hoạt**: không cần key, không cần Telegram, `icontent/license.py` luôn ở chế độ không khóa. Mã nguồn gốc của wthaibinh theo giấy phép MIT (xem `LICENSE`, giữ nguyên dòng bản quyền khi phát hành lại).
+Studio566 **không cần kích hoạt**: không cần key, mở là dùng. Giấy phép mã nguồn: xem `LICENSE`.
 
-## Phát hành bản mới (cho tác giả)
+## Phát hành bản mới (cho người phát triển)
 
 ```
 .\icontent.cmd release            (bản cần icontent\license_pubkey.txt)
@@ -593,7 +591,7 @@ icontent/
   clean.py      xóa hẳn sub gốc: mặt nạ nét chữ theo từng câu + vá hình → clean_band.mp4
   cover.py      ảnh bìa: chấm điểm khung hình, đặt tiêu đề
   keys.py       API key lưu cục bộ, kiểm tra kết nối AI
-  about.py      thông tin mời cà phê
+  about.py      trang Giới thiệu, nhật ký thay đổi
   asr.py        faster-whisper (giữ model trong RAM/VRAM), thời gian từng từ, ngắt câu
   align.py      ghép từ ASR với câu sub gốc, dời ranh giới theo độ khớp chữ
   translate.py  phân tích ngữ cảnh + dịch: Claude (structured JSON) / OpenAI-compatible / offline / Google; rút gọn
@@ -656,20 +654,6 @@ tests/          test_basic.py, test_studio.py, test_features.py  (chạy: .venv\
 - Phần dựng hình dùng Remotion (Node, dùng thương mại miễn phí chỉ cho cá nhân và công ty tới 3 người) và phần tạo video AI cần key trả phí.
 
 Nếu dùng riêng cho mình thì vẫn có thể clone OpenMontage và mở trong Claude Code để làm video giải thích, hoạt hình: đó là việc Studio566 không làm, và hai bên không ảnh hưởng nhau.
-
-## Mời tác giả cà phê
-
-Studio566 được làm ra với tinh thần chia sẻ, mong góp một phần nhỏ giúp những người làm nội dung bớt vất vả hơn mỗi ngày. Nếu Studio566 đã giúp ích cho công việc của bạn, bạn có thể mời tác giả một ly cà phê.
-
-| | |
-|---|---|
-| Ngân hàng | Vietcombank |
-| Chủ tài khoản | NGUYEN KHAC DIEN |
-| Số tài khoản | 1079328888 |
-
-![Mã VietQR](icontent/web/static/donate-qr.png)
-
-Việc ủng hộ hoàn toàn tự nguyện, không ảnh hưởng đến quyền sử dụng phần mềm. Trong ứng dụng: bấm **Cà phê** ở thanh bên trái.
 
 ## Lưu ý bản quyền
 

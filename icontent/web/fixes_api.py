@@ -16,7 +16,7 @@ from ..util import log
 COOKIE_LIMIT = 2 * 1024 * 1024
 # chỉ mở được các trang này trên trình duyệt của khách (trang lạ không lợi dụng được)
 OPEN_HOSTS = ("douyin.com", "bilibili.com", "kuaishou.com", "xiaohongshu.com", "chromewebstore.google.com", "addons.mozilla.org",
-              "microsoftedge.microsoft.com")
+              "microsoftedge.microsoft.com", "github.com")      # github.com: trang tải bản Studio566 mới
 
 
 def mount(app, st) -> None:

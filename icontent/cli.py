@@ -340,7 +340,7 @@ def main(argv: list[str] | None = None) -> int:
     rl.add_argument("--no-python", action="store_true", help="không kèm Python vào gói (máy người dùng tự có hoặc tự cài qua winget)")
     rl.add_argument("--out", help="thư mục ghi file zip (mặc định: dist)")
     rl.add_argument("--pubkey", help="khoá công khai Studio566 của bot cấp key (mặc định: icontent/license_pubkey.txt)")
-    rl.add_argument("--bot", default="", help="tên bot Telegram cấp key (mặc định Kichhoatkey_bot)")
+    rl.add_argument("--bot", default="", help="tên bot Telegram cấp key (chỉ dùng khi tự bật lại khoá bản quyền)")
     rl.add_argument("--free", action="store_true", default=True, help="bản không khoá bản quyền (mặc định trong bản fork)")
     rl.set_defaults(fn=cmd_release)
 

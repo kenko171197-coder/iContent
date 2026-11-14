@@ -1,11 +1,11 @@
-"""Bản quyền Studio566: key do bot Telegram @Kichhoatkey_bot (dự án iKey_bot) cấp, ký Ed25519, gắn với mã máy. Kiểm hoàn toàn offline.
+"""Bản quyền Studio566 (TẮT trong bản này: enforced() luôn False). Cơ chế cũ giữ lại để API cũ không lỗi: key ký Ed25519, gắn với mã máy, kiểm offline.
 
-Key là `<payload>.<chữ ký>` (base64url). Payload là JSON kiểu iTube mà bot ký cho Studio566:
+Key là `<payload>.<chữ ký>` (base64url). Payload là JSON:
     {"app": "iContent", "license_id", "customer", "issued", "features", "fingerprint", "expires"}
 chữ ký Ed25519 trên đúng các byte của payload. Máy người dùng chỉ có khoá CÔNG KHAI: kiểm được key, không tự tạo được key.
 
 Ai khoá: bản phát hành (`icontent release`) sinh icontent/_build_info.py nhúng khoá công khai và ENFORCE=True, nên sửa config hay
-biến môi trường không tắt được. Chạy từ mã nguồn (máy tác giả) thì không khoá, trừ khi đặt ICONTENT_LICENSE_ENFORCE=1 và
+biến môi trường không tắt được. Chạy từ mã nguồn thì không khoá, trừ khi đặt ICONTENT_LICENSE_ENFORCE=1 và
 ICONTENT_LICENSE_PUBKEY (để thử).
 
 Mã máy = sha256(MachineGuid của Windows | id ngẫu nhiên của lần cài)[:32]: đúng 32 ký tự 0-9a-f, dạng duy nhất bot nhận ra. Id lần cài và
@@ -30,7 +30,7 @@ from . import _ed25519 as ed
 
 APP = "iContent"
 PRODUCT = "icontent"                 # mã sản phẩm trong bot: link t.me/<bot>?start=icontent_<mã máy>
-DEFAULT_BOT = "Kichhoatkey_bot"
+DEFAULT_BOT = ""
 TOKEN_RE = re.compile(r"[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{40,}")      # giống bot: dán cả tin nhắn có key cũng nhận
 FP_RE = re.compile(r"[0-9a-f]{32}")
 _lock = threading.Lock()
@@ -257,7 +257,8 @@ def install_token(text: str) -> tuple[bool, str]:
 
 
 def telegram_link(fp: str | None = None) -> str:
-    return f"https://t.me/{bot_name()}?start={PRODUCT}_{fp or machine_fingerprint()}"
+    bot = bot_name()
+    return f"https://t.me/{bot}?start={PRODUCT}_{fp or machine_fingerprint()}" if bot else ""
 
 
 def public_state() -> dict[str, Any]:

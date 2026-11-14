@@ -12,6 +12,6 @@ if not exist "%~dp0setup.ps1" (
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" %*
 set RC=%errorlevel%
 echo.
-if not "%RC%"=="0" echo Cai dat chua xong. Hay doc thong bao o tren, hoac chup man hinh nay gui cho tac gia.
+if not "%RC%"=="0" echo Cai dat chua xong. Hay doc thong bao o tren, hoac chup man hinh nay gui cho nguoi ho tro.
 if not defined ICONTENT_NO_PAUSE pause
 exit /b %RC%

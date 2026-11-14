@@ -198,6 +198,21 @@ def apply_pronounce(text: str, mapping: dict | None) -> str:
     return pat.sub(lambda m: lower.get(m.group(1).lower(), m.group(1)), text)
 
 
+def speakable(text: str) -> str:
+    """Làm sạch câu trước khi đọc (phụ đề giữ nguyên): câu cụt như "Con…", "Hả?!", câu có dấu ba chấm, ký hiệu lạ
+    hay làm bộ đọc lỗi hoặc đọc ra tiếng lạ. Câu không còn chữ nào thì trả lại nguyên văn để bộ đọc tự xử lý."""
+    t = str(text or "").replace("\u2026", "...").strip()
+    t = re.sub(r"\.{2,}", ", ", t)                         # ba chấm giữa câu -> ngắt nhẹ
+    t = re.sub(r"[~～*#_^|<>\[\]{}「」『』【】《》\"“”]+", " ", t)
+    t = re.sub(r"([!?！？])[!?！？]+", r"\1", t)             # "?!?!" -> "?"
+    t = re.sub(r"\s+", " ", t).strip(" ,，、-–—")
+    if not any(ch.isalnum() for ch in t):
+        return str(text or "").strip()
+    if t[-1] not in ".!?。！？":
+        t += "."
+    return t
+
+
 class _Line:
     def __init__(self, idx: int, seg: Segment, voice: str, slot: float):
         self.idx, self.seg, self.voice, self.slot = idx, seg, voice, slot
@@ -253,7 +268,7 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
                 ln.mp3 = job / "rec" / ln.seg.rec       # giọng thu tay: không cần đọc, chỉ co giãn cho vừa khe
                 continue
             r = _rate_str(ln.pct)
-            spoken = apply_pronounce(ln.seg.trans, pronounce)
+            spoken = speakable(apply_pronounce(ln.seg.trans, pronounce))
             if engine == "edge":
                 ln.mp3 = clips / f"{ln.seg.id:04d}_{short_hash(spoken, ln.voice, r)}.mp3"
             elif engine == "vox":
@@ -292,6 +307,19 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
     who = ("clone " + Path(ref).name) if ref else default_voice
     log("tts", f"Lồng tiếng {len(lines)} câu bằng {engine}: {who}")
     synth_and_measure(lines)
+    for attempt in (1, 2):
+        # câu đọc lỗi (Edge giới hạn tần suất, VieNeu gặp câu lạ): đọc lại tối đa 2 lần trước khi chịu bỏ trống
+        retry = [ln for ln in lines if ln.failed]
+        if not retry:
+            break
+        log("tts", f"Đọc lại {len(retry)} câu bị lỗi (lần {attempt})")
+        if engine == "edge":
+            import time
+            time.sleep(4.0 * attempt)
+            conc = 1
+        for ln in retry:
+            ln.failed = False
+        synth_and_measure(retry)
     failed = [ln for ln in lines if ln.failed]
     lines = [ln for ln in lines if not ln.failed]
     if not lines:
@@ -320,6 +348,33 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
                 changed.append(ln)
         if changed:
             synth_and_measure(changed, old)
+    # 2b) câu vẫn dài hơn mức tăng tốc tối đa (sẽ đẩy cả đoạn sau lệch dần): rút gọn thêm một lần, chặt hơn
+    still = [ln for ln in lines if ln.dur > ln.slot * hard_max and not ln.seg.rec]
+    if still and shorten_fn and cfg.translate.shorten_retry:
+        targets = {}
+        for ln in still:
+            cur = count_units(ln.seg.trans, cfg.translate.target_lang)
+            fit = int(cur * ln.slot * max_speed / ln.dur * 0.9)
+            targets[ln.seg.id] = max(2, min(fit, max_len_for(ln.slot, cfg), cur - 1))
+        log("tts", f"{len(still)} câu vẫn quá dài so với thời gian -> rút gọn thêm lần nữa")
+        try:
+            new = shorten_fn(targets)
+        except Exception as e:
+            log("tts", f"Rút gọn lần 2 lỗi, bỏ qua: {e}")
+            new = {}
+        old = snapshot(still)
+        changed = []
+        for ln in still:
+            t = new.get(ln.seg.id, "").strip()
+            if t and t != ln.seg.trans and len(t) < len(ln.seg.trans):
+                ln.seg.trans = t
+                changed.append(ln)
+        if changed:
+            synth_and_measure(changed, old)
+            for ln in changed:
+                if ln.failed:           # đọc lại bản ngắn lỗi: giữ bản cũ đã đọc được
+                    ln.mp3, ln.seg.trans, ln.pct, ln.dur = old[id(ln)]
+                    ln.failed = False
     for ln in lines:
         ln.base_dur = ln.dur
 
@@ -337,6 +392,7 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
     # 4) atempo phần dư + 5) đặt vào timeline
     track = np.zeros(int((total + 2.0) * SR), dtype=np.float32)
     cursor, drift_max = 0.0, 0.0
+    drifted: list[str] = []
     for ln in sorted(lines, key=lambda x: x.seg.start):
         edge_factor = ln.base_dur / ln.dur if ln.dur > 0 else 1.0
         tempo = 1.0
@@ -352,6 +408,8 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
         ln.seg.dub_end = round(at + len(data) / SR, 3)
         ln.seg.speed = round(edge_factor * tempo, 3)
         drift_max = max(drift_max, at - ln.seg.start)
+        if at - ln.seg.start > 0.6:
+            drifted.append(f"{ln.seg.start:.1f}s")
         cursor = ln.seg.dub_end + 0.05
 
     end = max(total, cursor)
@@ -360,6 +418,10 @@ def build_dub(segs: list[Segment], job: Path, cfg, meta: dict, shorten_fn=None,
     write_wav(out, track, SR)
     sp = [ln.seg.speed for ln in lines if ln.seg.speed]
     log("tts", f"dub.wav xong. Tăng tốc TB {np.mean(sp):.2f}x, max {max(sp):.2f}x, trôi tối đa {drift_max:.2f}s")
+    if drifted:
+        log("tts", f"CẢNH BÁO: {len(drifted)} câu đọc lệch sau hình hơn 0,6 giây (câu trước quá dài): "
+                   + ", ".join(drifted[:12]) + (" ..." if len(drifted) > 12 else "")
+                   + ". Rút gọn câu đứng trước các mốc này trong Studio để khớp hơn")
     if failed:
         log("tts", f"CẢNH BÁO: {len(failed)} câu chưa đọc được (Edge giới hạn) — chạy lại lệnh sau ít phút "
                    "để đọc bù, các câu đã đọc được giữ trong cache")
