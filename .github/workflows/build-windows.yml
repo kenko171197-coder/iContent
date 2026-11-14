@@ -1,0 +1,98 @@
+# Dựng file cài Windows (.exe) cho iContent Studio trên máy Windows của GitHub, tự cài thử, rồi đưa lên mục Release.
+# Chạy mỗi khi có code mới đẩy lên nhánh main (và khi mở pull request để thử), hoặc bấm tay: tab Actions → "Dựng bản Windows (.exe)" → Run workflow.
+name: Dựng bản Windows (.exe)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'HUONG DAN.txt']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write # đưa file cài lên mục Release
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Lấy số phiên bản
+        id: ver
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path icontent/__init__.py -Pattern '__version__\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
+          Write-Host "Phiên bản: $v"
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Kiểm tra code Python (Python đi kèm trong runtime)
+        shell: pwsh
+        run: |
+          $py = "runtime\python\python.exe"
+          & $py -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('icontent', quiet=1, force=True) else 1)"
+          if ($LASTEXITCODE) { throw "Có file Python lỗi cú pháp" }
+          Get-ChildItem icontent -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+
+      - name: Cài Inno Setup (nếu máy chưa có)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE) { throw "Không cài được Inno Setup" }
+          }
+          if (-not (Test-Path $iscc)) { throw "Không thấy ISCC.exe" }
+          "ISCC=$iscc" >> $env:GITHUB_ENV
+
+      - name: Đóng gói file cài .exe
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          & $env:ISCC /Q "/DAppVersion=$v" "/DStageDir=$PWD" "/DOutputDir=$PWD\dist" "/DOutputBase=iContent-Setup-$v" installer\iContent.iss
+          if ($LASTEXITCODE) { throw "Inno Setup báo lỗi" }
+          $f = Get-Item "dist\iContent-Setup-$v.exe"
+          Write-Host ("Đã tạo {0} ({1:N1} MB)" -f $f.Name, ($f.Length / 1MB))
+          "SETUP_EXE=$($f.FullName)" >> $env:GITHUB_ENV
+
+      - name: Cài thử (im lặng) và kiểm tra không còn khóa bản quyền
+        shell: pwsh
+        run: |
+          $dir = "$env:RUNNER_TEMP\iContent-thu"
+          $p = Start-Process -FilePath $env:SETUP_EXE -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/DIR=$dir" -PassThru -Wait
+          if ($p.ExitCode) { throw "Cài thử lỗi, mã $($p.ExitCode)" }
+          foreach ($f in "iContent Studio.cmd","Cai dat iContent.cmd","setup.ps1","runtime\python\python.exe","icontent\web\static\index.html") {
+            if (-not (Test-Path (Join-Path $dir $f))) { throw "Thiếu file sau khi cài: $f" }
+          }
+          Push-Location $dir
+          $env:PYTHONUTF8 = "1"; $env:PYTHONIOENCODING = "utf-8"
+          & "runtime\python\python.exe" -c "import sys; sys.path.insert(0, '.'); from icontent import license as l; s = l.public_state(); print(s); sys.exit(1 if l.locked() else 0)"
+          if ($LASTEXITCODE) { throw "App vẫn còn khóa bản quyền" }
+          Pop-Location
+          Write-Host ">>> Cài thử ĐẠT, không còn khóa bản quyền"
+
+      - name: Lưu file cài (tải ở trang kết quả chạy)
+        uses: actions/upload-artifact@v5
+        with:
+          name: iContent-Setup-${{ steps.ver.outputs.version }}
+          path: dist/*.exe
+          retention-days: 7
+
+      - name: Đưa file cài lên Release
+        if: github.ref_name == 'main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "ban-moi-main"
+          $notes = "File cài mới nhất của nhánh main. Commit $($env:GITHUB_SHA.Substring(0,7)), dựng lúc $((Get-Date).ToUniversalTime().AddHours(9).ToString('HH:mm dd/MM/yyyy')) (giờ Nhật). Bấm đúp file .exe để cài; lần đầu cần mạng để tải thêm khoảng 3 GB."
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --prerelease --target $env:GITHUB_SHA --title "Bản mới nhất (main)" --notes $notes
+          } else {
+            gh release edit $tag --repo $env:GITHUB_REPOSITORY --notes $notes
+            gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' | ForEach-Object { gh release delete-asset $tag $_ --repo $env:GITHUB_REPOSITORY -y }
+          }
+          gh release upload $tag $env:SETUP_EXE --repo $env:GITHUB_REPOSITORY --clobber
+          Write-Host "Đã đưa lên: https://github.com/$($env:GITHUB_REPOSITORY)/releases/tag/$tag"
