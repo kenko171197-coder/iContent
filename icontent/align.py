@@ -26,6 +26,11 @@ def _event_of(mid: float, events: list[dict], tol: float = 0.25) -> int | None:
 
 
 FINAL_PARTICLES = set("吗吧呢啊呀啦嘛哦哈呗")
+REACH_SEC = 1.0        # chữ chỉ được ghép vào câu phụ đề hiện trong vòng từng này giây quanh nó
+
+
+def _near(w: tuple, e: dict, reach: float = REACH_SEC) -> bool:
+    return e["start"] - reach <= (w[0] + w[1]) / 2 <= e["end"] + reach
 
 
 def _norm(s: str) -> str:
@@ -57,6 +62,9 @@ def _refine(groups: list[tuple[int | None, list[tuple]]], events: list[dict], re
 
         best_k, best = len(a), score(len(a))
         for k in range(max(1, len(a) - reach), min(len(ws) - 1, len(a) + reach) + 1):
+            # không kéo chữ sang câu phụ đề ở cách xa nó: chữ giống nhau nhưng nói ở lúc khác thì không phải cùng câu
+            if any(not _near(w, events[eb]) for w in ws[k:len(a)]) or any(not _near(w, events[ea]) for w in ws[len(a):k]):
+                continue
             sc = score(k)
             if sc > best + 1e-6:
                 best, best_k = sc, k
@@ -95,11 +103,65 @@ def _ocr_only(words: list[tuple], events: list[dict], used: set[int], min_dur: f
     return out
 
 
+def _tidy(groups: list[tuple[int | None, list[tuple]]], events: list[dict]) -> list[tuple[int | None, list[tuple]]]:
+    """Dọn các mẩu lời không có phụ đề đi kèm nằm sát một câu có phụ đề, để không sinh ra câu cụt ("Lên", "Ông"):
+    - cuối câu có phụ đề còn dính vài chữ không có trên màn hình, ngay sau là lời không phụ đề -> chuyển sang câu sau
+      ("往墙上一挂,啥也" + "不管了" -> "往墙上一挂," + "啥也不管了");
+    - mẩu 1-2 chữ không phụ đề nằm sát câu có phụ đề -> nhập vào câu đó; mẩu 1 chữ đứng trơ trọi -> bỏ (thường là
+      Whisper nghe nhầm tiếng nhạc, tiếng động)."""
+    gs = [(ev, list(ws)) for ev, ws in groups if ws]
+    for i in range(len(gs) - 1):
+        (ea, a), (eb, b) = gs[i], gs[i + 1]
+        if ea is None or eb is not None or b[0][0] - a[-1][1] > 0.3:
+            continue
+        scr, end = _norm(events[ea]["text"]), events[ea]["end"]
+        moved = 0
+        while len(a) > 1 and moved < 3:
+            t = _norm(a[-1][2])
+            if not t or any(ch in scr for ch in t) or a[-1][0] < end - 0.5:
+                break
+            b.insert(0, a.pop())
+            moved += 1
+    out: list[tuple[int | None, list[tuple]]] = []
+    i = 0
+    while i < len(gs):
+        ev, ws = gs[i]
+        n = len(_norm("".join(w[2] for w in ws)))
+        if ev is None and n <= 2:
+            nxt = gs[i + 1] if i + 1 < len(gs) else None
+            if nxt and nxt[0] is not None and nxt[1][0][0] - ws[-1][1] <= 0.6 and _near(ws[0], events[nxt[0]]):
+                gs[i + 1] = (nxt[0], ws + nxt[1])
+                i += 1
+                continue
+            if out and out[-1][0] is not None and ws[0][0] - out[-1][1][-1][1] <= 0.6 and _near(ws[-1], events[out[-1][0]]):
+                out[-1] = (out[-1][0], out[-1][1] + ws)
+                i += 1
+                continue
+            if n <= 1:
+                i += 1
+                continue
+        out.append((ev, ws))
+        i += 1
+    return out
+
+
+def _span(ws: list[tuple], e: dict) -> tuple[float, float]:
+    """Giờ của câu theo lời nói, nhưng không ra ngoài lúc phụ đề hiện quá REACH_SEC (chặn chữ bị đặt sai giờ)."""
+    a, b = max(ws[0][0], e["start"] - REACH_SEC), min(ws[-1][1], e["end"] + REACH_SEC)
+    if b - a < 0.2:
+        a, b = e["start"], e["end"]
+    return round(a, 3), round(b, 3)
+
+
 def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
     """words: (start, end, text, brk); events: [{start, end, text}] (đã sắp theo thời gian)."""
+    from .asr import fix_stray_words
+
+    logos = _logo_texts(events)
+    events = sorted((e for e in events if _norm(str(e.get("text") or "")) not in logos), key=lambda e: e["start"])
+    words = fix_stray_words(words)
     if not events:
         return resegment(words, acfg)
-    events = sorted(events, key=lambda e: e["start"])
     groups: list[tuple[int | None, list[tuple]]] = []
     for w in words:
         ev = _event_of((w[0] + w[1]) / 2, events)
@@ -109,8 +171,9 @@ def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
             groups.append((ev, [w]))
     for _ in range(2):
         _refine(groups, events)
-    groups = [g for g in groups if g[1]]
+    groups = _tidy(groups, events)
     out: list[Segment] = []
+    partial: dict[int, dict] = {}
     max_chars = int(acfg.max_chars)
     for ev, ws in groups:
         if ev is None:
@@ -127,9 +190,17 @@ def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
                 s.ocr = screen
                 out.append(s)
             continue
-        out.append(Segment(id=0, start=round(ws[0][0], 3), end=round(ws[-1][1], 3), text=text, ocr=screen))
+        a, b = _span(ws, events[ev])
+        out.append(Segment(id=0, start=a, end=b, text=text, ocr=screen))
+        if len(_norm(text)) < 0.7 * len(_norm(screen)):      # chỉ nghe ra một phần câu: lấy thêm giờ theo phụ đề
+            partial[id(out[-1])] = events[ev]
     out += _ocr_only(words, events, {ev for ev, _ in groups if ev is not None})
     out.sort(key=lambda s: s.start)
+    for i, s in enumerate(out):
+        e = partial.get(id(s))
+        if e:
+            s.start = round(max(min(s.start, e["start"]), out[i - 1].end if i else 0.0), 3)
+            s.end = round(min(max(s.end, e["end"]), out[i + 1].start if i + 1 < len(out) else e["end"]), 3)
     for i, s in enumerate(out, 1):
         s.id = i
     return out

@@ -310,6 +310,32 @@ def transcribe_gaps(wav16k: str | Path, gaps: list[tuple[float, float]], acfg, t
     return out
 
 
+STRAY_GAP = 1.5        # chữ lẻ cách chữ kế tiếp từng này giây trở lên mà không kết câu = bị đặt sai giờ
+_SENT_END = set("。.！!？?，,、；;：:…")
+
+
+def fix_stray_words(words: list[tuple]) -> list[tuple]:
+    """Sau một đoạn im lặng (nhạc, cảnh không lời) Whisper hay đặt giờ của CHỮ ĐẦU câu mới dính vào cuối câu trước,
+    cách phần còn lại của câu cả chục giây: "让 (0:05) ... 让我看不见 (0:18)". Câu ghép lại bị kéo dài từ 0:05,
+    tiếng lồng và phụ đề chạy trước hình. Chữ lẻ như vậy (sát câu trước, không có dấu câu, cách chữ sau >= STRAY_GAP)
+    được dời về ngay trước chữ kế tiếp. Không đổi chữ, chỉ đổi giờ."""
+    ws = [tuple(w) for w in words]
+    for i in range(len(ws) - 1):
+        a, b, text = ws[i][0], ws[i][1], str(ws[i][2])
+        brk = ws[i][3] if len(ws[i]) > 3 else 0
+        t = text.strip()
+        if not t or t[-1] in _SENT_END or brk or len(re.sub(r"\W", "", t)) > 2:
+            continue
+        if ws[i + 1][0] - b < STRAY_GAP:
+            continue
+        if i > 0 and a - ws[i - 1][1] > 1.0:       # đứng riêng một mình giữa khoảng lặng: có thể là tiếng thật
+            continue
+        nxt = ws[i + 1][0]
+        dur = min(b - a, 0.3)
+        ws[i] = (round(nxt - dur, 3), round(nxt, 3)) + tuple(ws[i][2:])
+    return ws
+
+
 def resegment(words: list[tuple], acfg) -> list[Segment]:
     """Gộp từ thành câu phụ đề.
 

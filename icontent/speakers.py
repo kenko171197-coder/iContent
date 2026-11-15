@@ -121,25 +121,43 @@ def _join_short(units: list[dict]) -> list[dict]:
     return out
 
 
-def _cluster(vecs: np.ndarray, durs: np.ndarray) -> np.ndarray:
-    """Gom cụm trung bình theo cosin, rồi nhập các nhóm quá ít lời vào nhóm gần nhất."""
+def _cluster(vecs: np.ndarray, durs: np.ndarray, count: int = 0) -> np.ndarray:
+    """Gom cụm trung bình theo cosin, rồi nhập các nhóm quá ít lời vào nhóm gần nhất.
+    count > 0: người dùng cho biết video có đúng từng ấy nhân vật -> không bao giờ ra nhiều nhóm hơn. Cắt cây gom cụm
+    mịn hơn (tối đa 2*count nhóm), bỏ nhóm vụn, rồi nhập dần 2 nhóm giống nhau nhất tới khi còn count nhóm."""
     if len(vecs) < 2:
         return np.zeros(len(vecs), dtype=int)
     from scipy.cluster.hierarchy import fcluster, linkage
 
-    lab = fcluster(linkage(vecs, "average", metric="cosine"), THRESHOLD, "distance") - 1
+    tree = linkage(vecs, "average", metric="cosine")
     total = float(durs.sum())
+    if count > 0:
+        lab = fcluster(tree, max(count, min(len(vecs), count * 2)), "maxclust") - 1
+        floor, cap = max(1.5, total * 0.015), count
+    else:
+        lab = fcluster(tree, THRESHOLD, "distance") - 1
+        floor, cap = max(3.0, total * 0.03), MAX_SPEAKERS
+
+    def centroids(ids):
+        cent = {c: vecs[lab == c].mean(axis=0) for c in ids}
+        return {c: v / max(1e-9, float(np.linalg.norm(v))) for c, v in cent.items()}
+
     while True:
         ids = np.unique(lab)
         if len(ids) < 2:
             break
         secs = {c: float(durs[lab == c].sum()) for c in ids}
         small = min(ids, key=lambda c: secs[c])
-        if secs[small] >= max(3.0, total * 0.03) and len(ids) <= MAX_SPEAKERS:
+        cent = centroids(ids)
+        if secs[small] < floor or (count <= 0 and len(ids) > cap):
+            other = max((c for c in ids if c != small), key=lambda c: float(cent[c] @ cent[small]))
+            lab[lab == small] = other
+            continue
+        if len(ids) <= cap:
             break
-        cent = {c: vecs[lab == c].mean(axis=0) for c in ids}
-        other = max((c for c in ids if c != small), key=lambda c: float(cent[c] @ cent[small]))
-        lab[lab == small] = other
+        # còn nhiều nhóm hơn số nhân vật: nhập 2 nhóm giống nhau nhất (thường là một người lúc nói thường, lúc quát)
+        x, y = max(((p, q) for n, p in enumerate(ids) for q in ids[n + 1:]), key=lambda pq: float(cent[pq[0]] @ cent[pq[1]]))
+        lab[lab == y] = x
     return np.unique(lab, return_inverse=True)[1]
 
 
@@ -173,6 +191,13 @@ def _apply_labels(segs: list[Segment], units: list[dict], split: bool) -> list[S
             runs[a:b + 1] = [{"spk": keep, "start": runs[a]["start"], "end": runs[b]["end"],
                               "words": runs[a]["words"] + runs[b]["words"]}]
             k = 0
+        merged: list[dict] = []
+        for r in runs:      # nhập lượt ngắn xong có thể còn 2 lượt liền nhau của cùng một người: không tách câu ở đó
+            if merged and merged[-1]["spk"] == r["spk"]:
+                merged[-1]["end"], merged[-1]["words"] = r["end"], merged[-1]["words"] + r["words"]
+            else:
+                merged.append(r)
+        runs = merged
         if not runs:
             out.append(s)
             continue
@@ -184,14 +209,57 @@ def _apply_labels(segs: list[Segment], units: list[dict], split: bool) -> list[S
         for n, r in enumerate(runs):
             start = s.start if n == 0 else r["start"]
             end = s.end if n == len(runs) - 1 else r["end"]
-            out.append(Segment(id=0, start=round(start, 3), end=round(end, 3), text=_text_of(r["words"]), speaker=r["spk"]))
+            out.append(Segment(id=0, start=round(start, 3), end=round(end, 3), text=_text_of(r["words"]), speaker=r["spk"], check=s.check))
     for n, s in enumerate(out, 1):
         s.id = n if split else s.id
     return out
 
 
-def diarize(segs: list[Segment], words: list[tuple] | None, wav: Path, split: bool = True) -> tuple[list[Segment], dict]:
-    """-> (danh sách câu đã gắn s.speaker, {"speakers": [...]}). Không ghi file."""
+WEAK_SIM = 1.0 - THRESHOLD     # cụm yếu (ngắn, hoặc không nghe ra chữ) phải giống một người đã có ít nhất từng này
+WEAK_MARGIN = 0.05             # và giống hơn hẳn người thứ nhì; không thì giữ người của câu bên cạnh
+
+
+def _settle(units: list[dict], cent: dict[int, np.ndarray]) -> None:
+    """Gán người cho các cụm chưa có nhãn (cụm yếu). Cụm yếu KHÔNG BAO GIỜ tạo ra người mới: đủ giống một người đã có
+    thì theo người đó, không chắc thì giữ người của cụm có nhãn gần nhất về thời gian (ưu tiên câu ngay trước).
+    Nhờ vậy một nhân vật không bị đổi giọng ở những câu ngắn, câu la hét, câu chìm trong nhạc."""
+    for u in units:
+        if "cl" in u or u.get("vec") is None or len(cent) < 1:
+            continue
+        sims = sorted(((float(v @ u["vec"]), c) for c, v in cent.items()), reverse=True)
+        if sims[0][0] >= WEAK_SIM and (len(sims) < 2 or sims[0][0] - sims[1][0] >= WEAK_MARGIN):
+            u["cl"] = sims[0][1]
+    known = [n for n, u in enumerate(units) if "cl" in u]
+    for n, u in enumerate(units):
+        if "cl" in u:
+            continue
+        before = max((k for k in known if k < n), default=None)
+        after = min((k for k in known if k > n), default=None)
+        if before is None or (after is not None and units[after]["start"] - u["end"] + 1.0 < u["start"] - units[before]["end"]):
+            u["cl"] = units[after]["cl"]        # câu sau gần hơn hẳn (hơn 1 giây) thì mới theo câu sau
+        else:
+            u["cl"] = units[before]["cl"]
+        known.append(n)
+        known.sort()
+
+
+def _smooth(units: list[dict], cent: dict[int, np.ndarray]) -> None:
+    """Cụm ngắn kẹp giữa 2 cụm sát nó của cùng một người khác (bà - ? - bà) mà không khác hẳn người đó: theo hai bên."""
+    for n in range(1, len(units) - 1):
+        a, u, b = units[n - 1], units[n], units[n + 1]
+        if a["cl"] != b["cl"] or u["cl"] == a["cl"] or u["end"] - u["start"] >= 1.5:
+            continue
+        if u["start"] - a["end"] > 1.0 or b["start"] - u["end"] > 1.0:
+            continue
+        v = u.get("vec")
+        if v is None or float(cent[a["cl"]] @ v) >= float(cent[u["cl"]] @ v) - 0.1:
+            u["cl"] = a["cl"]
+
+
+def diarize(segs: list[Segment], words: list[tuple] | None, wav: Path, split: bool = True,
+            count: int = 0) -> tuple[list[Segment], dict]:
+    """-> (danh sách câu đã gắn s.speaker, {"speakers": [...]}). Không ghi file.
+    count: số nhân vật người dùng nhập (0 = tự đoán)."""
     audio, sr = read_wav(wav)
     if audio.ndim > 1:
         audio = audio.mean(axis=1)
@@ -203,28 +271,22 @@ def diarize(segs: list[Segment], words: list[tuple] | None, wav: Path, split: bo
             check_cancel()
             progress("speakers", n / max(1, len(units)))
         u["vec"] = _embed(audio, sr, u["start"], u["end"])
-        if u["vec"] is not None and u["end"] - u["start"] >= MIN_EMBED:
+        # câu chỉ có chữ trên màn hình (không nghe ra lời, thường chìm trong nhạc): dấu giọng lẫn tiếng nhạc, không đủ tin
+        heard = segs[u["seg"]].check != "ocr"
+        if u["vec"] is not None and u["end"] - u["start"] >= MIN_EMBED and heard:
             strong.append(u)
             vecs.append(u["vec"])
     if not strong:     # toàn câu rất ngắn: không đủ căn cứ, coi như một người
         for s in segs:
             s.speaker = "S1"
         return segs, _summary(segs)
-    lab = _cluster(np.stack(vecs), np.array([u["end"] - u["start"] for u in strong]))
+    lab = _cluster(np.stack(vecs), np.array([u["end"] - u["start"] for u in strong]), count)
     for u, c in zip(strong, lab):
         u["cl"] = int(c)
     cent = {c: np.mean([u["vec"] for u in strong if u["cl"] == c], axis=0) for c in set(int(x) for x in lab)}
     cent = {c: v / max(1e-9, float(np.linalg.norm(v))) for c, v in cent.items()}
-    # cụm ngắn: lấy người gần nhất nếu đủ giống, không thì theo cụm liền trước
-    prev = next(u["cl"] for u in strong)
-    for u in units:
-        if "cl" not in u:
-            if u["vec"] is not None:
-                best = max(cent, key=lambda c: float(cent[c] @ u["vec"]))
-                u["cl"] = best if float(cent[best] @ u["vec"]) >= 0.25 else prev
-            else:
-                u["cl"] = prev
-        prev = u["cl"]
+    _settle(units, cent)
+    _smooth(units, cent)
     # đánh số theo thời lượng nói: S1 là người nói nhiều nhất
     secs: dict[int, float] = {}
     for u in units:
@@ -236,7 +298,7 @@ def diarize(segs: list[Segment], words: list[tuple] | None, wav: Path, split: bo
     out = _apply_labels(segs, units, split)
     info = _summary(out)
     n = len(info["speakers"])
-    log("speakers", f"Nghe ra {n} người nói" + (f", tách thêm {len(out) - before} câu ở chỗ đổi người" if len(out) > before else ""))
+    log("speakers", (f"Chia {n} người nói theo số nhân vật đã nhập ({count})" if count > 0 else f"Nghe ra {n} người nói") + (f", tách thêm {len(out) - before} câu ở chỗ đổi người" if len(out) > before else ""))
     return out, info
 
 
@@ -322,7 +384,7 @@ def _pool(cfg, gender: str, need: int) -> list[str]:
 def assign_voices(job: Path, segs: list[Segment], wav: Path, cfg, hint: str = "") -> dict[str, str]:
     """Xác định nam/nữ từng người theo cao độ, chia giọng không trùng nhau, cập nhật speakers.json + s.gender.
     Trả về {speaker: giọng}. Giọng đặt tay trong Studio luôn được ưu tiên."""
-    from .voice import analyze_pitch, gender_of, nearest_gender
+    from .voice import analyze_pitch, gender_of, gender_of_lines, nearest_gender
 
     info = _summary(segs, load(job))
     people = info["speakers"]
@@ -337,8 +399,8 @@ def assign_voices(job: Path, segs: list[Segment], wav: Path, cfg, hint: str = ""
             p["f0"] = round(float(np.median(vals)), 1) if vals else None
             # gợi ý từ nội dung chỉ nói về người kể chính, nên chỉ áp cho người nói nhiều nhất
             said = hint if k == 0 and hint in ("male", "female") else ""
-            p["gender"] = gender_of(p["f0"], split) or said or nearest_gender(p["f0"], split) \
-                or nearest_gender(pitch["global"], split) or "male"
+            p["gender"] = gender_of_lines(vals, split) or gender_of(p["f0"], split) or said \
+                or nearest_gender(p["f0"], split) or nearest_gender(pitch["global"], split) or "male"
     used = {p["voice"] for p in people if p["voice"]}
     count = {g: sum(1 for p in people if p["gender"] == g) for g in {p["gender"] for p in people}}
     pools = {g: _pool(cfg, g, n) for g, n in count.items()}

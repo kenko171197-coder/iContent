@@ -298,7 +298,7 @@ export function Inspector({ st, id, meta, getBox, hasFile, player, retranslate, 
 
   // ------------------------------------------------ tab Giọng
   function tabVoice() {
-    const fl = FieldList(['tts.enabled', 'tts.engine', 'tts.voice_mode', 'tts.vieneu_voice', 'tts.vox_voice', 'tts.voice', 'tts.male_voice', 'tts.female_voice', 'tts.max_speed', 'tts.pronounce'], st.vals, baseCfg(), changed);
+    const fl = FieldList(['tts.enabled', 'tts.engine', 'tts.voice_mode', 'tts.speakers', 'tts.vieneu_voice', 'tts.vox_voice', 'tts.voice', 'tts.male_voice', 'tts.female_voice', 'tts.max_speed', 'tts.pronounce'], st.vals, baseCfg(), changed);
     const cast = el('div', { class: 'cast' });
     const people = el('div', { class: 'block people' });
     const lang = () => getPath(st.vals, 'translate.target_lang') || 'vi';

@@ -3,6 +3,13 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "1.0.2", "date": "11/2026", "items": [
+        "Hết lồng tiếng và phụ đề chạy trước hình: chữ đầu câu bị nghe sai giờ (sớm cả chục giây) được đưa về đúng chỗ.",
+        "Hết câu cụt một hai chữ vô nghĩa: mẩu lời lẻ được nhập vào đúng câu, logo trên video không còn cắt ngang câu.",
+        "Giọng nhân vật ổn định hơn: câu ngắn, câu la hét, câu chìm trong nhạc giữ giọng của câu bên cạnh thay vì nhảy sang giọng khác. Có thêm ô Số nhân vật có lời (Giọng đọc): chọn đúng số nhân vật thì mỗi nhân vật đúng một giọng.",
+        "Nhân vật nam không còn bị lồng giọng nữ ở phim nhiều cảnh la hét (lấy từ iContent 0.6.3).",
+        "Video làm bằng bản cũ: thêm lại từ Video mới là app tự ghép câu lại theo cách mới, không phải xóa gì.",
+    ]},
     {"version": "1.0.1", "date": "11/2026", "items": [
         "Không còn biến logo kênh in trên video (chữ ngắn hiện lặp lại nhiều lần) thành câu thoại.",
         "Câu app chưa chắc chắn được tô vàng trong Studio: chỉ có chữ trên màn hình mà không nghe ra tiếng, hoặc chỉ nghe ra tiếng mà không có phụ đề. Bấm Cần xem để lọc, soát xong bấm vào nhãn vàng để bỏ đánh dấu.",

@@ -59,6 +59,7 @@ DEFAULTS: dict[str, Any] = {
         # clone    : VieNeu bắt chước âm sắc người nói gốc (thử nghiệm)
         "voice_mode": "auto",
         "diarize": True,                # chế độ auto: nghe ra mấy người nói, mỗi người một giọng, tách câu gộp 2 người
+        "speakers": 0,                  # số nhân vật có lời trong video (người dùng nhập). 0 = app tự đoán
         "male_voice": "",               # trống = Thiện Minh (vieneu) / vi-VN-NamMinhNeural (edge)
         "female_voice": "",             # trống = Trúc Ly (vieneu) / vi-VN-HoaiMyNeural (edge)
         "pitch_split": 175.0,           # Hz: dưới ngưỡng = giọng nam. Đo 14 giọng: nam cao nhất 165, nữ thấp nhất 186

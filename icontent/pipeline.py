@@ -23,6 +23,7 @@ from .download import fetch
 from .models import Segment, load_segments, read_srt, save_segments, write_srt
 from .util import Cancelled, check_cancel, copy_replace, emit, ffmpeg, log, safe_name, short_hash, stage
 
+SEG_VERSION = "2"      # tăng khi đổi cách ghép câu (align/asr): video cũ được thêm lại từ đầu sẽ ghép lại
 STAGES = ["download", "audio", "separate", "hardsub", "asr", "translate", "tts", "render"]
 
 
@@ -313,7 +314,7 @@ _is_fresh = is_fresh
 
 def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None = None,
             targets: list[str] | None = None, clips: list | None = None, profiles: list[str] | None = None,
-            clip_profile: str = "", editor_base: bool = False) -> Path:
+            clip_profile: str = "", editor_base: bool = False, fresh: bool = False) -> Path:
     """overrides: tùy chọn riêng cho video này (lưu vào options.json của job).
     targets: các khung hình cần xuất thêm ("9:16", "16:9", "1:1").
     clips: các đoạn [[đầu, cuối], ...] (giây theo video gốc) cần xuất thành từng clip riêng.
@@ -380,6 +381,14 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
 
     # ---- asr (+ ghép với phụ đề gốc nếu có)
     seg_path, words_path = job / "segments.json", job / "words.json"
+    ver_path = job / "segments.ver"
+    if fresh and seg_path.exists() and words_path.exists() and "asr" not in force \
+            and (ver_path.read_text(encoding="utf-8").strip() if ver_path.exists() else "") != SEG_VERSION \
+            and not any(x.rec for x in load_segments(seg_path)):
+        # video này từng làm bằng bản Studio566 cũ: người dùng thêm lại từ đầu thì ghép câu lại theo cách mới
+        # (dùng lại kết quả nghe đã lưu, không phải nghe lại), rồi dịch và lồng tiếng lại
+        log("asr", "Video này đã làm bằng bản cũ: ghép lại câu theo cách mới rồi dịch, lồng tiếng lại")
+        force |= {"asr", "translate", "tts", "render"}
     if "asr" in force or not seg_path.exists():
         stage("asr")
         redo_words = from_stage in ("download", "audio", "separate", "asr") or not words_path.exists()
@@ -407,8 +416,8 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
                         words = sorted(words + [(round(float(a), 3), round(float(b), 3), w, k) for a, b, w, k in extra],
                                        key=lambda x: x[0])
             words_path.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
-        words = [tuple(w) for w in json.loads(words_path.read_text(encoding="utf-8"))]
-        from .asr import resegment
+        from .asr import fix_stray_words, resegment
+        words = fix_stray_words([tuple(w) for w in json.loads(words_path.read_text(encoding="utf-8"))])
         segs = None
         if hs_box and cfg.asr.get("ocr_align", True):
             from . import hardsub
@@ -423,6 +432,7 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
         if not segs:
             raise RuntimeError("Video này không có lời thoại nên không có gì để dịch và lồng tiếng (thường là video chỉ có nhạc). Hãy chọn video có người nói.")
         save_segments(seg_path, segs)
+        ver_path.write_text(SEG_VERSION, encoding="utf-8")
         write_srt(job / "subs.zh.srt", [(s.start, s.end, s.ocr or s.text) for s in segs])
         n_chk = sum(1 for s in segs if s.check)
         if n_chk:
@@ -440,8 +450,9 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
         if speakers.available():
             stage("speakers")
             try:
-                words = [tuple(w) for w in load_json(words_path) or []]
-                segs, info = speakers.diarize(segs, words, voice_src)
+                from .asr import fix_stray_words
+                words = fix_stray_words([tuple(w) for w in load_json(words_path) or []])
+                segs, info = speakers.diarize(segs, words, voice_src, count=int(cfg.tts.get("speakers", 0) or 0))
                 speakers.save(job, info)
                 save_segments(seg_path, segs)
                 write_srt(job / "subs.zh.srt", [(s.start, s.end, s.ocr or s.text) for s in segs])
