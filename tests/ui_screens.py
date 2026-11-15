@@ -20,7 +20,7 @@ demo.mkdir(parents=True, exist_ok=True)
 rows = [(0.4, 2.0, "上来吧，别站在那儿", "Lên đây đi, đừng đứng đó nữa."), (2.2, 3.4, "我…", "Con…"),
         (4.5, 7.8, "奶奶不会放过你的", "Bà nội sẽ không tha cho con đâu."), (8.2, 10.6, "让开，全挡住了", "Tránh ra, che hết rồi."),
         (11.0, 14.5, "你到底想怎么样", "Rốt cuộc con muốn thế nào?"), (15.0, 18.6, "我只是想回家", "Con chỉ muốn về nhà thôi.")]
-(demo / "segments.json").write_text(json.dumps([{"id": i + 1, "start": a, "end": b, "text": zh, "trans": vi} for i, (a, b, zh, vi) in enumerate(rows)], ensure_ascii=False), encoding="utf-8")
+(demo / "segments.json").write_text(json.dumps([{"id": i + 1, "start": a, "end": b, "text": zh, "trans": vi, "check": "ocr" if i == 1 else ""} for i, (a, b, zh, vi) in enumerate(rows)], ensure_ascii=False), encoding="utf-8")
 ff = shutil.which("ffmpeg") or next((str(p) for p in Path(".").rglob("ffmpeg.exe")), None)
 if ff:
     subprocess.run([ff, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=0x2b2420:s=540x960:d=20", "-f", "lavfi", "-i", "sine=f=300:d=20",

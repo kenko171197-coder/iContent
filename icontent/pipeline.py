@@ -424,6 +424,9 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
             raise RuntimeError("Video này không có lời thoại nên không có gì để dịch và lồng tiếng (thường là video chỉ có nhạc). Hãy chọn video có người nói.")
         save_segments(seg_path, segs)
         write_srt(job / "subs.zh.srt", [(s.start, s.end, s.ocr or s.text) for s in segs])
+        n_chk = sum(1 for s in segs if s.check)
+        if n_chk:
+            log("asr", f"{n_chk} câu nên soát lại (tô vàng trong Studio): chỉ thấy chữ trên màn hình hoặc chỉ nghe ra tiếng")
         (job / "voice.json").unlink(missing_ok=True)
         (job / "speakers.json").unlink(missing_ok=True)
         log("asr", f"{len(segs)} câu -> subs.zh.srt")

@@ -911,6 +911,8 @@ def create_app(config_path: str | None = None) -> FastAPI:
                 # tên file do chính máy chủ đặt. Không tin giá trị gửi lên vì nó được ghép vào đường dẫn để đọc và xóa file
                 rec = str(d.get("rec", s.rec) or "")
                 s.rec = rec if not rec or REC_NAME.fullmatch(rec) else s.rec
+                chk = str(d.get("check", s.check) or "")
+                s.check = chk if chk in ("ocr", "nghe") else ""
             except (KeyError, TypeError, ValueError) as e:
                 raise HTTPException(400, f"Câu không hợp lệ: {d} ({e})")
             if s.end <= s.start:

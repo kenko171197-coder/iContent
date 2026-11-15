@@ -3,6 +3,10 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "1.0.1", "date": "11/2026", "items": [
+        "Không còn biến logo kênh in trên video (chữ ngắn hiện lặp lại nhiều lần) thành câu thoại.",
+        "Câu app chưa chắc chắn được tô vàng trong Studio: chỉ có chữ trên màn hình mà không nghe ra tiếng, hoặc chỉ nghe ra tiếng mà không có phụ đề. Bấm Cần xem để lọc, soát xong bấm vào nhãn vàng để bỏ đánh dấu.",
+    ]},
     {"version": "1.0.0", "date": "11/2026", "items": [
         "Dịch video chia 3 bước rõ ràng: chọn video, chọn kiểu, bắt đầu. Tùy chọn chi tiết gập vào Tùy chỉnh nâng cao.",
         "Studio có chế độ Đơn giản (mặc định): video bên trái, danh sách câu bên phải, chữ to dễ sửa. Chuyển sang Chuyên nghiệp để có đủ timeline.",
