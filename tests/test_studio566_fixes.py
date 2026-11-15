@@ -71,3 +71,35 @@ def test_nhan_ra_ban_moi():
     assert autoupdate.is_newer("0123456", "fedcba9") is True
     assert autoupdate.is_newer("0123456789", "0123456") is False
     assert autoupdate.is_newer("", "abc1234") is False
+
+
+def test_logo_khong_thanh_cau_thoai():
+    """Video 丧彪: logo kênh bị OCR đọc thành chữ 丧彪 đứng riêng nhiều lần -> không được thành câu thoại."""
+    words = [(0.0, 0.3, "丧", 0), (0.3, 0.7, "彪,", 0), (0.9, 1.6, "别闹。", 2),      # chủ nhân gọi tên con chó thật
+             (179.0, 179.4, "气死我了", 2), (190.1, 191.9, "我们不能辜负二舅的努力", 2)]
+    events = [
+        {"start": 0.25, "end": 1.75, "text": "丧彪別闹"},
+        {"start": 21.25, "end": 22.75, "text": "丧彪"},
+        {"start": 61.25, "end": 62.0, "text": "丧彪"},
+        {"start": 64.5, "end": 66.25, "text": "丧彪你不是狗吗"},       # nhạc to, câu thật có chữ khác đi kèm
+        {"start": 104.75, "end": 106.25, "text": "丧彪"},
+        {"start": 178.0, "end": 179.75, "text": "哎呦气死我了"},
+        {"start": 183.0, "end": 184.5, "text": "丧彪"},
+        {"start": 185.0, "end": 186.5, "text": "二舅还在跑呢"},
+        {"start": 186.5, "end": 187.0, "text": "丧彪"},
+        {"start": 189.25, "end": 192.0, "text": "我们不能辜负二舅的努力"},
+    ]
+    segs = align.fuse(words, events, ACFG)
+    texts = [s.text for s in segs]
+    assert "丧彪" not in texts                       # logo bị bỏ
+    assert "丧彪你不是狗吗" in texts                  # câu thật có tên con chó vẫn giữ
+    s = next(s for s in segs if s.text == "二舅还在跑呢")
+    assert (s.start, s.end, s.check) == (185.0, 186.5, "ocr")   # đúng giờ phụ đề, được đánh dấu để soát
+    assert all(not x.check for x in segs if x.text != "二舅还在跑呢" and x.text != "丧彪你不是狗吗")
+
+
+def test_cau_chi_nghe_ra_tieng_duoc_danh_dau():
+    words = [(0.2, 0.9, "上来吧", 2), (10.0, 10.6, "什么", 2)]       # 10s: màn hình không có phụ đề
+    events = [{"start": 0.1, "end": 1.0, "text": "上来吧"}]
+    segs = align.fuse(words, events, ACFG)
+    assert [(s.text, s.check) for s in segs] == [("上来吧", ""), ("什么", "nghe")]

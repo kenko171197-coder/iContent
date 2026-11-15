@@ -66,19 +66,32 @@ def _refine(groups: list[tuple[int | None, list[tuple]]], events: list[dict], re
 CJK = re.compile(r"[\u3400-\u9fff]")
 
 
+def _logo_texts(events: list[dict], min_repeat: int = 3, max_chars: int = 4) -> set[str]:
+    """Chữ ngắn hiện MỘT MÌNH lặp đi lặp lại nhiều lần = logo / tên kênh in trên video, không phải lời thoại.
+    VD logo 丧彪 bị đọc thành 5 "câu" 丧彪 rời nhau. Câu thoại thật hiếm khi lặp nguyên văn, đứng riêng từng ấy lần."""
+    count: dict[str, int] = {}
+    for e in events:
+        t = _norm(str(e.get("text") or ""))
+        if t and len(t) <= max_chars:
+            count[t] = count.get(t, 0) + 1
+    return {t for t, n in count.items() if n >= min_repeat}
+
+
 def _ocr_only(words: list[tuple], events: list[dict], used: set[int], min_dur: float = 0.5) -> list[Segment]:
     """Phụ đề in sẵn hiện trên màn hình mà Whisper không nghe ra chữ nào (nhạc nền to che lời):
-    lấy chính chữ phụ đề làm câu thoại để vẫn dịch và lồng tiếng được, thay vì bỏ trống cả đoạn."""
+    lấy chính chữ phụ đề làm câu thoại để vẫn dịch và lồng tiếng được, thay vì bỏ trống cả đoạn.
+    Bỏ qua logo (chữ ngắn đứng một mình lặp lại nhiều lần). Câu tạo ra được đánh dấu check="ocr" để người dùng soát."""
     out = []
+    logos = _logo_texts(events)
     for i, e in enumerate(events):
         if i in used or e["end"] - e["start"] < min_dur:
             continue
         text = " ".join(str(e.get("text") or "").split()).strip(" ，,、")
-        if len(CJK.findall(text)) < 2:
+        if len(CJK.findall(text)) < 2 or _norm(text) in logos:
             continue
         if any(e["start"] - 0.1 <= (w[0] + w[1]) / 2 <= e["end"] + 0.1 for w in words):
             continue
-        out.append(Segment(id=0, start=round(e["start"], 3), end=round(e["end"], 3), text=text, ocr=text))
+        out.append(Segment(id=0, start=round(e["start"], 3), end=round(e["end"], 3), text=text, ocr=text, check="ocr"))
     return out
 
 
@@ -101,7 +114,9 @@ def fuse(words: list[tuple], events: list[dict], acfg) -> list[Segment]:
     max_chars = int(acfg.max_chars)
     for ev, ws in groups:
         if ev is None:
-            out += resegment(ws, acfg)          # lời thoại không có phụ đề đi kèm
+            for s in resegment(ws, acfg):       # lời thoại không có phụ đề đi kèm: video có phụ đề mà câu này
+                s.check = "nghe"                # không có -> có thể Whisper nghe nhầm tiếng nhạc, nên soát lại
+                out.append(s)
             continue
         screen = events[ev]["text"]
         text = " ".join("".join(w[2] for w in ws).split()).strip(" ，,、")

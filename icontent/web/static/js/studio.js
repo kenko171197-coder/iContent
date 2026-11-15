@@ -14,7 +14,11 @@ import { Player } from './player.js';
 import { runChecks } from './qa.js';
 import { Timeline } from './timeline.js';
 
-const EDIT_FIELDS = ['id', 'start', 'end', 'text', 'trans', 'voice', 'speaker'];
+const EDIT_FIELDS = ['id', 'start', 'end', 'text', 'trans', 'voice', 'speaker', 'check'];
+const CHECK_TIPS = {
+  ocr: 'Không nghe ra tiếng ở đây (thường do nhạc to), câu này lấy từ chữ phụ đề trên màn hình. Xem lại chữ và thời gian, đúng rồi thì bấm vào nhãn này để bỏ đánh dấu',
+  nghe: 'Chỉ nghe ra tiếng, màn hình không có phụ đề lúc này. Có thể app nghe nhầm tiếng nhạc hoặc tiếng động. Nghe lại, đúng rồi thì bấm vào nhãn này để bỏ đánh dấu',
+};
 const HISTORY_FIELDS = [...EDIT_FIELDS, 'gender', 'ocr'];
 
 export async function viewStudio(main, alive, id) {
@@ -172,7 +176,7 @@ export async function viewStudio(main, alive, id) {
   const replBox = el('div', { class: 'repl-box', hidden: true }, replInp,
     el('button', { class: 'btn btn-sm', onclick: () => replaceAll() }, 'Thay tất cả'));
   const replToggle = el('button', { class: 'btn btn-xs btn-icon btn-ghost', title: 'Tìm và thay thế', 'aria-label': 'Tìm và thay thế', onclick: () => { replBox.hidden = !replBox.hidden; if (!replBox.hidden) replInp.focus(); } }, icon('edit'));
-  const onlyBad = el('button', { class: 'chip', title: 'Chỉ hiện câu đọc nhanh hoặc chưa dịch', onclick: () => { onlyBad.classList.toggle('active'); applyFilter(); } }, icon('alert'), 'Cần xem');
+  const onlyBad = el('button', { class: 'chip', title: 'Chỉ hiện câu cần xem: đọc quá nhanh, chưa dịch, hoặc được tô vàng vì app chưa chắc chắn', onclick: () => { onlyBad.classList.toggle('active'); applyFilter(); } }, icon('alert'), 'Cần xem');
   const linesPane = el('section', { class: 'pane lines-pane' },
     el('div', { class: 'pane-head' }, stats, el('span', { class: 'grow' }), onlyBad),
     el('div', { class: 'find-row' }, el('div', { class: 'search-box' }, icon('search'), findInp), replToggle),
@@ -344,12 +348,16 @@ export async function viewStudio(main, alive, id) {
     const retransBtn = el('button', { class: 'btn btn-xs btn-icon btn-ghost', title: 'Dịch lại câu này', 'aria-label': 'Dịch lại câu này', onclick: () => retranslateLine(r, retransBtn) }, icon('globe'));
     const recBtn = el('button', { class: 'btn btn-xs btn-icon btn-ghost', title: 'Thu giọng của bạn cho câu này', 'aria-label': 'Thu giọng của bạn', onclick: () => openRecorder(r) }, icon('mic'));
     const recChip = el('span', { class: 'ln-rec', title: 'Câu này dùng giọng bạn thu', text: 'Giọng thu', hidden: !s.rec });
+    const chkChip = el('button', {
+      class: 'ln-check', type: 'button', title: CHECK_TIPS[s.check] || '', text: s.check === 'ocr' ? 'Soát: chỉ có chữ' : 'Soát: chỉ có tiếng', hidden: !s.check,
+      onclick: (e) => { e.stopPropagation(); s.check = ''; chkChip.hidden = true; updMeta(); markDirty(); pushHistory(); applyFilter(); },
+    });
     const splitBtn = el('button', { class: 'btn btn-xs btn-icon btn-ghost', title: 'Tách câu tại vị trí con trỏ', 'aria-label': 'Tách câu', onclick: () => splitLine(r) }, icon('scissors'));
     const mergeBtn = el('button', { class: 'btn btn-xs btn-icon btn-ghost', title: 'Gộp với câu sau', 'aria-label': 'Gộp với câu sau', onclick: () => mergeLine(r) }, icon('merge'));
     const root = el('div', { class: 'ln', dataset: { id: String(s.id) }, onclick: (e) => { if (e.target === root) setActive(r.i, false); } },
       el('div', { class: 'ln-gutter' }, el('span', { class: 'ln-idx mono', text: String(i + 1) }), el('span', { class: 'ln-dirty', title: 'Chưa lưu' })),
       el('div', { class: 'ln-main' },
-        el('div', { class: 'ln-top' }, timeBtn, gEl, recChip, speed, el('span', { class: 'grow' }), playBtn),
+        el('div', { class: 'ln-top' }, timeBtn, gEl, recChip, chkChip, speed, el('span', { class: 'grow' }), playBtn),
         zh, ta,
         el('div', { class: 'ln-foot' }, meter, syl, el('span', { class: 'grow' }), el('span', { class: 'ln-tools' }, voiceSel, speakBtn, retransBtn, recBtn, splitBtn, mergeBtn))));
     Object.assign(r, { root, ta, playBtn, speakBtn, recChip, updTime, updMeta, markDirty, grow: () => grow(ta) });
@@ -370,13 +378,15 @@ export async function viewStudio(main, alive, id) {
       speed.className = 'ln-speed mono ' + (!v ? '' : v <= 1.05 ? 'ok' : v <= 1.3 ? 'warn' : 'bad');
       speed.title = v ? 'Giọng đọc đang phải nhanh gấp từng này lần để vừa câu' : '';
       root.classList.toggle('bad', !(s.trans || '').trim() || v > 1.3);
+      root.classList.toggle('chk', !!s.check);
+      chkChip.hidden = !s.check;
     }
     function markDirty() { root.classList.toggle('dirty', snapOf(s) !== st.snap.get(s.id)); updateStats(); }
     function editZh() {
       if (zh.querySelector('input')) return;
       const inp = el('input', { class: 'input input-xs', value: s.text || '', spellcheck: 'false', 'aria-label': 'Sửa câu gốc' });
       const done = (commit) => {
-        if (commit) { s.text = inp.value.trim(); markDirty(); pushHistory(); }
+        if (commit) { const v = inp.value.trim(); if (v !== (s.text || '')) s.check = ''; s.text = v; updMeta(); markDirty(); pushHistory(); }
         zh.textContent = s.text || '';
       };
       inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); done(true); } if (e.key === 'Escape') { e.preventDefault(); done(false); } });
@@ -444,7 +454,7 @@ export async function viewStudio(main, alive, id) {
     const bad = onlyBad.classList.contains('active');
     for (const r of st.rows) {
       const match = !q || (r.s.text || '').toLowerCase().includes(q) || (r.s.trans || '').toLowerCase().includes(q);
-      r.root.hidden = !match || (bad && !r.root.classList.contains('bad'));
+      r.root.hidden = !match || (bad && !r.root.classList.contains('bad') && !r.root.classList.contains('chk'));
     }
   }
   function replaceAll() {
@@ -729,7 +739,7 @@ export async function viewStudio(main, alive, id) {
 
   // ------------------------------------------------ lưu / chạy lại
   async function save(silent) {
-    const payload = st.segs.map((s) => ({ id: s.id, start: s.start, end: s.end, text: s.text || '', trans: s.trans || '', voice: s.voice || '', gender: s.gender || '', speaker: s.speaker || '', rec: s.rec || '' }));
+    const payload = st.segs.map((s) => ({ id: s.id, start: s.start, end: s.end, text: s.text || '', trans: s.trans || '', voice: s.voice || '', gender: s.gender || '', speaker: s.speaker || '', rec: s.rec || '', check: s.check || '' }));
     const sent = st.segs.map((s) => [s.id, snapOf(s)]);      // gõ thêm lúc đang gửi thì câu đó vẫn là chưa lưu
     await api('PUT', `/api/jobs/${enc(id)}/segments`, { segments: payload });
     sent.forEach(([k, v]) => st.snap.set(k, v));

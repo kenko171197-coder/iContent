@@ -51,6 +51,10 @@ export function notesFromLogs(logs, state) {
   if (found) out.push({ kind: 'ok', text: `Đã nghe lại ${found} đoạn nhạc nền to và tìm thêm được lời thoại.` });
   if (miss.length) out.push({ kind: 'warn', text: `Đoạn ${miss.slice(0, 4).join(', ')}${miss.length > 4 ? '…' : ''} có tiếng nhưng chưa nghe ra lời (thường do nhạc nền to). Nên xem lại đoạn này trong Studio.` });
   for (const l of L) {
+    const m = l.match(/^\[asr\] (\d+) câu nên soát lại/);
+    if (m) out.push({ kind: 'warn', text: `${m[1]} câu app chưa chắc chắn, được tô vàng trong Studio. Mở Studio, bấm nút Cần xem để soát nhanh.` });
+  }
+  for (const l of L) {
     let m = l.match(/^\[tts\] CẢNH BÁO: (\d+) câu chưa đọc được/);
     if (m) out.push({ kind: 'warn', text: `${m[1]} câu chưa đọc được (có phụ đề nhưng không có tiếng). Mở Studio, bấm Đọc lại ở các câu đó.` });
     m = l.match(/^\[tts\] CẢNH BÁO: (\d+) câu đọc lệch sau hình hơn 0,6 giây \(câu trước quá dài\): (.+?)(?:\.\s|\s\.\.\.|$)/);

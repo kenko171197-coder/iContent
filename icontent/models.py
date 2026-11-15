@@ -22,6 +22,8 @@ class Segment:
     ocr: str = ""                   # chữ phụ đề in sẵn trên màn hình lúc đó (OCR) — tham chiếu khi dịch
     speaker: str = ""               # người nói: S1, S2... (S1 nói nhiều nhất), xem speakers.py
     rec: str = ""                   # giọng thu tay cho câu này (file trong thư mục rec/ của job), thay cho TTS
+    check: str = ""                 # câu nên soát lại: "ocr" = chỉ có chữ trên màn hình, không nghe ra tiếng;
+                                    # "nghe" = chỉ nghe ra tiếng, màn hình không có phụ đề. Người dùng soát xong thì xóa
 
     @property
     def dur(self) -> float:
