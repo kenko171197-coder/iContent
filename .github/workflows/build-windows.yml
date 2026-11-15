@@ -22,7 +22,7 @@ jobs:
         run: node cloudflare/test-worker.mjs
       - name: Kiểm thử Python
         run: |
-          pip install --quiet numpy pytest pyyaml
+          pip install --quiet numpy scipy pytest pyyaml
           python -m pytest -q tests
       - name: Kiểm tra cú pháp JavaScript
         run: |
