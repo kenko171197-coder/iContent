@@ -142,6 +142,21 @@ def gender_of(f0: float | None, split: float) -> str:
     return ""
 
 
+LOW_GAP = 25.0       # Hz dưới ngưỡng nam/nữ: câu thấp hơn mức này gần như chắc là giọng nam
+LOW_SHARE = 0.10     # tỉ lệ câu thấp như vậy để coi cả người là nam
+
+
+def gender_of_lines(vals: list[float], split: float) -> str:
+    """Nam/nữ của một người theo cao độ TỪNG CÂU, không chỉ trung vị (lấy từ iContent 0.6.3 của wthaibinh, MIT).
+    Phim nhiều cảnh la hét: trung vị đàn ông bị kéo lên 177–195 Hz, thành giọng nữ. Nhưng đàn ông vẫn có những câu
+    nói bình thường, trầm. Ít câu quá thì không kết luận."""
+    vals = [v for v in vals if v]
+    low = sum(1 for v in vals if v < split - LOW_GAP)
+    if len(vals) >= 8 and low >= max(2, LOW_SHARE * len(vals)):
+        return "male"
+    return ""
+
+
 def nearest_gender(f0: float | None, split: float) -> str:
     """Như gender_of nhưng trong vùng lưng chừng thì chọn bên gần hơn, thay vì không trả lời."""
     return gender_of(f0, split) or ("" if not f0 else "male" if f0 < split else "female")

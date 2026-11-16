@@ -103,3 +103,81 @@ def test_cau_chi_nghe_ra_tieng_duoc_danh_dau():
     events = [{"start": 0.1, "end": 1.0, "text": "上来吧"}]
     segs = align.fuse(words, events, ACFG)
     assert [(s.text, s.check) for s in segs] == [("上来吧", ""), ("什么", "nghe")]
+
+
+# ---------- 1.0.2: dữ liệu thật của video 丧彪 (2 lần Whisper nghe khác nhau, cùng một bảng phụ đề OCR)
+import json as _json
+from pathlib import Path as _Path
+
+_DATA = _Path(__file__).parent / "data"
+
+
+def _sangbieu(name):
+    words = [tuple(w) for w in _json.loads((_DATA / f"{name}.json").read_text(encoding="utf-8"))]
+    events = _json.loads((_DATA / "sangbieu_ocr.json").read_text(encoding="utf-8"))["events"]
+    return align.fuse(words, events, ACFG)
+
+
+def _find(segs, part):
+    return next(s for s in segs if part in s.text)
+
+
+def test_chu_dau_cau_bi_dat_sai_gio_duoc_doi_ve():
+    from icontent.asr import fix_stray_words
+    ws = fix_stray_words([(4.83, 5.01, "经,", 0), (5.27, 5.45, "让", 0), (18.41, 18.57, "让", 0), (18.57, 18.75, "我", 0)])
+    assert ws[1][:3] == (18.23, 18.41, "让")
+    keep = [(1.0, 1.3, "好。", 0), (1.4, 1.7, "走", 2), (9.0, 9.3, "来", 0)]      # hết câu / hết đoạn: không dời
+    assert fix_stray_words(keep) == keep
+    alone = [(1.0, 1.3, "好", 2), (4.0, 4.3, "嗯", 0), (9.0, 9.3, "来", 0)]       # đứng riêng giữa khoảng lặng: không dời
+    assert fix_stray_words(alone) == alone
+
+
+def test_video_sangbieu_khong_con_cau_chay_truoc_hinh():
+    for name in ("sangbieu_words", "sangbieu_words_lan1"):
+        segs = _sangbieu(name)
+        assert max(s.end - s.start for s in segs) < 4.0, name          # trước đây có câu dài 14-15 giây
+        assert all(b.start >= a.end - 0.05 for a, b in zip(segs, segs[1:])), name   # không câu nào chồng câu nào
+        assert not [s.text for s in segs if s.text in ("丧彪", "发", "老", "哟")], name   # hết logo và câu cụt 1 chữ
+    segs = _sangbieu("sangbieu_words")
+    assert 17.9 <= _find(segs, "看不见").start <= 18.5      # trước: 0:05
+    assert 107.0 <= _find(segs, "干啥的").start <= 107.5    # trước: 1:32
+    assert 132.0 <= _find(segs, "诈骗").start <= 132.7      # trước: 2:06
+    assert 167.9 <= _find(segs, "给我起来").start <= 168.4  # trước: 2:39
+    assert _find(segs, "老头子").text == "老头子" and _find(segs, "不管了").text.startswith("啥也")
+    s = _find(segs, "什么神经")
+    assert s.text.startswith("发") and s.start <= 3.1       # nghe ra nửa câu: lấy thêm giờ theo phụ đề
+
+
+def test_gom_nguoi_noi_theo_so_nhan_vat():
+    import numpy as np
+    from icontent import speakers
+    rng = np.random.default_rng(7)
+    base = np.eye(6)[:3]                                    # 3 nhân vật thật
+    vecs, truth = [], []
+    for k in range(3):
+        for mood in (0.0, 0.9):                             # mỗi người có 2 kiểu giọng: nói thường và quát
+            for _ in range(6):
+                v = base[k] + mood * np.eye(6)[3 + k] + rng.normal(0, 0.05, 6)
+                vecs.append(v / np.linalg.norm(v)); truth.append(k)
+    vecs, durs = np.stack(vecs), np.full(len(vecs), 1.5)
+    lab = speakers._cluster(vecs, durs, count=3)
+    assert len(set(lab)) == 3
+    assert all(len({lab[i] for i in range(len(truth)) if truth[i] == k}) == 1 for k in range(3))   # một người một nhóm
+
+
+def test_cau_khong_chac_giu_nguoi_cua_cau_ben_canh():
+    import numpy as np
+    from icontent import speakers
+    cent = {0: np.array([1.0, 0, 0]), 1: np.array([0, 1.0, 0])}
+    noise = np.array([0.5, 0.5, 0.70710678])                # không giống hẳn ai (tiếng nhạc)
+    units = [{"start": 0, "end": 2, "cl": 0, "vec": cent[0]},
+             {"start": 2.1, "end": 2.6, "vec": noise},       # câu ngắn không chắc -> theo câu trước
+             {"start": 3.0, "end": 3.5, "vec": np.array([0.05, 0.99, 0.1])},   # giống hẳn người 2 -> người 2
+             {"start": 20.0, "end": 21.0, "vec": None},      # không lấy được dấu giọng, sát câu sau -> theo câu sau
+             {"start": 21.2, "end": 23, "cl": 1, "vec": cent[1]}]
+    speakers._settle(units, cent)
+    assert [u["cl"] for u in units] == [0, 0, 1, 1, 1]
+    units = [{"start": 0, "end": 2, "cl": 0, "vec": cent[0]}, {"start": 2.1, "end": 3.0, "cl": 1, "vec": noise},
+             {"start": 3.2, "end": 5, "cl": 0, "vec": cent[0]}]
+    speakers._smooth(units, cent)                           # bà - ? - bà
+    assert [u["cl"] for u in units] == [0, 0, 0]

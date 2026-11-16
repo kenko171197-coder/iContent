@@ -119,14 +119,14 @@ class Studio:
     # ------------------------------------------------------------------ queue
     def enqueue(self, src: str, options: dict | None, from_stage: str | None, title: str = "", job: str | None = None,
                 targets: list[str] | None = None, clips: list | None = None, kind: str = "video", payload: dict | None = None,
-                profiles: list[str] | None = None, clip_profile: str = "", editor_base: bool = False) -> str:
+                profiles: list[str] | None = None, clip_profile: str = "", editor_base: bool = False, fresh: bool = False) -> str:
         if from_stage and from_stage not in STAGES:
             raise HTTPException(400, f"from_stage phải là một trong {STAGES}")
         it = {"qid": uuid.uuid4().hex[:10], "src": src, "title": title or src, "job": job, "state": "queued",
               "stage": None, "progress": None, "message": "Đang chờ ...", "error": None, "logs": [],
               "created": time.time(), "started": None, "finished": None, "from_stage": from_stage,
               "output": None, "options": options or {}, "targets": targets or [], "clips": clips or [], "kind": kind, "payload": payload,
-              "profiles": profiles or [], "clip_profile": clip_profile, "editor_base": editor_base}
+              "profiles": profiles or [], "clip_profile": clip_profile, "editor_base": editor_base, "fresh": fresh}
         with self.lock:
             self.items.insert(0, it)
             del self.items[150:]
@@ -188,7 +188,7 @@ class Studio:
                     out = None
                 else:
                     out = run_job(it["src"], self.cfg(), it["from_stage"], it["options"] or None, it.get("targets") or None, it.get("clips") or None,
-                                  it.get("profiles") or None, it.get("clip_profile") or "", bool(it.get("editor_base")))
+                                  it.get("profiles") or None, it.get("clip_profile") or "", bool(it.get("editor_base")), fresh=bool(it.get("fresh")))
                 with self.lock:
                     it.update(state="done", output=str(Path(out).resolve()) if out else None, progress=1.0, stage="done",
                               message="Hoàn tất")
@@ -848,7 +848,7 @@ def create_app(config_path: str | None = None) -> FastAPI:
         if not isinstance(opts, dict):
             raise HTTPException(400, "options phải là object")
         titles = body.get("titles") if isinstance(body.get("titles"), dict) else {}
-        return {"qids": [st.enqueue(s, opts, body.get("from_stage"), title=str(titles.get(s) or "")) for s in srcs]}
+        return {"qids": [st.enqueue(s, opts, body.get("from_stage"), title=str(titles.get(s) or ""), fresh=not body.get("from_stage")) for s in srcs]}
 
     @app.post("/api/queue/{qid}/cancel")
     def cancel(qid: str):
@@ -1136,9 +1136,9 @@ def create_app(config_path: str | None = None) -> FastAPI:
         if wav is None:
             raise HTTPException(400, "Không thấy file âm thanh của video")
         old_labels = {s.id: s.speaker for s in segs}
-        segs, info = speakers.diarize(segs, None, wav, split=False)
-        speakers.save(p, speakers.carry_over(info, segs, old_labels, speakers.load(p)))
         eff = with_overrides(st.cfg(), job_options(p))
+        segs, info = speakers.diarize(segs, None, wav, split=False, count=int(eff.tts.get("speakers", 0) or 0))
+        speakers.save(p, speakers.carry_over(info, segs, old_labels, speakers.load(p)))
         hint = (load_json(p / "context.json") or {}).get("narrator_gender", "")
         speakers.assign_voices(p, segs, wav, eff, hint=hint)     # hiện ngay nam/nữ và giọng, không đợi cập nhật video
         info = speakers.load(p)

@@ -55,6 +55,11 @@ export const FIELDS = {
       ['fixed', 'Một giọng cố định'], ['clone', 'Bắt chước giọng gốc (thử nghiệm)'],
     ],
   },
+  'tts.speakers': {
+    label: 'Số nhân vật có lời', type: 'range', min: 0, max: 8, step: 1, fallback: 0, fmt: (x) => (x > 0 ? x + ' người' : 'Tự đoán'),
+    showIf: (v) => dubOn(v) && (getPath(v, 'tts.voice_mode') || 'auto') === 'auto',
+    hint: 'Biết video có mấy nhân vật thì chọn đúng số đó (tính cả con vật biết nói): mỗi nhân vật một giọng, không bị đổi giọng giữa chừng. Để Tự đoán thì app tự nghe',
+  },
   'tts.vieneu_voice': { label: 'Giọng', type: 'voice', engine: 'vieneu', showIf: (v) => dubOn(v) && fixed(v) && effE(v) === 'vieneu' },
   'tts.vox_voice': { label: 'Giọng', type: 'voice', engine: 'vox', showIf: (v) => dubOn(v) && fixed(v) && effE(v) === 'vox' },
   'tts.voice': { label: 'Giọng', type: 'voice', engine: 'edge', showIf: (v) => dubOn(v) && fixed(v) && effE(v) === 'edge' },
@@ -119,7 +124,7 @@ export const FIELDS = {
 
 export const GROUPS = {
   translate: { title: 'Dịch', icon: 'globe', paths: ['translate.target_lang', 'translate.provider', 'translate.model', 'translate.analyze', 'translate.mcp_wait', 'translate.style'] },
-  voice: { title: 'Giọng đọc', icon: 'mic', paths: ['tts.enabled', 'tts.engine', 'tts.voice_mode', 'tts.vieneu_voice', 'tts.vox_voice', 'tts.voice', 'tts.male_voice', 'tts.female_voice', 'tts.max_speed', 'tts.pronounce'] },
+  voice: { title: 'Giọng đọc', icon: 'mic', paths: ['tts.enabled', 'tts.engine', 'tts.voice_mode', 'tts.speakers', 'tts.vieneu_voice', 'tts.vox_voice', 'tts.voice', 'tts.male_voice', 'tts.female_voice', 'tts.max_speed', 'tts.pronounce'] },
   subs: { title: 'Phụ đề', icon: 'sub', paths: ['edit.sub_style', 'edit.burn_subs', 'edit.font', 'edit.font_size_ratio', 'edit.primary_color', 'edit.highlight_color', 'edit.uppercase'] },
   picture: { title: 'Hình ảnh', icon: 'image', paths: ['edit.blur_hardsub', 'edit.hardsub_mode', 'edit.aspect', 'edit.flip', 'edit.zoom', 'edit.speed', 'edit.saturation', 'edit.watermark_text', 'edit.logo', 'edit.logo_pos', 'edit.logo_scale', 'edit.encoder'] },
   sound: { title: 'Âm thanh', icon: 'wave', paths: ['audio.duck', 'audio.original_volume', 'audio.separate', 'audio.music', 'audio.music_volume'] },
