@@ -35,7 +35,7 @@ export const FIELDS = {
   },
   'translate.model': { label: 'Model', type: 'text', placeholder: 'claude-opus-5-5', showIf: (v) => ['claude', 'openai'].includes(prov(v)) },
   'translate.effort': { label: 'Mức suy nghĩ (Claude)', type: 'seg', fallback: 'medium', options: [['low', 'Nhanh'], ['medium', 'Cân bằng'], ['high', 'Kỹ']], showIf: (v) => prov(v) === 'claude' },
-  'translate.analyze': { label: 'Phân tích video trước khi dịch', type: 'toggle', fallback: true, hint: 'AI đọc cả video một lượt: tóm tắt, xưng hô, tên riêng, gợi ý tiêu đề và hashtag. Dịch hay hơn, thêm một việc cho AI', showIf: (v) => ['claude', 'openai', 'mcp'].includes(prov(v)) },
+  'translate.analyze': { label: 'Phân tích video trước khi dịch', type: 'toggle', fallback: true, hint: 'AI đọc cả video một lượt: tóm tắt, xưng hô, tên riêng, gợi ý tiêu đề và hashtag, và chia nhân vật để mỗi nhân vật lồng đúng một giọng. Dịch và chia giọng chuẩn hơn, thêm một việc cho AI', showIf: (v) => ['claude', 'openai', 'mcp'].includes(prov(v)) },
   'translate.mcp_wait': { label: 'Chờ AI qua MCP nhận việc', type: 'range', min: 60, max: 900, step: 30, fallback: 300, fmt: (x) => (x % 60 ? (x / 60).toFixed(1) : x / 60) + ' phút', showIf: (v) => prov(v) === 'mcp', hint: 'Quá thời gian này mà chưa AI nào nhận việc thì tự dịch bằng dịch offline hoặc Google' },
   'translate.style': { label: 'Văn phong', type: 'text', placeholder: 'Tự nhiên, khẩu ngữ, hợp video ngắn…', showIf: (v) => prov(v) !== 'none' },
   'translate.glossary': { label: 'Thuật ngữ: luôn dịch đúng như sau', type: 'dict', keyPh: '中文', valPh: 'Bản dịch', addLabel: 'Thêm thuật ngữ', showIf: (v) => prov(v) !== 'none' },
@@ -58,7 +58,7 @@ export const FIELDS = {
   'tts.speakers': {
     label: 'Số nhân vật có lời', type: 'range', min: 0, max: 8, step: 1, fallback: 0, fmt: (x) => (x > 0 ? x + ' người' : 'Tự đoán'),
     showIf: (v) => dubOn(v) && (getPath(v, 'tts.voice_mode') || 'auto') === 'auto',
-    hint: 'Biết video có mấy nhân vật thì chọn đúng số đó (tính cả con vật biết nói): mỗi nhân vật một giọng, không bị đổi giọng giữa chừng. Để Tự đoán thì app tự nghe',
+    hint: 'Biết video có mấy nhân vật thì chọn đúng số đó (tính cả con vật biết nói), app và AI sẽ chia đúng chừng ấy nhân vật. Để Tự đoán thì app tự đếm',
   },
   'tts.vieneu_voice': { label: 'Giọng', type: 'voice', engine: 'vieneu', showIf: (v) => dubOn(v) && fixed(v) && effE(v) === 'vieneu' },
   'tts.vox_voice': { label: 'Giọng', type: 'voice', engine: 'vox', showIf: (v) => dubOn(v) && fixed(v) && effE(v) === 'vox' },

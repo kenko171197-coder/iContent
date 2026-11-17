@@ -394,6 +394,8 @@ def assign_voices(job: Path, segs: list[Segment], wav: Path, cfg, hint: str = ""
     if any(not p.get("gender") for p in people):
         pitch = analyze_pitch(wav, segs)
         for k, p in enumerate(people):
+            if p.get("gender") and (load(job) or {}).get("source") == "ai":
+                continue        # nam/nữ do AI đọc kịch bản đã nói rõ: không đoán lại theo cao độ
             vals = [pitch["lines"].get(s.id) for s in segs if s.speaker == p["id"]]
             vals = [v for v in vals if v]
             p["f0"] = round(float(np.median(vals)), 1) if vals else None
@@ -416,6 +418,8 @@ def assign_voices(job: Path, segs: list[Segment], wav: Path, cfg, hint: str = ""
     for s in segs:
         if s.speaker in by_id:
             s.gender = by_id[s.speaker]["gender"]
+    if (load(job) or {}).get("source"):
+        info["source"] = load(job)["source"]
     if info != load(job):        # ghi lại file giống hệt sẽ làm Studio tưởng video có thay đổi mới
         save(job, info)
     who = ", ".join(f"{p['name']} ({'nữ' if p['gender'] == 'female' else 'nam'}): {p['voice'] or p['auto_voice']}" for p in people)
@@ -425,3 +429,44 @@ def assign_voices(job: Path, segs: list[Segment], wav: Path, cfg, hint: str = ""
 
 def voice_map(job: Path) -> dict[str, str]:
     return {p["id"]: p.get("voice") or p.get("auto_voice") or "" for p in (load(job) or {}).get("speakers", [])}
+
+
+def apply_cast(segs: list[Segment], context: dict | None, old: dict | None = None) -> dict | None:
+    """Người nói theo AI đọc kịch bản (context["cast"], context["line_speakers"] của bước phân tích).
+    Gán s.speaker cho mọi câu, trả về speakers.json mới: mỗi nhân vật một mã, có tên và nam/nữ do AI nói.
+    Kết quả không dùng được (thiếu nhân vật, AI bỏ sót quá nửa số câu) -> None, giữ kết quả nghe giọng."""
+    cast = [c for c in (context or {}).get("cast") or [] if str(c.get("name") or "").strip()]
+    if not cast or not segs:
+        return None
+    names = {}
+    for c in cast:
+        names.setdefault(str(c["name"]).strip().casefold(), c)
+    who: dict[int, str] = {}
+    for x in (context or {}).get("line_speakers") or []:
+        n = str(x.get("who") or "").strip().casefold()
+        if n in names:
+            who[int(x.get("id", -1))] = n
+    if len(who) * 2 < len(segs):
+        return None
+    # câu AI bỏ sót: theo câu gần nhất có nhân vật (ưu tiên câu trước)
+    seq = [who.get(s.id) for s in segs]
+    for i, n in enumerate(seq):
+        if n is None:
+            seq[i] = next((seq[j] for j in range(i - 1, -1, -1) if seq[j]), None) or next(x for x in seq if x)
+    secs: dict[str, float] = {}
+    for s, n in zip(segs, seq):
+        secs[n] = secs.get(n, 0.0) + s.dur
+    ids = {n: f"S{i}" for i, n in enumerate(sorted(secs, key=lambda n: -secs[n]), 1)}
+    for s, n in zip(segs, seq):
+        s.speaker = ids[n]
+    known = {str(p.get("name") or "").casefold(): p for p in (old or {}).get("speakers", [])}
+    info = _summary(segs)
+    for p in info["speakers"]:
+        n = next(k for k, v in ids.items() if v == p["id"])
+        p["name"] = str(names[n]["name"]).strip()
+        p["gender"] = names[n].get("gender") if names[n].get("gender") in ("male", "female") else ""
+        p["voice"] = known.get(n, {}).get("voice", "")      # giọng anh đã đặt tay cho nhân vật cùng tên thì giữ
+    info["source"] = "ai"
+    for s in segs:
+        s.gender = next(p["gender"] for p in info["speakers"] if p["id"] == s.speaker) or s.gender
+    return info
