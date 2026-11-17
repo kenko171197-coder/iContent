@@ -3,6 +3,11 @@ from __future__ import annotations
 
 # hiện một lần sau khi cập nhật (Trang chủ, js/onboard.js): mới nhất trước, viết cho người dùng, không phải cho lập trình viên
 CHANGES = [
+    {"version": "1.1.0", "date": "11/2026", "items": [
+        "Chia nhân vật bằng AI đọc kịch bản: khi bật Phân tích video trước khi dịch, AI đọc cả lời thoại và cho biết từng câu là của nhân vật nào (Bà, bé, ông chủ quán...). Mỗi nhân vật có tên thật và đúng một giọng xuyên suốt video, không còn đổi giọng giữa chừng hay gộp nhầm hai nhân vật giọng giống nhau.",
+        "Nghe giọng gốc vẫn dùng làm gợi ý phụ, và vẫn là cách chia khi dịch bằng Google hoặc dịch offline.",
+        "Sửa tay: trong Studio, ô người nói ở mỗi câu hiện tên nhân vật, chọn lại là giọng đổi theo.",
+    ]},
     {"version": "1.0.2", "date": "11/2026", "items": [
         "Hết lồng tiếng và phụ đề chạy trước hình: chữ đầu câu bị nghe sai giờ (sớm cả chục giây) được đưa về đúng chỗ.",
         "Hết câu cụt một hai chữ vô nghĩa: mẩu lời lẻ được nhập vào đúng câu, logo trên video không còn cắt ngang câu.",

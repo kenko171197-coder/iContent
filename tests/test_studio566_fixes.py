@@ -181,3 +181,65 @@ def test_cau_khong_chac_giu_nguoi_cua_cau_ben_canh():
              {"start": 3.2, "end": 5, "cl": 0, "vec": cent[0]}]
     speakers._smooth(units, cent)                           # bà - ? - bà
     assert [u["cl"] for u in units] == [0, 0, 0]
+
+
+# ---------- 1.1.0: AI đọc kịch bản để chia nhân vật (video 丧彪: nghe giọng ra 8 "người", gộp bà với bé)
+def _segs_102():
+    from icontent.models import Segment
+    raw = _json.loads((_DATA / "sangbieu_segments_102.json").read_text(encoding="utf-8"))
+    return [Segment(**{k: v for k, v in d.items() if k in Segment.__dataclass_fields__}) for d in raw]
+
+
+def test_ai_chia_nhan_vat_moi_nhan_vat_mot_giong():
+    from icontent import speakers
+    segs = _segs_102()
+    ans = _json.loads((_DATA / "sangbieu_cast_ai.json").read_text(encoding="utf-8"))
+    info = speakers.apply_cast(segs, ans, {"speakers": [{"id": "S9", "name": "Bà", "voice": "Mai Anh"}]})
+    people = {p["name"]: p for p in info["speakers"]}
+    assert set(people) == {"Bà", "Mễ Lạp", "Lão Hứa", "Tang Bưu"} and info["source"] == "ai"
+    assert people["Bà"]["voice"] == "Mai Anh"                    # giọng đặt tay cho nhân vật cùng tên được giữ
+    by = {s.id: people_name for s in segs for people_name, p in people.items() if p["id"] == s.speaker}
+    assert by[1] == by[5] == by[8] == by[61] == "Bà"              # bà nói với ảnh ông (0:22) không còn là "đàn ông"
+    assert by[4] == by[13] == by[50] == "Mễ Lạp"                 # bé gọi bà: không còn chung giọng với bà
+    assert by[40] == by[47] == by[56] == "Lão Hứa"                # Lão Hứa không còn bị chia 3, không còn giọng nữ
+    assert all(s.gender == "male" for s in segs if by[s.id] == "Lão Hứa")
+    assert all(s.gender == "female" for s in segs if by[s.id] == "Bà")
+
+
+def test_ai_chia_nhan_vat_khong_dung_khi_thieu():
+    from icontent import speakers
+    segs = _segs_102()
+    before = [s.speaker for s in segs]
+    half = {"cast": [{"name": "Bà", "gender": "female"}], "line_speakers": [{"id": 1, "who": "Bà"}, {"id": 2, "who": "Ai đó"}]}
+    assert speakers.apply_cast(segs, half) is None and [s.speaker for s in segs] == before
+    assert speakers.apply_cast(segs, {"summary": "x"}) is None
+
+
+def test_phan_tich_hoi_ai_nguoi_noi_tung_cau():
+    from types import SimpleNamespace
+    from icontent import translate
+    seen = {}
+
+    class Fake:
+        deadline = None
+
+        def json_call(self, system, user, schema, max_tokens=0, title=""):
+            seen.update(system=system, user=user, schema=schema)
+            return {"genre": "hài", "summary": "x"}
+
+    cfg = SimpleNamespace(translate=SimpleNamespace(provider="claude", analyze=True, target_lang="vi"))
+    old = translate.make_translator
+    translate.make_translator = lambda tc, *a: Fake()
+    try:
+        translate.analyze_video(_segs_102(), cfg, {"title": "t", "duration": 220}, cast=True, cast_count=5)
+    finally:
+        translate.make_translator = old
+    assert {"cast", "line_speakers"} <= set(seen["schema"]["required"])
+    assert "exactly 5 speaking characters" in seen["system"] and "{" not in seen["system"].split("cast:")[0][-3:]
+    assert '"v": "S1"' in seen["user"]                            # kết quả nghe giọng gửi kèm làm gợi ý phụ
+    translate.make_translator = lambda tc, *a: Fake()
+    try:
+        translate.analyze_video(_segs_102(), cfg, {"title": "t"}, cast=False)
+    finally:
+        translate.make_translator = old
+    assert "cast" not in seen["schema"]["required"] and '"v"' not in seen["user"]

@@ -105,6 +105,36 @@ ANALYZE_SCHEMA = {
     "additionalProperties": False,
 }
 
+CAST_SCHEMA = {
+    "cast": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "gender": {"type": "string", "enum": ["male", "female"]},
+            },
+            "required": ["name", "gender"],
+            "additionalProperties": False,
+        },
+    },
+    "line_speakers": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {"id": {"type": "integer"}, "who": {"type": "string"}},
+            "required": ["id", "who"],
+            "additionalProperties": False,
+        },
+    },
+}
+
+CAST_RULES = """
+Also work out WHO SAYS EACH LINE. A dub voice is assigned per character, so one character must keep one voice through the whole video:
+- cast: every character that speaks, as {{"name", "gender"}}. name is short, in {lang}, the way viewers would call them (Bà, Cô bé, Ông chủ quán, Chú chó, Người dẫn chuyện...). gender is the voice gender the dub should use (a talking dog or toy: pick what fits the character).{count_rule}
+- line_speakers: one entry {{"id", "who"}} for EVERY line id of the transcript, who = a name from cast.
+Decide mainly from the dialogue itself: who is addressed (a line starting with 奶奶 / "grandma" is said TO grandma, so not by her), who answers whom, self-reference (我奶奶, 我老婆), turn-taking, and who is on scene. Lines may carry "v": a voice group guessed from the audio. It is a weak hint only: in cartoons and AI-dubbed videos different characters often sound alike and one character shouting is often put in another group. When the dialogue makes the speaker clear, follow the dialogue."""
+
 ANALYZE_SYSTEM = """You prepare Chinese short videos for a {lang} voice-over dub that will be posted on TikTok, Reels and YouTube Shorts for {lang} viewers.
 
 You receive the video title and its full transcript. The transcript comes from speech recognition and can contain misheard words; when a line has a "screen" field, that is the subtitle burned into the video at that moment, read by OCR, and it is usually more accurate for names and numbers.
@@ -614,14 +644,28 @@ def _item(s: Segment, **kw) -> dict:
 ANALYZE_BUDGET = 75      # giây. Thường mất 5-15 giây; quá hạn thì dịch luôn, không có bảng xưng hô
 
 
-def analyze_video(segs: list[Segment], cfg, meta: dict) -> dict | None:
-    """Đọc toàn bộ lời thoại một lượt: tóm tắt, người nói, xưng hô, bảng tên riêng, bộ tiêu đề/caption/hashtag."""
+CAST_MAX_LINES = 500     # video quá nhiều câu: không bắt AI liệt kê người nói từng câu (câu trả lời quá dài)
+
+
+def analyze_video(segs: list[Segment], cfg, meta: dict, cast: bool = False, cast_count: int = 0) -> dict | None:
+    """Đọc toàn bộ lời thoại một lượt: tóm tắt, người nói, xưng hô, bảng tên riêng, bộ tiêu đề/caption/hashtag.
+    cast=True: AI còn chia nhân vật và cho biết từng câu là của ai (lồng mỗi nhân vật một giọng).
+    cast_count: số nhân vật người dùng nhập (0 = để AI tự đếm)."""
     tc = cfg.translate
     if tc.provider not in ("claude", "openai", "mcp") or not tc.analyze:
         return None
     tr = make_translator(tc)
     lang = LANG_NAMES.get(tc.target_lang, tc.target_lang)
-    lines = [_item(s, t=round(s.start, 1)) for s in segs]
+    cast = cast and 0 < len(segs) <= CAST_MAX_LINES
+    lines = [_item(s, t=round(s.start, 1), **({"v": s.speaker} if cast and s.speaker else {})) for s in segs]
+    schema, system = ANALYZE_SCHEMA, ANALYZE_SYSTEM
+    if cast:
+        schema = dict(ANALYZE_SCHEMA, properties=dict(ANALYZE_SCHEMA["properties"], **CAST_SCHEMA),
+                      required=ANALYZE_SCHEMA["required"] + list(CAST_SCHEMA))
+        count_rule = (f" The video has exactly {cast_count} speaking characters (the user counted them): return exactly "
+                      f"{cast_count} cast entries.") if cast_count > 0 else ""
+        system = ANALYZE_SYSTEM.replace("\nRespond with JSON only.",
+                                        CAST_RULES.replace("{count_rule}", count_rule) + "\nRespond with JSON only.")
     user = (f"Video title: {meta.get('title', '')}\n"
             + (f"Description: {meta.get('description', '')[:500]}\n" if meta.get("description") else "")
             + f"Duration: {meta.get('duration', 0):.0f}s\n\nTranscript:\n" + json.dumps(lines, ensure_ascii=False))
@@ -629,9 +673,10 @@ def analyze_video(segs: list[Segment], cfg, meta: dict) -> dict | None:
     if tc.provider != "mcp":      # qua MCP: người dùng phải mở AI và nhắn, cho chờ đủ translate.mcp_wait
         tr.deadline = time.time() + ANALYZE_BUDGET      # bước phụ: AI quá tải thì bỏ qua sau ít phút, không bắt khách chờ
     if tc.provider == "mcp":
-        data = tr.json_call(ANALYZE_SYSTEM.format(lang=lang), user, ANALYZE_SCHEMA, max_tokens=8000, title="Phân tích video: xưng hô, tiêu đề, hashtag")
+        data = tr.json_call(system.format(lang=lang), user, schema, max_tokens=16000 if cast else 8000,
+                            title="Phân tích video: nhân vật, xưng hô, tiêu đề, hashtag")
     else:
-        data = tr.json_call(ANALYZE_SYSTEM.format(lang=lang), user, ANALYZE_SCHEMA, max_tokens=8000)
+        data = tr.json_call(system.format(lang=lang), user, schema, max_tokens=16000 if cast else 8000)
     log("analyze", f"{data.get('genre', '')}: {data.get('summary', '')[:120]}")
     return data
 

@@ -472,10 +472,23 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
                 ("translate" in force or context is None):
             stage("analyze")
             from .translate import analyze_video
+            # AI đọc kịch bản để chia nhân vật: chỉ khi các câu còn mới (chưa dịch), không đè người nói anh đã sửa tay
+            want_cast = use_speakers and not any(s.trans.strip() for s in segs)
             try:
-                context = analyze_video(segs, cfg, meta)
+                context = analyze_video(segs, cfg, meta, cast=want_cast, cast_count=int(cfg.tts.get("speakers", 0) or 0))
                 if context:
                     ctx_path.write_text(json.dumps(context, ensure_ascii=False, indent=1), encoding="utf-8")
+                if context and want_cast:
+                    from . import speakers
+                    info = speakers.apply_cast(segs, context, speakers.load(job))
+                    if info:
+                        speakers.save(job, info)
+                        (job / "voice.json").unlink(missing_ok=True)
+                        save_segments(seg_path, segs)
+                        log("speakers", "AI đọc kịch bản, chia " + str(len(info["speakers"])) + " nhân vật: "
+                            + ", ".join(p["name"] for p in info["speakers"]))
+                    elif context.get("cast"):
+                        log("speakers", "AI chưa chia đủ người nói từng câu, giữ kết quả nghe giọng")
             except Cancelled:
                 raise
             except Exception as e:  # không chặn cả video vì bước phụ
