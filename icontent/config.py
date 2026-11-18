@@ -46,7 +46,10 @@ DEFAULTS: dict[str, Any] = {
         "glossary": {},               # {"小米": "Xiaomi", ...}
         "shorten_retry": True,        # câu nào đọc không kịp -> nhờ LLM rút gọn rồi đọc lại
         "analyze": True,              # đọc cả video trước khi dịch: tóm tắt, xưng hô, tên riêng, tiêu đề/hashtag
-        "mcp_wait": 300,
+        "mcp_wait": 300,              # giây chờ AI nhận việc, tính từ lúc người dùng bấm Bắt đầu
+        "mcp_confirm": True,          # trước khi dùng AI qua MCP: hiện thông báo, chờ người dùng bấm Bắt đầu
+        "review": True,               # dịch xong, AI đọc lại cả bản dịch một lượt: sửa xưng hô lệch, câu vô nghĩa
+        "characters": "",             # nhân vật có lời do người dùng nhập, VD "Bà (nữ), Mễ Lạp (bé gái), Tang Bưu (chó, giọng nam)"
         "mcp_server": "",             # địa chỉ cổng MCP trung tâm (trống = địa chỉ gắn sẵn trong bản cài)              # provider mcp: chờ AI nhận việc chừng này giây rồi tự chuyển sang cách dịch dự phòng
     },
     "tts": {

@@ -1874,3 +1874,10 @@ h1, h2, h3, h4 { letter-spacing: -.012em; }
 .ln-check:hover { background: color-mix(in srgb, var(--warn) 22%, transparent); }
 .ln-check[hidden] { display: none; }
 .ln.chk { box-shadow: inset 3px 0 0 var(--warn); }
+
+/* 1.1.1: chờ người dùng bấm Bắt đầu trước khi dùng AI qua MCP */
+.mcp-gate { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 900; width: min(560px, calc(100vw - 32px));
+  background: var(--s2); border: 1px solid var(--amber); border-radius: 12px; padding: 16px 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
+.mcp-gate-t { font-weight: 700; font-size: 15px; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mcp-gate-d { color: var(--tx2); font-size: 13.5px; line-height: 1.45; margin-bottom: 12px; }
+.mcp-gate-a { display: flex; gap: 8px; flex-wrap: wrap; }

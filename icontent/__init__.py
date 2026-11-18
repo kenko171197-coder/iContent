@@ -2,7 +2,7 @@
 
 import os as _os
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 # Bộ đệm mô hình Hugging Face lưu file thật, không dùng symlink. Máy bật Developer Mode (hoặc chạy quyền admin) mặc định có
 # symlink, ONNX Runtime 1.2x+ thì từ chối file .data nằm ngoài thư mục của file .onnx sau khi giải symlink, nên giọng VieNeu

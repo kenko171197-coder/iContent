@@ -36,7 +36,13 @@ export const FIELDS = {
   'translate.model': { label: 'Model', type: 'text', placeholder: 'claude-opus-5-5', showIf: (v) => ['claude', 'openai'].includes(prov(v)) },
   'translate.effort': { label: 'Mức suy nghĩ (Claude)', type: 'seg', fallback: 'medium', options: [['low', 'Nhanh'], ['medium', 'Cân bằng'], ['high', 'Kỹ']], showIf: (v) => prov(v) === 'claude' },
   'translate.analyze': { label: 'Phân tích video trước khi dịch', type: 'toggle', fallback: true, hint: 'AI đọc cả video một lượt: tóm tắt, xưng hô, tên riêng, gợi ý tiêu đề và hashtag, và chia nhân vật để mỗi nhân vật lồng đúng một giọng. Dịch và chia giọng chuẩn hơn, thêm một việc cho AI', showIf: (v) => ['claude', 'openai', 'mcp'].includes(prov(v)) },
-  'translate.mcp_wait': { label: 'Chờ AI qua MCP nhận việc', type: 'range', min: 60, max: 900, step: 30, fallback: 300, fmt: (x) => (x % 60 ? (x / 60).toFixed(1) : x / 60) + ' phút', showIf: (v) => prov(v) === 'mcp', hint: 'Quá thời gian này mà chưa AI nào nhận việc thì tự dịch bằng dịch offline hoặc Google' },
+  'translate.mcp_wait': { label: 'Chờ AI qua MCP nhận việc', type: 'range', min: 60, max: 900, step: 30, fallback: 300, fmt: (x) => (x % 60 ? (x / 60).toFixed(1) : x / 60) + ' phút', showIf: (v) => prov(v) === 'mcp', hint: 'Tính từ lúc bạn bấm Bắt đầu trên thông báo của app. Quá thời gian này mà chưa AI nào nhận việc thì tự dịch bằng dịch offline hoặc Google' },
+  'translate.characters': {
+    label: 'Nhân vật có lời', type: 'text', placeholder: 'VD: Bà (nữ), Mễ Lạp (bé gái), Tang Bưu (chó, giọng nam), Lão Hứa (nam)',
+    showIf: (v) => ['claude', 'openai', 'mcp'].includes(prov(v)) && getPath(v, 'translate.analyze') !== false,
+    hint: 'Không bắt buộc. Ghi tên và là ai (nam, nữ, bé, con vật...): AI biết ai là ai nên chia câu cho từng nhân vật và xưng hô đúng hơn hẳn. Mỗi video một danh sách, chọn ở đây khi thêm video',
+  },
+  'translate.review': { label: 'Soát lại bản dịch', type: 'toggle', fallback: true, showIf: (v) => ['claude', 'openai', 'mcp'].includes(prov(v)), hint: 'Dịch xong, AI đọc lại cả bản dịch một lượt để sửa câu sai nghĩa, xưng hô lệch, câu cụt. Dịch hay hơn, thêm một việc cho AI (khoảng 1-2 phút)' },
   'translate.style': { label: 'Văn phong', type: 'text', placeholder: 'Tự nhiên, khẩu ngữ, hợp video ngắn…', showIf: (v) => prov(v) !== 'none' },
   'translate.glossary': { label: 'Thuật ngữ: luôn dịch đúng như sau', type: 'dict', keyPh: '中文', valPh: 'Bản dịch', addLabel: 'Thêm thuật ngữ', showIf: (v) => prov(v) !== 'none' },
 
@@ -123,7 +129,7 @@ export const FIELDS = {
 };
 
 export const GROUPS = {
-  translate: { title: 'Dịch', icon: 'globe', paths: ['translate.target_lang', 'translate.provider', 'translate.model', 'translate.analyze', 'translate.mcp_wait', 'translate.style'] },
+  translate: { title: 'Dịch', icon: 'globe', paths: ['translate.target_lang', 'translate.provider', 'translate.model', 'translate.analyze', 'translate.characters', 'translate.review', 'translate.mcp_wait', 'translate.style'] },
   voice: { title: 'Giọng đọc', icon: 'mic', paths: ['tts.enabled', 'tts.engine', 'tts.voice_mode', 'tts.speakers', 'tts.vieneu_voice', 'tts.vox_voice', 'tts.voice', 'tts.male_voice', 'tts.female_voice', 'tts.max_speed', 'tts.pronounce'] },
   subs: { title: 'Phụ đề', icon: 'sub', paths: ['edit.sub_style', 'edit.burn_subs', 'edit.font', 'edit.font_size_ratio', 'edit.primary_color', 'edit.highlight_color', 'edit.uppercase'] },
   picture: { title: 'Hình ảnh', icon: 'image', paths: ['edit.blur_hardsub', 'edit.hardsub_mode', 'edit.aspect', 'edit.flip', 'edit.zoom', 'edit.speed', 'edit.saturation', 'edit.watermark_text', 'edit.logo', 'edit.logo_pos', 'edit.logo_scale', 'edit.encoder'] },

@@ -187,6 +187,8 @@ class Studio:
                     prefetch(self.cfg(), **(it.get("payload") or {}))
                     out = None
                 else:
+                    from .. import mcpcloud
+                    mcpcloud.gate_reset(str(it.get("title") or Path(str(it["src"])).name)[:80])
                     out = run_job(it["src"], self.cfg(), it["from_stage"], it["options"] or None, it.get("targets") or None, it.get("clips") or None,
                                   it.get("profiles") or None, it.get("clip_profile") or "", bool(it.get("editor_base")), fresh=bool(it.get("fresh")))
                 with self.lock:
@@ -474,6 +476,21 @@ def create_app(config_path: str | None = None) -> FastAPI:
             except Exception as e:      # noqa: BLE001
                 out["error"] = str(e)[:200]
         return out
+
+    @app.get("/api/mcp/gate")
+    def mcp_gate():
+        from .. import mcpcloud
+        g = mcpcloud.gate_state()
+        busy = any(x.get("state") == "running" for x in st.items)
+        if not busy and g["state"] != "idle":
+            mcpcloud.gate_reset()
+            g = mcpcloud.gate_state()
+        return g
+
+    @app.post("/api/mcp/gate")
+    def mcp_gate_answer(body: dict = Body(default={})):
+        from .. import mcpcloud
+        return {"ok": mcpcloud.gate_answer(bool(body.get("go")))}
 
     @app.post("/api/mcp/connect")
     def mcp_connect():
