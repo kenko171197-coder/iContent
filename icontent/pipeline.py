@@ -24,7 +24,7 @@ from .download import fetch
 from .models import Segment, load_segments, read_srt, save_segments, write_srt
 from .util import Cancelled, check_cancel, copy_replace, emit, ffmpeg, log, safe_name, short_hash, stage
 
-SEG_VERSION = "2"      # tăng khi đổi cách ghép câu (align/asr): video cũ được thêm lại từ đầu sẽ ghép lại
+SEG_VERSION = "3"      # tăng khi đổi cách ghép câu (align/asr): video cũ được thêm lại từ đầu sẽ ghép lại
 STAGES = ["download", "audio", "separate", "hardsub", "asr", "translate", "tts", "render"]
 
 
