@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import threading
 import time
 
 from .models import Segment
@@ -159,9 +160,16 @@ def build_system_prompt(tcfg, context: dict | None = None) -> str:
         "Each request gives a JSON list of subtitle lines with an id, the Chinese text and a max_len.",
         "Return exactly one translation per id, in the same order. Never merge, split, drop or add lines: "
         "the dub is placed on the video timeline line by line.",
-        f"A TTS voice reads each line inside the original line's time slot, so keep each translation at or "
-        f"under max_len {unit}. When the literal meaning does not fit, keep the core meaning and say it the "
-        "short, natural way a native narrator would. Drop filler (嗯, 啊, 那个, 就是, 然后) rather than translate it.",
+        f"A TTS voice reads each line inside the original line's time slot. max_len is the comfortable length in {unit}; "
+        f"you may go up to about 25% over it when that is what it takes to say a complete, natural sentence. Never "
+        "cut a line down to a fragment that no longer makes sense on its own (\"Ôi.\", \"Quá không biết lý.\"). "
+        "Drop filler (嗯, 啊, 那个, 就是, 然后) rather than translate it.",
+        "Translate the MEANING in context, the way people really talk in this scene, never word for word. Read idioms "
+        "and set phrases as what they mean (喝西北风 = nhịn đói, not 'uống gió Tây Bắc'). In a scolding or while "
+        "hitting someone, 我让你X! is sarcastic 'cho mày X này!' (我让你贴照片! → Cho mày dán ảnh này!), not 'tao bảo mày X'. "
+        "Interjections and laughter become natural spoken equivalents, never letters copied by sound.",
+        "Lines may carry 'who': the character saying the line. Use it to pick the right forms of address for that "
+        "character towards the person they are talking to, and keep them consistent.",
         "The Chinese comes from speech recognition and may contain misheard words; infer the intended meaning "
         "from the surrounding lines and the video title.",
         "Some lines also carry 'screen': the subtitle burned into the video at that moment, read by OCR. It is "
@@ -206,12 +214,14 @@ def build_system_prompt(tcfg, context: dict | None = None) -> str:
     return "\n".join(rules)
 
 
-def _user_msg(items: list[dict], title: str, prev: list[str], shorten: bool) -> str:
+def _user_msg(items: list[dict], title: str, prev: list[str], shorten: bool, nxt: list[str] | None = None) -> str:
     parts = []
     if title:
         parts.append(f"Video title: {title}")
     if prev:
         parts.append("Previous lines (already translated, for continuity):\n" + "\n".join(prev))
+    if nxt:
+        parts.append("Next lines (not to translate, only so you know where the conversation goes):\n" + "\n".join(nxt))
     if shorten:
         parts.append(
             "These translations are too long to be spoken in their time slots. Rewrite each one so it fits "
@@ -548,6 +558,8 @@ class McpTranslator:
         self.mc = mcpcloud
         self.system = build_system_prompt(tcfg, context)
         self.wait = float(tcfg.get("mcp_wait") or 300)
+        # chỉ hỏi Bắt đầu khi app tự chạy video trong hàng chờ; người dùng tự bấm (dịch lại câu, thử kết nối) thì gửi luôn
+        self.confirm = bool(tcfg.get("mcp_confirm", True)) and threading.current_thread().name == "icontent-worker"
         self.deadline: float | None = None
 
     def call(self, user: str, ids: list[int] | None = None) -> dict[int, str]:
@@ -561,7 +573,7 @@ class McpTranslator:
         if not title:
             first = system.strip().splitlines()[0] if system.strip() else "Việc chữ"
             title = first[:80]
-        res = self.mc.run_job(system, user, schema, title=title, wait=wait)
+        res = self.mc.run_job(system, user, schema, title=title, wait=wait, confirm=self.confirm)
         if not isinstance(res, dict):
             raise RuntimeError("AI qua MCP trả kết quả không đúng dạng")
         return res
@@ -619,18 +631,23 @@ def _fix_names(tr, items: list[dict], got: dict[int, str]) -> dict[int, str]:
     return out
 
 
-def _call_checked(tr, items: list[dict], title: str, prev: list[str], shorten: bool) -> dict[int, str]:
+def _call_checked(tr, items: list[dict], title: str, prev: list[str], shorten: bool,
+                  nxt: list[str] | None = None) -> dict[int, str]:
     if isinstance(tr, GoogleFreeTranslator):
         return _fix_names(tr, items, tr.translate_items(items)) if not shorten else {}
     if isinstance(tr, OfflineTranslator):
         return _fix_names(tr, items, tr.shorten_items(items) if shorten else tr.translate_items(items))
     want = {it["id"] for it in items}
-    got = tr.call(_user_msg(items, title, prev, shorten), [it["id"] for it in items])
+    got = tr.call(_user_msg(items, title, prev, shorten, nxt), [it["id"] for it in items])
     missing = [it for it in items if not got.get(it["id"])]
     if missing and len(missing) < len(items):
         log("translate", f"Thiếu {len(missing)} câu, dịch lại phần thiếu")
-        got.update(tr.call(_user_msg(missing, title, prev, shorten), [it["id"] for it in missing]))
+        got.update(tr.call(_user_msg(missing, title, prev, shorten, nxt), [it["id"] for it in missing]))
     return {k: v for k, v in got.items() if k in want}
+
+
+def _ctx_line(s: Segment, who: dict) -> str:
+    return (f"{who[s.speaker]}: " if who.get(s.speaker) else "") + s.text
 
 
 def _item(s: Segment, **kw) -> dict:
@@ -647,7 +664,8 @@ ANALYZE_BUDGET = 75      # giây. Thường mất 5-15 giây; quá hạn thì d�
 CAST_MAX_LINES = 500     # video quá nhiều câu: không bắt AI liệt kê người nói từng câu (câu trả lời quá dài)
 
 
-def analyze_video(segs: list[Segment], cfg, meta: dict, cast: bool = False, cast_count: int = 0) -> dict | None:
+def analyze_video(segs: list[Segment], cfg, meta: dict, cast: bool = False, cast_count: int = 0,
+                  characters: str = "") -> dict | None:
     """Đọc toàn bộ lời thoại một lượt: tóm tắt, người nói, xưng hô, bảng tên riêng, bộ tiêu đề/caption/hashtag.
     cast=True: AI còn chia nhân vật và cho biết từng câu là của ai (lồng mỗi nhân vật một giọng).
     cast_count: số nhân vật người dùng nhập (0 = để AI tự đếm)."""
@@ -664,6 +682,11 @@ def analyze_video(segs: list[Segment], cfg, meta: dict, cast: bool = False, cast
                       required=ANALYZE_SCHEMA["required"] + list(CAST_SCHEMA))
         count_rule = (f" The video has exactly {cast_count} speaking characters (the user counted them): return exactly "
                       f"{cast_count} cast entries.") if cast_count > 0 else ""
+        if characters.strip():
+            count_rule += (" The user who knows this video listed its speaking characters (name, and what they are): "
+                           + json.dumps(characters.strip(), ensure_ascii=False)
+                           + ". Use exactly these characters and these names in cast (gender as the user says), do not add "
+                           "others; they are the ground truth about who is who (e.g. which one is an animal).")
         system = ANALYZE_SYSTEM.replace("\nRespond with JSON only.",
                                         CAST_RULES.replace("{count_rule}", count_rule) + "\nRespond with JSON only.")
     user = (f"Video title: {meta.get('title', '')}\n"
@@ -689,18 +712,21 @@ def translate_segments(segs: list[Segment], cfg, meta: dict, only: set[int] | No
         return segs
     total = float(meta.get("duration") or (segs[-1].end if segs else 0))
     title = meta.get("title", "")
+    who = dict((context or {}).get("_who") or {}) if not isinstance(tr, (OfflineTranslator, GoogleFreeTranslator)) else {}
     # dịch offline đi từng câu một -> lô nhỏ để thanh tiến độ chạy đều
     bs = 5 if isinstance(tr, OfflineTranslator) else int(cfg.translate.batch_size)
     todo = [i for i, s in enumerate(segs) if only is None or s.id in only]
     for b in range(0, len(todo), bs):
         idxs = todo[b:b + bs]
-        items = [_item(segs[i], max_len=max_len_for(slot_of(segs, i, total), cfg)) for i in idxs]
-        first = idxs[0]
-        prev = [f"{p.text} => {p.trans}" for p in segs[max(0, first - 4):first] if p.trans]
+        items = [_item(segs[i], max_len=max_len_for(slot_of(segs, i, total), cfg),
+                       **({"who": who[segs[i].speaker]} if who.get(segs[i].speaker) else {})) for i in idxs]
+        first, last = idxs[0], idxs[-1]
+        prev = [_ctx_line(p, who) + f" => {p.trans}" for p in segs[max(0, first - 4):first] if p.trans]
+        nxt = [_ctx_line(p, who) for p in segs[last + 1:last + 4]]
         log("translate", f"Dịch câu {b + 1}-{b + len(idxs)} / {len(todo)} ({cfg.translate.provider})")
         progress("translate", b / max(1, len(todo)))
         check_cancel()
-        res = _call_checked(tr, items, title, prev, shorten=False)
+        res = _call_checked(tr, items, title, prev, shorten=False, nxt=nxt)
         for i in idxs:
             segs[i].trans = res.get(segs[i].id, segs[i].trans)
     return segs
@@ -722,3 +748,85 @@ def shorten_segments(segs: list[Segment], targets: dict[int, int], cfg, meta: di
     for b in range(0, len(items), bs):
         out.update(_call_checked(tr, items[b:b + bs], meta.get("title", ""), [], shorten=True))
     return out
+
+
+REVIEW_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"id": {"type": "integer"}, "text": {"type": "string"}},
+                "required": ["id", "text"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["items"],
+    "additionalProperties": False,
+}
+
+REVIEW_SYSTEM = """You are the editor of a {lang} voice-over dub of a Chinese short video. The whole script is already translated line by line; read it from start to end like a viewer would hear it and fix what is wrong.
+
+Each line has: id, zh (speech recognition, may contain misheard words), screen (the burned-in subtitle when it differs, usually more reliable), who (the character speaking, when known), max_len (comfortable length in {unit}) and tr (the current translation).
+
+Fix only real problems:
+- wrong meaning, a word-for-word rendering of an idiom or set phrase, a sentence that makes no sense when heard;
+- forms of address / pronouns that are wrong for who is talking to whom or that change between lines without reason;
+- a line cut down to a fragment, or two neighbouring lines that only make sense when read together but sound broken;
+- names that do not follow the glossary.
+Keep each line its own line (never move meaning between ids), keep it about max_len (at most ~25% over), keep the natural spoken tone. Do not touch lines that are fine.
+Return {{"items": [...]}} with ONLY the lines you changed, each {{"id", "text"}} where text is the full new translation. Return an empty list if everything is fine.
+Respond with JSON only."""
+
+REVIEW_CHUNK = 150
+
+
+def review_translation(segs: list[Segment], cfg, meta: dict, context: dict | None, ids: set[int]) -> int:
+    """Dịch xong: AI đọc lại cả bản dịch một lượt, sửa câu sai nghĩa, xưng hô lệch, câu cụt. Chỉ sửa câu trong `ids`
+    (câu vừa dịch, không đụng câu người dùng đã sửa tay). Trả về số câu đã sửa."""
+    tc = cfg.translate
+    if tc.provider not in ("claude", "openai", "mcp") or not ids:
+        return 0
+    tr = make_translator(tc, context)
+    lang = LANG_NAMES.get(tc.target_lang, tc.target_lang)
+    who = dict((context or {}).get("_who") or {})
+    total = float(meta.get("duration") or (segs[-1].end if segs else 0))
+    system = REVIEW_SYSTEM.format(lang=lang, unit=_langs.unit_words(tc.target_lang))
+    gloss = {g["zh"]: g["vi"] for g in (context or {}).get("glossary") or [] if g.get("zh") and g.get("vi")}
+    gloss.update(dict(tc.glossary or {}))
+    if (context or {}).get("pronouns"):
+        system += "\n\nForms of address to use: " + context["pronouns"]
+    if gloss:
+        system += "\nGlossary: " + json.dumps(gloss, ensure_ascii=False)
+    lines = []
+    for i, s in enumerate(segs):
+        d = _item(s, max_len=max_len_for(slot_of(segs, i, total), cfg), tr=s.trans)
+        if who.get(s.speaker):
+            d["who"] = who[s.speaker]
+        lines.append(d)
+    changed = 0
+    for b in range(0, len(lines), REVIEW_CHUNK):
+        part = lines[b:b + REVIEW_CHUNK]
+        if not any(x["id"] in ids for x in part):
+            continue
+        check_cancel()
+        user = f"Video title: {meta.get('title', '')}\n\nScript:\n" + json.dumps(part, ensure_ascii=False)
+        log("translate", f"AI đọc lại bản dịch câu {b + 1}-{b + len(part)} để sửa xưng hô, câu sai nghĩa ...")
+        if tc.provider == "mcp":
+            data = tr.json_call(system, user, REVIEW_SCHEMA, max_tokens=16000, title="Soát lại bản dịch")
+        else:
+            tr.deadline = time.time() + ANALYZE_BUDGET * 2
+            data = tr.json_call(system, user, REVIEW_SCHEMA, max_tokens=16000)
+        by_id = {s.id: s for s in segs}
+        for x in (data or {}).get("items") or []:
+            try:
+                k, text = int(x.get("id")), str(x.get("text") or "").strip()
+            except (TypeError, ValueError):
+                continue
+            if k in ids and k in by_id and text and text != by_id[k].trans:
+                by_id[k].trans = text
+                changed += 1
+    log("translate", f"Soát lại xong: sửa {changed} câu" if changed else "Soát lại xong: bản dịch ổn, không phải sửa")
+    return changed

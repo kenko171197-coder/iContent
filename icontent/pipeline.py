@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -182,6 +183,17 @@ def _transient(e: Exception) -> bool:
         return False
     return any(w in m for w in ("overload", "quá tải", "429", "503", "500", "502", "504", "rate limit", "timeout", "timed out",
                                 "unavailable", "internalservererror", "apitimeouterror", "connection"))
+
+
+def _speaker_names(job: Path) -> dict[str, str]:
+    """{S1: "Bà", ...} khi người nói có tên thật (AI chia nhân vật hoặc người dùng đặt tên), bỏ tên mặc định "Người 1"."""
+    from . import speakers
+    out = {}
+    for p in (speakers.load(job) or {}).get("speakers", []):
+        name = str(p.get("name") or "").strip()
+        if name and not re.fullmatch(r"Người \d+", name):
+            out[p["id"]] = name
+    return out
 
 
 def translate_resilient(segs, cfg, meta: dict, only: set, context: dict | None = None):
@@ -475,12 +487,13 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
             # AI đọc kịch bản để chia nhân vật: chỉ khi các câu còn mới (chưa dịch), không đè người nói anh đã sửa tay
             want_cast = use_speakers and not any(s.trans.strip() for s in segs)
             try:
-                context = analyze_video(segs, cfg, meta, cast=want_cast, cast_count=int(cfg.tts.get("speakers", 0) or 0))
+                context = analyze_video(segs, cfg, meta, cast=want_cast, cast_count=int(cfg.tts.get("speakers", 0) or 0),
+                                        characters=str(cfg.translate.get("characters") or ""))
                 if context:
                     ctx_path.write_text(json.dumps(context, ensure_ascii=False, indent=1), encoding="utf-8")
                 if context and want_cast:
                     from . import speakers
-                    info = speakers.apply_cast(segs, context, speakers.load(job))
+                    info = speakers.apply_cast(segs, context, speakers.load(job), count=int(cfg.tts.get("speakers", 0) or 0))
                     if info:
                         speakers.save(job, info)
                         (job / "voice.json").unlink(missing_ok=True)
@@ -501,10 +514,20 @@ def run_job(src: str, cfg, from_stage: str | None = None, overrides: dict | None
         missing = [s for s in segs if not s.trans.strip()]
         if missing:
             stage("translate")
+            tctx = dict(context or {}, _who=_speaker_names(job))      # tên người nói từng câu, để AI xưng hô đúng
             try:
                 if len(missing) != len(segs):      # chỉ dịch câu còn thiếu, giữ nguyên câu đã sửa tay
                     log("translate", f"Dịch {len(missing)} câu còn thiếu")
-                tr_cfg = translate_resilient(segs, cfg, meta, {s.id for s in missing}, context)
+                tr_cfg = translate_resilient(segs, cfg, meta, {s.id for s in missing}, tctx)
+                if cfg.translate.get("review", True) and tr_cfg.translate.provider == cfg.translate.provider \
+                        and cfg.translate.provider in ("claude", "openai", "mcp"):
+                    from .translate import review_translation
+                    try:
+                        review_translation(segs, cfg, meta, tctx, {s.id for s in missing})
+                    except Cancelled:
+                        raise
+                    except Exception as e:      # noqa: BLE001 — bước phụ: lỗi thì giữ bản dịch vừa có
+                        log("translate", f"Bỏ qua bước soát lại: {str(e)[:160]}")
             except Cancelled:
                 if old_trans is not None:
                     for s in segs:

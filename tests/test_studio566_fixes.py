@@ -243,3 +243,114 @@ def test_phan_tich_hoi_ai_nguoi_noi_tung_cau():
     finally:
         translate.make_translator = old
     assert "cast" not in seen["schema"]["required"] and '"v"' not in seen["user"]
+
+
+# ---------- 1.1.1: dịch hay hơn, ít lỗi hơn
+def test_chu_keo_dai_bat_thuong_khong_lam_dut_cau():
+    """3:26 video 丧彪: 让 bị ghi 206.27 -> 208.97, app tách thành câu "Tao bảo." đọc sớm 3 giây."""
+    segs = _sangbieu("sangbieu_words_lan3")
+    s = _find(segs, "让你带回来")
+    assert s.text == "我让你带回来" and s.start >= 208.3
+    assert not [x for x in segs if x.text in ("我让", "我让。")]
+    from icontent.asr import fix_stray_words
+    long_end = [(1.0, 2.5, "啊", 2), (2.5, 2.8, "好", 0)]          # tiếng kéo dài thật, kết câu: giữ nguyên
+    assert fix_stray_words(long_end) == long_end
+
+
+def test_ai_tra_thua_nhan_vat_thi_gop_theo_so_da_nhap():
+    from icontent import speakers
+    segs = _segs_102()
+    ans = _json.loads((_DATA / "sangbieu_cast_ai.json").read_text(encoding="utf-8"))
+    ans["cast"].append({"name": "Người đàn ông", "gender": "male"})
+    for x in ans["line_speakers"]:
+        if x["id"] in (56, 57, 58):
+            x["who"] = "Người đàn ông"                              # Grok tách Lão Hứa làm 2 người
+    info = speakers.apply_cast(segs, ans, count=4)
+    assert {p["name"] for p in info["speakers"]} == {"Bà", "Mễ Lạp", "Lão Hứa", "Tang Bưu"}
+    lh = next(p["id"] for p in info["speakers"] if p["name"] == "Lão Hứa")
+    assert all(s.speaker == lh for s in segs if s.id in (53, 56, 57, 58))
+
+
+def _fake_cfg(provider="claude", **tr):
+    from types import SimpleNamespace
+    t = SimpleNamespace(provider=provider, analyze=True, target_lang="vi", glossary={}, style="", batch_size=40,
+                        get=lambda k, d=None: tr.get(k, d), **{k: v for k, v in tr.items()})
+    return SimpleNamespace(translate=t, tts=SimpleNamespace(syllables_per_sec=5.0, get=lambda k, d=None: d))
+
+
+def test_dich_kem_ten_nguoi_noi_va_cau_sau():
+    from icontent import translate
+    seen = []
+
+    class Fake:
+        deadline = None
+
+        def call(self, user, ids):
+            seen.append(user)
+            return {i: "x" for i in ids}
+
+    segs = _segs_102()[:12]
+    old = translate.make_translator
+    translate.make_translator = lambda tc, *a: Fake()
+    try:
+        translate.translate_segments(segs, _fake_cfg(), {"title": "t", "duration": 40}, only={1, 2, 3},
+                                     context={"_who": {"S1": "Bà", "S3": "Tang Bưu"}})
+    finally:
+        translate.make_translator = old
+    assert '"who": "Bà"' in seen[0] and "Next lines" in seen[0] and "Bà: " in seen[0].split("Next lines")[1]
+    system = translate.build_system_prompt(_fake_cfg().translate)
+    assert "喝西北风" in system and "cho mày X này" in system and "'who'" in system
+
+
+def test_soat_lai_chi_sua_cau_vua_dich():
+    from icontent import translate
+    seen = {}
+
+    class Fake:
+        deadline = None
+
+        def json_call(self, system, user, schema, max_tokens=0, title=""):
+            seen.update(system=system, user=user)
+            return {"items": [{"id": 61, "text": "Bắt tôi nhịn đói trước à?"}, {"id": 5, "text": "sửa tay thì không đụng"}]}
+
+    segs = _segs_102()
+    old = translate.make_translator
+    translate.make_translator = lambda tc, *a: Fake()
+    try:
+        n = translate.review_translation(segs, _fake_cfg(), {"title": "t", "duration": 220}, {"_who": {"S1": "Mễ Lạp"}}, {61, 62})
+    finally:
+        translate.make_translator = old
+    by = {s.id: s for s in segs}
+    assert n == 1 and by[61].trans == "Bắt tôi nhịn đói trước à?" and by[5].trans == "Nhường chút, tao không thấy."
+    assert '"who": "Mễ Lạp"' in seen["user"] and '"tr": ' in seen["user"]
+
+
+def test_mcp_cho_bam_bat_dau_moi_gui_viec():
+    import threading
+    import time
+    from icontent import mcpcloud
+    sent = []
+    old = mcpcloud._app
+    mcpcloud._app = lambda m, path, body=None, timeout=0: (sent.append(path), {"id": "j1"} if m == "POST" else {"status": "done", "result": {"ok": 1}})[1]
+    try:
+        mcpcloud.gate_reset("Video A")
+        out = {}
+        th = threading.Thread(target=lambda: out.update(r=mcpcloud.run_job("s", "u", None, "Dịch", wait=5, confirm=True)),
+                              name="test-mcp")
+        th.start()
+        time.sleep(0.6)
+        assert mcpcloud.gate_state()["state"] == "waiting" and sent == []        # chưa bấm: chưa gửi gì, không đếm giờ
+        assert mcpcloud.gate_answer(True)
+        th.join(5)
+        assert out["r"] == {"ok": 1} and sent[0] == "jobs"
+        assert mcpcloud.run_job("s", "u", None, "Soát", wait=5, confirm=True) == {"ok": 1}   # cùng video: không hỏi lại
+        mcpcloud.gate_reset("Video B")
+        mcpcloud.gate_answer(False)
+        try:
+            mcpcloud.run_job("s", "u", None, "Dịch", wait=5, confirm=True)
+            raise AssertionError("bấm Bỏ qua thì phải chuyển sang cách dự phòng")
+        except mcpcloud.McpError:
+            pass
+    finally:
+        mcpcloud._app = old
+        mcpcloud.gate_reset()

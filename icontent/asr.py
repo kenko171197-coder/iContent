@@ -310,6 +310,7 @@ def transcribe_gaps(wav16k: str | Path, gaps: list[tuple[float, float]], acfg, t
     return out
 
 
+LONG_WORD = 1.0        # một chữ dài hơn từng này giây mà dính liền chữ sau = bị đặt sai giờ bắt đầu
 STRAY_GAP = 1.5        # chữ lẻ cách chữ kế tiếp từng này giây trở lên mà không kết câu = bị đặt sai giờ
 _SENT_END = set("。.！!？?，,、；;：:…")
 
@@ -320,6 +321,13 @@ def fix_stray_words(words: list[tuple]) -> list[tuple]:
     tiếng lồng và phụ đề chạy trước hình. Chữ lẻ như vậy (sát câu trước, không có dấu câu, cách chữ sau >= STRAY_GAP)
     được dời về ngay trước chữ kế tiếp. Không đổi chữ, chỉ đổi giờ."""
     ws = [tuple(w) for w in words]
+    # chữ đơn kéo dài bất thường, dính liền chữ sau (VD 让 3:26.3 -> 3:29.0 rồi 你 3:29.0): Whisper kéo giờ bắt đầu của
+    # chữ về tận chữ trước. Lời thật nằm sát chữ sau -> chỉ giữ 0.3 giây cuối. Tiếng kéo dài thật (啊——) thường kết câu.
+    for i in range(len(ws) - 1):
+        a, b = ws[i][0], ws[i][1]
+        brk = ws[i][3] if len(ws[i]) > 3 else 0
+        if b - a > LONG_WORD and not brk and len(re.sub(r"\W", "", str(ws[i][2]))) == 1 and ws[i + 1][0] - b < 0.15:
+            ws[i] = (round(b - 0.3, 3), b) + tuple(ws[i][2:])
     for i in range(len(ws) - 1):
         a, b, text = ws[i][0], ws[i][1], str(ws[i][2])
         brk = ws[i][3] if len(ws[i]) > 3 else 0

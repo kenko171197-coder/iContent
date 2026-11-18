@@ -431,7 +431,7 @@ def voice_map(job: Path) -> dict[str, str]:
     return {p["id"]: p.get("voice") or p.get("auto_voice") or "" for p in (load(job) or {}).get("speakers", [])}
 
 
-def apply_cast(segs: list[Segment], context: dict | None, old: dict | None = None) -> dict | None:
+def apply_cast(segs: list[Segment], context: dict | None, old: dict | None = None, count: int = 0) -> dict | None:
     """Người nói theo AI đọc kịch bản (context["cast"], context["line_speakers"] của bước phân tích).
     Gán s.speaker cho mọi câu, trả về speakers.json mới: mỗi nhân vật một mã, có tên và nam/nữ do AI nói.
     Kết quả không dùng được (thiếu nhân vật, AI bỏ sót quá nửa số câu) -> None, giữ kết quả nghe giọng."""
@@ -456,6 +456,21 @@ def apply_cast(segs: list[Segment], context: dict | None, old: dict | None = Non
     secs: dict[str, float] = {}
     for s, n in zip(segs, seq):
         secs[n] = secs.get(n, 0.0) + s.dur
+    if count > 0 and len(secs) > count:
+        # AI trả nhiều nhân vật hơn số người dùng nhập: giữ những người nói nhiều nhất, câu của người thừa theo người
+        # của câu ngay trước (hội thoại thường nối lượt cùng người), không có thì câu ngay sau
+        # AI trả nhiều nhân vật hơn số người dùng nhập (VD tách một người làm "Lão Hứa" và "Người đàn ông"): giữ những
+        # người nói nhiều nhất; mỗi người thừa nhập trọn vào một người giữ lại cùng giới, hay nói xen quanh các câu của họ
+        keep = sorted(secs, key=lambda n: -secs[n])[:count]
+        for drop in sorted((n for n in secs if n not in keep), key=lambda n: secs[n]):
+            mine = [i for i, n in enumerate(seq) if n == drop]
+            g = names[drop].get("gender")
+            pool = [k for k in keep if names[k].get("gender") == g] or keep
+            near = {k: sum(1 for i in mine for j in range(max(0, i - 3), min(len(seq), i + 4)) if seq[j] == k) for k in pool}
+            to = max(pool, key=lambda k: (near[k], secs[k]))
+            for i in mine:
+                seq[i] = to
+        secs = {n: sum(s.dur for s, m in zip(segs, seq) if m == n) for n in keep}
     ids = {n: f"S{i}" for i, n in enumerate(sorted(secs, key=lambda n: -secs[n]), 1)}
     for s, n in zip(segs, seq):
         s.speaker = ids[n]

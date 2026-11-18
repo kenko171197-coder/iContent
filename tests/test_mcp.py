@@ -85,6 +85,9 @@ def test_dich_qua_mcp_tron_vong(gate):
 
     cfg = with_overrides(load_config(), {"translate": {"provider": "mcp", "mcp_wait": 30}})
     ids = [3, 4, 5]
+    from icontent import mcpcloud
+    mcpcloud.gate_reset("thử")
+    mcpcloud.gate_answer(True)          # người dùng đã bấm Bắt đầu
 
     def answer(data: str):
         return {"items": [{"id": int(i), "text": f"VI:{i}"} for i in re.findall(r'"id":\s*(\d+)', data)]}

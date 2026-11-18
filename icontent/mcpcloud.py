@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -149,10 +150,66 @@ def status() -> dict:
 
 # ------------------------------------------------------------------ chạy một việc
 
+_gate = {"state": "idle", "video": "", "since": 0.0}
+_gate_lock = threading.Lock()
+
+
+def gate_reset(video: str = "") -> None:
+    """Mỗi video bắt đầu chạy: chưa ai bấm gì. Hết video: về nghỉ (giao diện ẩn thông báo)."""
+    with _gate_lock:
+        _gate.update(state="idle", video=video, since=0.0)
+
+
+def gate_state() -> dict:
+    with _gate_lock:
+        return dict(_gate)
+
+
+def gate_answer(go: bool) -> bool:
+    """Người dùng bấm Bắt đầu (go=True) hoặc Bỏ qua. Đúng một lần cho cả video: các việc MCP sau không hỏi lại."""
+    with _gate_lock:
+        if _gate["state"] not in ("waiting", "idle"):
+            return False
+        _gate["state"] = "go" if go else "skip"
+        return True
+
+
+def _await_go(title: str) -> None:
+    """Chờ người dùng bấm Bắt đầu rồi mới gửi việc và tính giờ: không ai nhắn AI thì cũng không tự hết giờ."""
+    with _gate_lock:
+        st = _gate["state"]
+        if st == "idle":
+            _gate.update(state="waiting", since=time.time())
+    if st == "go":
+        return
+    if st == "skip":
+        raise McpError("Bạn đã chọn bỏ qua AI qua MCP cho video này")
+    log("mcp", f"Cần AI qua MCP ({title}): bấm Bắt đầu trên thông báo của app, rồi mở Claude, ChatGPT hoặc Grok "
+               "và nhắn \"làm việc đang chờ\". Bấm Bỏ qua để dùng cách dịch dự phòng")
+    try:
+        while True:
+            check_cancel()
+            with _gate_lock:
+                st = _gate["state"]
+            if st == "go":
+                log("mcp", "Đã bấm Bắt đầu: gửi việc cho AI qua MCP")
+                return
+            if st == "skip":
+                raise McpError("Bạn đã chọn bỏ qua AI qua MCP cho video này")
+            time.sleep(0.4)
+    except BaseException:
+        with _gate_lock:
+            if _gate["state"] == "waiting":
+                _gate["state"] = "idle"
+        raise
+
+
 def run_job(system: str, user: str, schema: dict | None, title: str, wait: float = 300.0,
-            work_limit: float = 900.0, poll: float = POLL_WAIT) -> dict:
+            work_limit: float = 900.0, poll: float = POLL_WAIT, confirm: bool = False) -> dict:
     """Gửi một việc vào kênh, chờ AI làm. Chưa AI nào nhận sau `wait` giây -> hủy việc và báo lỗi để app dùng cách dự phòng.
     AI đã nhận thì cho thêm tới `work_limit` giây. Mỗi lượt hỏi, cổng giữ kết nối tới `poll` giây chờ AI trả."""
+    if confirm:
+        _await_go(title)
     job = _app("POST", "jobs", {"title": title, "system": system, "user": user, "schema": schema})
     jid = job["id"]
     start = time.time()

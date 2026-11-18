@@ -2,6 +2,7 @@
 import {
   $, S, api, closeAllModals, closePop, el, emptyState, enc, errorState, fmtDur, icon, loadFonts, loadStatus, loadVoices, modalStack, openModal,
   pollQueue, pollSoon, stopAudio, confirmDialog, toast, licenseHooks,
+  copyText,
 } from './core.js';
 import { showLicenseGate } from './license.js';
 import { startConn } from './conn.js';
@@ -174,6 +175,30 @@ async function checkAppUpdate() {
   } catch (_) { /* không có mạng: bỏ qua */ }
 }
 
+/** Trước khi dùng AI qua MCP: app chờ người dùng bấm Bắt đầu (không tự hết giờ khi chưa ai mở AI để nhắn). */
+let mcpGateBox = null;
+async function pollMcpGate() {
+  let g = null;
+  try { g = await api('GET', '/api/mcp/gate'); } catch (_) { /* máy chủ bận: lần sau */ }
+  const waiting = g && g.state === 'waiting';
+  if (!waiting) { if (mcpGateBox) { mcpGateBox.remove(); mcpGateBox = null; } return; }
+  if (mcpGateBox) return;
+  const answer = async (go) => {
+    try { await api('POST', '/api/mcp/gate', { go }); } catch (e) { toast(e.message, 'error'); return; }
+    if (mcpGateBox) { mcpGateBox.remove(); mcpGateBox = null; }
+    if (go) toast('Đã bắt đầu. Mở Claude, ChatGPT hoặc Grok và nhắn: làm việc đang chờ', 'success', { timeout: 9000 });
+  };
+  mcpGateBox = el('div', { class: 'mcp-gate', role: 'alertdialog', 'aria-label': 'Cần AI qua MCP' },
+    el('div', { class: 'mcp-gate-t', text: 'Cần AI qua MCP' + (g.video ? ': ' + g.video : '') }),
+    el('div', { class: 'mcp-gate-d', text: 'Bấm Bắt đầu khi bạn sẵn sàng, rồi mở Claude, ChatGPT hoặc Grok và nhắn "làm việc đang chờ". App chờ tới khi bạn bấm, không tự chuyển sang cách dịch dự phòng.' }),
+    el('div', { class: 'mcp-gate-a' },
+      el('button', { class: 'btn btn-primary', onclick: () => answer(true) }, 'Bắt đầu'),
+      el('button', { class: 'btn btn-ghost', onclick: () => copyText('làm việc đang chờ', 'Đã chép câu nhắn') }, 'Chép câu nhắn'),
+      el('button', { class: 'btn btn-ghost', title: 'Không dùng AI qua MCP cho video này: dịch bằng cách dự phòng (dịch offline hoặc Google)', onclick: () => answer(false) }, 'Bỏ qua')));
+  document.body.append(mcpGateBox);
+  try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification('Studio566: cần AI qua MCP', { body: 'Bấm Bắt đầu trên app để tiếp tục' }); } catch (_) { /* không có thông báo hệ thống */ }
+}
+
 async function boot() {
   // trước mọi thứ, kể cả màn Kích hoạt: máy chủ phải biết cửa sổ còn mở. Nối lại được thì vẽ lại trang đang báo lỗi mất kết nối
   startConn(() => { if ($('#main .empty.error')) route(); pollSoon(); });
@@ -189,5 +214,6 @@ async function boot() {
   loadVoices();
   pollQueue();
   setInterval(loadStatus, 60000);
+  setInterval(pollMcpGate, 2000);
 }
 boot();
